@@ -5,6 +5,7 @@ project:
 filters:
   - timeline
   - live
+  - aptitek/download-fonts
   - aptitek/tabs
   - aptitek/ojs-inputs
   - aptitek/bi-icons

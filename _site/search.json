@@ -104,13 +104,6 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Aptispace",
-    "section": "",
-    "text": "Bienvenue sur Aptispace."
-  },
-  {
     "objectID": "migration_process.html#déclaration-dans-la-navigation-quarto",
     "href": "migration_process.html#déclaration-dans-la-navigation-quarto",
     "title": "Guide de Migration de Contenu : Aptispace",
@@ -119,5 +112,12 @@
     "crumbs": [
       "Guide de Migration de Contenu : Aptispace"
     ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Aptispace",
+    "section": "",
+    "text": "Bienvenue sur Aptispace."
   }
 ]
