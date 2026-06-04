@@ -268,6 +268,24 @@ end
 function Pandoc(doc)
   input_items = {}
   ojs_imports = {}
+  local has_native_ojs = false
+  
+  -- Check if the document already contains native OJS code blocks (compiled to js cell-code) or inline code
+  doc:walk {
+    CodeBlock = function(el)
+      if (el.classes:includes('ojs') or el.classes:includes('{ojs}')) or 
+         (el.classes:includes('js') and el.classes:includes('cell-code')) then
+        has_native_ojs = true
+      end
+    end,
+    Code = function(el)
+      if el.classes:includes('ojs') or el.classes:includes('{ojs}') then
+        has_native_ojs = true
+      end
+    end
+  }
+
+
   
   -- 1. Walk the document to find and transform spans, links, and strings
   doc = doc:walk {
@@ -279,18 +297,20 @@ function Pandoc(doc)
   -- 2. If inputs, imports or string variables were generated, append base64 encoded silent OJS module scripts
   if #input_items > 0 or #ojs_imports > 0 then
     -- Automatically register the OJS assets as an HTML dependency in Quarto
-    if quarto and quarto.doc and quarto.doc.is_format("html") then
-      quarto.doc.add_html_dependency({
-        name = "quarto-ojs",
-        version = "1.0.0",
-        stylesheets = { "quarto-ojs.css" },
-        scripts = {
-          {
-            path = "quarto-ojs-runtime.js",
-            attribs = { type = "module" }
+    if not has_native_ojs then
+      if quarto and quarto.doc and quarto.doc.is_format("html") then
+        quarto.doc.add_html_dependency({
+          name = "quarto-ojs",
+          version = "1.0.0",
+          stylesheets = { "quarto-ojs.css" },
+          scripts = {
+            {
+              path = "quarto-ojs-runtime.js",
+              attribs = { type = "module" }
+            }
           }
-        }
-      })
+        })
+      end
     end
     
     -- Determine current document's path nesting offset
@@ -362,36 +382,38 @@ function Pandoc(doc)
     )
     table.insert(doc.blocks, pandoc.RawBlock('html', raw_html))
     
-    -- Inject path initializers and start script evaluation
-    local docToRootJS = "."
-    if docToRoot ~= "" then
-      docToRootJS = string.sub(docToRoot, 1, -2)
+    if not has_native_ojs then
+      -- Inject path initializers and start script evaluation
+      local docToRootJS = "."
+      if docToRoot ~= "" then
+        docToRootJS = string.sub(docToRoot, 1, -2)
+      end
+      
+      -- The HTML dependency is copied to site_libs/quarto-contrib/quarto-ojs-1.0.0/ (3 levels deep)
+      local runtimeToRoot = "../../.."
+      local runtimeToDoc = "../../.."
+      if docToRoot ~= "" then
+        runtimeToDoc = "../../../" .. string.sub(docToRoot, 1, -2)
+      end
+      
+      local init_html = string.format(
+        '<script type="module">\n' ..
+        '  if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }\n' ..
+        '  window._ojs = window._ojs || {};\n' ..
+        '  window._ojs.paths = window._ojs.paths || {};\n' ..
+        '  window._ojs.paths.runtimeToDoc = "%s";\n' ..
+        '  window._ojs.paths.runtimeToRoot = "%s";\n' ..
+        '  window._ojs.paths.docToRoot = "%s";\n' ..
+        '  window._ojs.selfContained = false;\n' ..
+        '  window._ojs.runtime = window._ojs.runtime || {};\n' ..
+        '  if (typeof window._ojs.runtime.interpretFromScriptTags === "function") {\n' ..
+        '    window._ojs.runtime.interpretFromScriptTags();\n' ..
+        '  }\n' ..
+        '</script>',
+        runtimeToDoc, runtimeToRoot, docToRootJS
+      )
+      table.insert(doc.blocks, pandoc.RawBlock('html', init_html))
     end
-    
-    -- The HTML dependency is copied to site_libs/quarto-contrib/quarto-ojs-1.0.0/ (3 levels deep)
-    local runtimeToRoot = "../../.."
-    local runtimeToDoc = "../../.."
-    if docToRoot ~= "" then
-      runtimeToDoc = "../../../" .. string.sub(docToRoot, 1, -2)
-    end
-    
-    local init_html = string.format(
-      '<script type="module">\n' ..
-      '  if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }\n' ..
-      '  window._ojs = window._ojs || {};\n' ..
-      '  window._ojs.paths = window._ojs.paths || {};\n' ..
-      '  window._ojs.paths.runtimeToDoc = "%s";\n' ..
-      '  window._ojs.paths.runtimeToRoot = "%s";\n' ..
-      '  window._ojs.paths.docToRoot = "%s";\n' ..
-      '  window._ojs.selfContained = false;\n' ..
-      '  window._ojs.runtime = window._ojs.runtime || {};\n' ..
-      '  if (typeof window._ojs.runtime.interpretFromScriptTags === "function") {\n' ..
-      '    window._ojs.runtime.interpretFromScriptTags();\n' ..
-      '  }\n' ..
-      '</script>',
-      runtimeToDoc, runtimeToRoot, docToRootJS
-    )
-    table.insert(doc.blocks, pandoc.RawBlock('html', init_html))
   end
   
   return doc

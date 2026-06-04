@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Code Viewer</title>
+    <!-- Font import (Backup if not synced) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/solarized-light.min.css">
+
+    <style>
+        /* --- 1. THEME VARIABLES (DEFAULTS) --- */
+        /* These will be overridden by parent theme if available */
+        :root {
+            --bg-color: #fdf6e3;
+            /* Base3 */
+            --text-color: #657b83;
+            /* Base00 */
+            --border-color: #eee8d5;
+            /* Base2 */
+            --btn-bg: transparent;
+            --btn-hover: #eee8d5;
+            --link-color: #268bd2;
+            --success-color: #859900;
+            --error-color: #dc322f;
+            --code-font: 'Recursive', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--code-font);
+            font-variation-settings: 'MONO' 1;
+        }
+
+        body.is-render-mode {
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+            font-family: 'Recursive', sans-serif;
+            font-variation-settings: 'MONO' 0, 'CASL' 0, 'slnt' 0, 'CRSV' 0.5;
+        }
+
+        body.is-render-mode code, body.is-render-mode pre code {
+            font-family: var(--code-font);
+            font-variation-settings: 'MONO' 1;
+        }
+
+        /* --- 2. CONTAINER --- */
+        .sourceCode {
+            position: relative;
+        }
+
+        pre {
+            margin: 0;
+            padding: 15px;
+            overflow: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        code {
+            font-family: var(--code-font);
+            background: transparent !important;
+            /* Let body handle bg */
+        }
+
+        /* --- 3. COPY BUTTON --- */
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: #93a1a1;
+            /* Base1 */
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--btn-hover);
+            color: #586e75;
+            /* Base01 */
+        }
+
+        .bi-clipboard {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .copy-btn.copied {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .copy-btn.copied::after {
+            content: "Copied!";
+            position: absolute;
+            top: 50%;
+            right: 110%;
+            transform: translateY(-50%);
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            white-space: nowrap;
+            pointer-events: none;
+            animation: tooltipFadeIn 0.3s forwards;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translate(10px, -50%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(0, -50%);
+            }
+        }
+
+        /* --- 4. ERROR MESSAGE --- */
+        #error-msg {
+            display: none;
+            color: var(--error-color);
+            padding: 20px;
+            font-family: sans-serif;
+            font-variation-settings: 'MONO' 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="error-msg"></div>
+
+    <div class="sourceCode">
+        <button class="copy-btn" id="copy-btn" title="Copy code">
+            <svg class="bi-clipboard" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path
+                    d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                <path
+                    d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+            </svg>
+        </button>
+
+        <pre><code id="code-content">Loading...</code></pre>
+    </div>
+
+    <!-- Highlight.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+
+    <script>
+        // --- THEME SYNC ---
+        // Try to pull variables from parent window (Quarto main site)
+        try {
+            if (window.parent && window.parent !== window) {
+                const parentStyle = window.parent.getComputedStyle(window.parent.document.documentElement);
+                const parentBodyStyle = window.parent.getComputedStyle(window.parent.document.body);
+                const root = document.documentElement;
+                
+                // Inherit computed page background and text colors
+                const bg = parentBodyStyle.backgroundColor;
+                const fg = parentBodyStyle.color;
+                if (bg) root.style.setProperty('--bg-color', bg);
+                if (fg) root.style.setProperty('--text-color', fg);
+
+                // Sync link color if bootstrap sets it
+                const linkColor = parentStyle.getPropertyValue('--bs-link-color');
+                if (linkColor) root.style.setProperty('--link-color', linkColor);
+
+                const varsToSync = [
+                    '--border-color', '--success-color', '--error-color', '--font-code'
+                ];
+
+                varsToSync.forEach(v => {
+                    const val = parentStyle.getPropertyValue(v);
+                    if (val && val.trim() !== "") root.style.setProperty(v, val);
+                });
+            }
+        } catch (e) {
+            console.debug("Theme sync not available (likely standalone or CORS).");
+        }
+
+        // --- MAIN LOGIC ---
+        let queryString = window.location.search;
+        if (!queryString && window.location.hash) {
+            // Support params in hash to avoid Quarto build warnings about broken links
+            let h = window.location.hash.substring(1);
+            // If hash starts with a ?, strip it
+            if (h.startsWith('?')) h = h.substring(1);
+            queryString = h;
+        }
+
+        const urlParams = new URLSearchParams(queryString);
+        const fileUrl = urlParams.get('file');
+        const codeEl = document.getElementById('code-content');
+        const btn = document.getElementById('copy-btn');
+        const errEl = document.getElementById('error-msg');
+
+        // Copy Feature
+        const copyToClipboard = async (text) => {
+            // Option 1: Modern Async API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch (err) {
+                    console.warn("Clipboard API failed, trying fallback...", err);
+                }
+            }
+
+            // Option 2: Flashback to 2015 (execCommand)
+            // Sturdy fallback for non-secure contexts or older browsers
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+
+                // Ensure it's not visible but part of DOM
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                textArea.style.top = "0";
+                document.body.appendChild(textArea);
+
+                textArea.focus();
+                textArea.select();
+
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                if (successful) return true;
+            } catch (err) {
+                console.error("Fallback copy failed", err);
+            }
+
+            return false;
+        };
+
+        const showCopySuccess = () => {
+            const originalHTML = btn.innerHTML;
+            const originalTitle = btn.getAttribute('title');
+
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>`;
+            btn.classList.add('copied');
+            btn.removeAttribute('title');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+                if (originalTitle) btn.setAttribute('title', originalTitle);
+            }, 2000);
+        };
+
+        const showCopyError = () => {
+            const originalHTML = btn.innerHTML;
+            // X icon
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>`;
+            btn.style.color = "var(--error-color)";
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.color = "";
+            }, 2000);
+        };
+
+        btn.addEventListener('click', () => {
+            copyToClipboard(codeEl.innerText).then(success => {
+                if (success) {
+                    showCopySuccess();
+                } else {
+                    console.error("Failed to copy code.");
+                    showCopyError();
+                }
+            });
+        });
+
+        // Load File
+        const mode = urlParams.get('mode');
+        const renderEl = document.createElement('div');
+        renderEl.id = 'render-content';
+        renderEl.style.display = 'none';
+        // Add minimal padding similar to pre
+        renderEl.style.padding = '15px';
+        renderEl.style.maxWidth = '100%';
+        renderEl.style.overflowX = 'auto';
+        document.body.appendChild(renderEl);
+
+        if (!fileUrl) {
+            errEl.innerText = "No file selected.";
+            errEl.style.display = "block";
+            codeEl.parentElement.style.display = "none";
+            btn.style.display = "none";
+        } else {
+            if (mode === 'render') {
+                // Static Render Mode
+                document.body.classList.add('is-render-mode');
+                codeEl.parentElement.style.display = 'none';
+                btn.style.display = 'none';
+                renderEl.style.display = 'block';
+
+                fetch(fileUrl)
+                    .then(r => {
+                        if (!r.ok) throw new Error(`File not found (${r.status})`);
+                        return r.text();
+                    })
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Extract main content
+                        const mainContent = doc.querySelector('main.content') || doc.querySelector('#quarto-document-content') || doc.body;
+
+                        // Inject HTML directly
+                        // This strips <script> tags execution usually
+                        renderEl.innerHTML = mainContent.innerHTML;
+
+                        // Copy Stylesheets from the fetched document to preserve look
+                        const links = doc.querySelectorAll('link[rel="stylesheet"]');
+                        links.forEach(link => {
+                            // Check if already exists? or just append
+                            // Fix relative hrefs
+                            const href = link.getAttribute('href');
+                            if (href && !href.startsWith('http') && !href.startsWith('//')) {
+                                // Resolve relative to fileUrl base
+                                const baseUrl = fileUrl.substring(0, fileUrl.lastIndexOf('/') + 1);
+                                // Simple concat if not starting with /
+                                if (!href.startsWith('/')) {
+                                    link.href = baseUrl + href;
+                                }
+                            }
+                            document.head.appendChild(link);
+                        });
+
+                        // Optional: Fix relative links in content? 
+                        const baseUrl = fileUrl.substring(0, fileUrl.lastIndexOf('/') + 1);
+                        if (baseUrl) {
+                            const base = document.createElement('base');
+                            base.href = baseUrl;
+                            document.head.appendChild(base);
+                        }
+                    })
+                    .catch(e => {
+                        errEl.innerText = "Error loading render: " + e.message;
+                        errEl.style.display = "block";
+                        renderEl.style.display = "none";
+                    });
+
+            } else {
+                // Code View Mode
+                let ext = fileUrl.split('.').pop().toLowerCase();
+                // Simple mapping
+                const langMap = {
+                    'js': 'javascript', 'ts': 'typescript', 'py': 'python',
+                    'md': 'markdown', 'yml': 'yaml', 'sh': 'bash'
+                };
+                if (langMap[ext]) ext = langMap[ext];
+
+                codeEl.className = `language-${ext}`;
+
+                fetch(fileUrl)
+                    .then(r => {
+                        if (!r.ok) throw new Error(`File not found (${r.status})`);
+                        return r.text();
+                    })
+                    .then(text => {
+                        codeEl.textContent = text;
+                        hljs.highlightElement(codeEl);
+                    })
+                    .catch(e => {
+                        errEl.innerText = "Error: " + e.message;
+                        errEl.style.display = "block";
+                        codeEl.parentElement.style.display = "none";
+                        btn.style.display = "none";
+                    });
+            }
+        }
+
+        // Handle hash changes
+        window.addEventListener('hashchange', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+
+</html>

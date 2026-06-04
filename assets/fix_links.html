@@ -1,0 +1,19 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("Fix script running");
+        // Select .ipynb and .html links that are likely notebooks (e.g. in lab/ folder or just generic .html that isn't the current page)
+        // For now, let's target all checking for 'lab/' in href as a heuristic based on user project structure, content folder etc.
+        // Or simpler: target all local .html links that are not anchors?
+        const links = document.querySelectorAll('a[href$=".ipynb"], a[href*="/lab/"][href$=".html"]');
+
+        links.forEach(link => {
+            // Check if the link already has a target
+            if (!link.hasAttribute('target')) {
+                // Force open in new tab
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+                console.log("Fixed link target:", link.href);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 120" width="100%" height="100%">
+  <defs>
+    <!-- PCB Gradient for a premium Solarized Dark circuit board -->
+    <linearGradient id="pcbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#002b36" />
+      <stop offset="100%" stop-color="#073642" />
+    </linearGradient>
+
+    <!-- Circuit trace glow effect -->
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- 1. PCB Board Base Shape (with side notches and bottom keying notch) -->
+  <path d="M 12,0 
+           L 788,0 
+           Q 800,0 800,12 
+           L 800,45 
+           L 792,45 
+           L 792,65 
+           L 800,65 
+           L 800,108 
+           Q 800,120 788,120 
+           L 424,120 
+           L 424,102 
+           L 404,102 
+           L 404,120 
+           L 12,120 
+           Q 0,120 0,108 
+           L 0,65 
+           L 8,65 
+           L 8,45 
+           L 0,45 
+           L 0,12 
+           Q 0,0 12,0 Z" 
+        fill="url(#pcbGrad)" 
+        stroke="#586e75" 
+        stroke-width="1.5" />
+
+  <!-- 2. Screen Printed Outlines (Solarized Base01) -->
+  <path d="M 15,5 
+           L 785,5 
+           Q 795,5 795,15 
+           L 795,43 
+           L 788,43 
+           L 788,67 
+           L 795,67 
+           L 795,95 
+           L 426,95 
+           L 426,102 
+           L 402,102 
+           L 402,95 
+           L 5,95 
+           L 5,67 
+           L 12,67 
+           L 12,43 
+           L 5,43 
+           L 5,15 
+           Q 5,5 15,5 Z" 
+        fill="none" 
+        stroke="#586e75" 
+        stroke-width="1" 
+        opacity="0.4" />
+
+  <!-- 3. Circuit Board Copper Traces (Solarized Green, Cyan & Gold) -->
+  <g opacity="0.35" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <!-- Parallel Bus Lines 1 (Green) -->
+    <path d="M 30,25 L 120,25 L 140,45 L 300,45 L 320,65 L 390,65" fill="none" stroke="#859900" stroke-width="1.5" />
+    <path d="M 30,29 L 118,29 L 138,49 L 298,49 L 318,69 L 390,69" fill="none" stroke="#859900" stroke-width="1.5" />
+    <path d="M 30,33 L 116,33 L 136,53 L 296,53 L 316,73 L 390,73" fill="none" stroke="#859900" stroke-width="1.5" />
+
+    <!-- Parallel Bus Lines 2 (Cyan) -->
+    <path d="M 770,25 L 680,25 L 660,45 L 500,45 L 480,65 L 430,65" fill="none" stroke="#2aa198" stroke-width="1.5" />
+    <path d="M 770,29 L 682,29 L 662,49 L 502,49 L 482,69 L 430,69" fill="none" stroke="#2aa198" stroke-width="1.5" />
+    <path d="M 770,33 L 684,33 L 664,53 L 504,53 L 484,73 L 430,73" fill="none" stroke="#2aa198" stroke-width="1.5" />
+
+    <!-- Cross and Diagonal Schematic Traces -->
+    <path d="M 50,15 L 70,35 L 70,75 L 90,85" fill="none" stroke="#2aa198" stroke-width="1" />
+    <path d="M 750,15 L 730,35 L 730,75 L 710,85" fill="none" stroke="#859900" stroke-width="1" />
+    
+    <!-- Chip Connection Traces (Vertical feeder lines) -->
+    <path d="M 160,10 L 160,85 M 240,10 L 240,85 M 320,10 L 320,85 M 480,10 L 480,85 M 560,10 L 560,85 M 640,10 L 640,85" fill="none" stroke="#586e75" stroke-width="1" stroke-dasharray="4,4" />
+  </g>
+
+  <!-- 4. Metallic Gold Vias (Circuit connection dots) -->
+  <g fill="#b58900" opacity="0.8">
+    <circle cx="70" cy="35" r="2.5" />
+    <circle cx="70" cy="75" r="2.5" />
+    <circle cx="120" cy="25" r="2" />
+    <circle cx="140" cy="45" r="2" />
+    <circle cx="300" cy="45" r="2" />
+    <circle cx="320" cy="65" r="2" />
+    <circle cx="730" cy="35" r="2.5" />
+    <circle cx="730" cy="75" r="2.5" />
+    <circle cx="680" cy="25" r="2" />
+    <circle cx="660" cy="45" r="2" />
+    <circle cx="500" cy="45" r="2" />
+    <circle cx="480" cy="65" r="2" />
+  </g>
+
+  <!-- 5. Gold Connector Finger Pins (Flashed along the bottom connector edge) -->
+  <!-- Left Side Contacts (Pins before the keying notch) -->
+  <line x1="15" y1="112" x2="395" y2="112" 
+        stroke="#b58900" 
+        stroke-width="12" 
+        stroke-dasharray="3,2" />
+  <line x1="15" y1="105" x2="395" y2="105" 
+        stroke="#cb4b16" 
+        stroke-width="1.5" 
+        opacity="0.8" />
+
+  <!-- Right Side Contacts (Pins after the keying notch) -->
+  <line x1="432" y1="112" x2="785" y2="112" 
+        stroke="#b58900" 
+        stroke-width="12" 
+        stroke-dasharray="3,2" />
+  <line x1="432" y1="105" x2="785" y2="105" 
+        stroke="#cb4b16" 
+        stroke-width="1.5" 
+        opacity="0.8" />
+
+  <!-- Thin gold guide trace running horizontally above the pins -->
+  <line x1="12" y1="102" x2="398" y2="102" stroke="#b58900" stroke-width="0.8" opacity="0.6" />
+  <line x1="428" y1="102" x2="788" y2="102" stroke="#b58900" stroke-width="0.8" opacity="0.6" />
+</svg>

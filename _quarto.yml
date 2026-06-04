@@ -27,3 +27,13 @@ format:
       - theme/solarized/base.scss
     toc: true
     code-copy: true
+    include-in-header:
+      - text: '<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>'
+      - text: |
+          <script type="module">
+            if (!window.aptitek) {
+              const mod = await import("/assets/js/index.js");
+              window.aptitek = Object.freeze({ ...mod });
+            }
+          </script>
+
