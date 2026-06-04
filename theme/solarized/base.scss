@@ -1,0 +1,387 @@
+/*-- scss:rules --*/
+
+// =============================================================================
+// 1. GOOGLE FONTS IMPORT
+// =============================================================================
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap");
+
+// =============================================================================
+// 2. SCROLLBARS AESTHETICS
+// =============================================================================
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba($sol-base1, 0.35);
+    border-radius: 4px;
+    
+    &:hover {
+        background: rgba($sol-base1, 0.7);
+    }
+}
+
+// =============================================================================
+// 3. GLOBAL HTML ELEMENT STYLING
+// =============================================================================
+body {
+    font-family: $font-family-base;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: $sol-base02;
+    font-weight: $headings-font-weight;
+    margin-top: 1.75rem;
+    margin-bottom: 0.85rem;
+    line-height: 1.25;
+}
+
+a {
+    color: $link-color;
+    text-decoration: $link-decoration;
+    border-bottom: 1px dotted transparent;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+
+    &:hover {
+        color: $link-hover-color;
+        border-bottom-color: $link-hover-color;
+    }
+}
+
+// =============================================================================
+// 4. CODE & MONOSPACE ELEMENTS
+// =============================================================================
+pre, code, kbd, samp {
+    font-family: $font-family-code;
+    font-size: 0.9em;
+}
+
+// Code Block Containers (Native Markdown / Quarto Code blocks)
+.sourceCode {
+    border-radius: 6px;
+    border: 1px solid rgba($sol-base1, 0.25);
+    background-color: $code-block-bg !important;
+}
+
+// Inline Code Styling
+code:not(pre code) {
+    background-color: rgba($sol-base1, 0.18);
+    color: $sol-base02;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+// =============================================================================
+// 5. LEFT SIDEBAR NAVIGATION
+// =============================================================================
+.sidebar {
+    background-color: $sidebar-bg !important;
+    border-right: 1px solid rgba($sol-base1, 0.2) !important;
+    
+    .sidebar-title {
+        color: $sol-base02 !important;
+        font-weight: 800;
+        font-size: 1.1em;
+        letter-spacing: -0.02em;
+    }
+    
+    .sidebar-item-container {
+        margin-bottom: 0.2rem;
+    }
+    
+    .sidebar-link {
+        color: $sidebar-fg !important;
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+        padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+        display: block;
+        border-radius: 0 4px 4px 0;
+        
+        &:hover {
+            color: $sol-orange !important;
+            background-color: rgba($sol-base1, 0.12);
+            text-decoration: none;
+        }
+        
+        &.active {
+            color: $sol-blue !important;
+            font-weight: 700;
+            border-left-color: $sol-blue;
+            background-color: rgba($sol-blue, 0.06);
+            text-decoration: none;
+        }
+    }
+}
+
+// =============================================================================
+// 6. TABLE OF CONTENTS (Right TOC Sidebar)
+// =============================================================================
+#quarto-toc {
+    border-left: 1px solid rgba($sol-base1, 0.2);
+    padding-left: 1rem;
+    
+    h2 {
+        color: $sol-base01;
+        font-size: 0.8em;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+    }
+    
+    .nav-link {
+        color: $sol-base01;
+        font-size: 0.82em;
+        padding: 0.25rem 0 0.25rem 0.75rem;
+        border-left: 2px solid transparent;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: $sol-orange !important;
+            text-decoration: none;
+        }
+
+        &.active {
+            color: $sol-green !important;
+            font-weight: 600;
+            border-left-color: $sol-green !important;
+            text-decoration: none;
+        }
+    }
+}
+
+// =============================================================================
+// 7. CALLOUT BOXES (Native Quarto Callouts)
+// =============================================================================
+.callout {
+    border-left-width: 5px !important;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba($sol-base1, 0.15) !important;
+    border-right: 1px solid rgba($sol-base1, 0.15) !important;
+    border-bottom: 1px solid rgba($sol-base1, 0.15) !important;
+    
+    .callout-header {
+        font-weight: 700;
+        color: $sol-base02;
+    }
+    
+    &.callout-note {
+        border-left-color: $sol-blue !important;
+        background-color: rgba($sol-blue, 0.06) !important;
+        .callout-icon-container { color: $sol-blue; }
+    }
+    
+    &.callout-warning {
+        border-left-color: $sol-yellow !important;
+        background-color: rgba($sol-yellow, 0.06) !important;
+        .callout-icon-container { color: $sol-yellow; }
+    }
+    
+    &.callout-important, &.callout-caution {
+        border-left-color: $sol-red !important;
+        background-color: rgba($sol-red, 0.06) !important;
+        .callout-icon-container { color: $sol-red; }
+    }
+    
+    &.callout-tip {
+        border-left-color: $sol-green !important;
+        background-color: rgba($sol-green, 0.06) !important;
+        .callout-icon-container { color: $sol-green; }
+    }
+}
+
+// =============================================================================
+// 8. TABLE STYLING
+// =============================================================================
+table, .table {
+    width: 100%;
+    margin-bottom: 1.75rem;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    
+    th {
+        background-color: rgba($sol-base1, 0.08);
+        color: $sol-base02;
+        font-weight: 600;
+        border-bottom: 2px solid rgba($sol-base1, 0.35) !important;
+        padding: 10px 14px;
+        text-align: left;
+    }
+    
+    td {
+        border-bottom: 1px solid rgba($sol-base1, 0.18);
+        padding: 10px 14px;
+        color: $sol-base00;
+    }
+    
+    tr:nth-child(even) {
+        background-color: rgba($sol-base1, 0.03);
+    }
+}
+
+// =============================================================================
+// 9. NATIVE BOOTSTRAP BUTTONS
+// =============================================================================
+.btn {
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: $sol-blue;
+    border-color: $sol-blue;
+    color: $sol-base3;
+    
+    &:hover, &:focus {
+        background-color: darken($sol-blue, 8%) !important;
+        border-color: darken($sol-blue, 8%) !important;
+        color: $sol-base3 !important;
+    }
+}
+
+.btn-secondary {
+    background-color: $sol-base1;
+    border-color: $sol-base1;
+    color: $sol-base3;
+    
+    &:hover, &:focus {
+        background-color: darken($sol-base1, 8%) !important;
+        border-color: darken($sol-base1, 8%) !important;
+        color: $sol-base3 !important;
+    }
+}
+
+// =============================================================================
+// 10. PEDAGOGICAL & PRESENTATIONAL CONTAINERS
+// =============================================================================
+.comparison-container {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    margin: 1.75rem 0;
+    
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .comparison-item {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid rgba($sol-base1, 0.22);
+        border-radius: 8px;
+        background-color: rgba($sol-base1, 0.04);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        
+        h4 {
+            margin-top: 0;
+            color: $sol-base02;
+        }
+    }
+}
+
+// =============================================================================
+// 11. CUSTOM TABS & CONTROLS STYLING
+// =============================================================================
+.tabset-container {
+    margin: 1.5rem 0;
+
+    .nav-tabs {
+        border-bottom: 2px solid rgba($sol-base1, 0.2);
+        
+        .nav-item {
+            margin-bottom: -2px;
+        }
+
+        .nav-link {
+            border: none;
+            background: none;
+            color: $sol-base01;
+            font-weight: 500;
+            padding: 0.6rem 1rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.25s ease;
+
+            &:hover {
+                color: $sol-orange;
+                border-bottom-color: rgba($sol-orange, 0.5);
+            }
+
+            &.active {
+                color: $sol-green !important;
+                background-color: transparent !important;
+                border-bottom: 2px solid $sol-green !important;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+// Custom Search Bar inside tab headers or generic elements
+.search-bar {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba($sol-base1, 0.08);
+    border: 1px solid rgba($sol-base1, 0.22);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    transition: all 0.2s ease;
+    
+    i.bi {
+        color: $sol-base01;
+        font-size: 0.85rem;
+        margin-right: 0.4rem;
+        pointer-events: none;
+    }
+
+    input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: $sol-base02;
+        font-size: 0.85rem;
+        width: 140px;
+        transition: width 0.2s ease;
+        padding: 0;
+
+        &::placeholder {
+            color: rgba($sol-base01, 0.5);
+        }
+
+        &:focus {
+            width: 180px;
+        }
+    }
+
+    &:focus-within {
+        background-color: rgba($sol-base3, 1);
+        border-color: $sol-blue;
+        box-shadow: 0 0 0 3px rgba($sol-blue, 0.15);
+    }
+}
+
+// Dynamic value display styles (.val)
+.val {
+    font-weight: 600;
+    color: $sol-violet;
+    font-family: $font-family-code;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: rgba($sol-violet, 0.08);
+    display: inline-block;
+}
+
+

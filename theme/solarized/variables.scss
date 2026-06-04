@@ -1,0 +1,66 @@
+/*-- scss:defaults --*/
+
+// =============================================================================
+// 1. SOLARIZED COLOR PALETTE (Ethan Schoonover)
+// =============================================================================
+$sol-base03:  #002b36; // Darkest background
+$sol-base02:  #073642; // Sidebar/darker background highlight
+$sol-base01:  #586e75; // Comments, secondary text
+$sol-base00:  #657b83; // Main body text (dark mode active/light mode secondary)
+$sol-base0:   #839496; // Main body text (light mode active/dark mode secondary)
+$sol-base1:   #93a1a1; // Secondary content/comments
+$sol-base2:   #eee8d5; // Light background highlight (Sidebar)
+$sol-base3:   #fdf6e3; // Lightest background (Main content bg)
+
+$sol-yellow:  #b58900;
+$sol-orange:  #cb4b16;
+$sol-red:     #dc322f;
+$sol-magenta: #d33682;
+$sol-violet:  #6c71c4;
+$sol-blue:    #268bd2;
+$sol-cyan:    #2aa198;
+$sol-green:   #859900;
+
+// =============================================================================
+// 2. TYPOGRAPHY TOKENS
+// =============================================================================
+$font-family-base: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !default;
+$font-family-code: "Fira Code", "Courier New", Courier, monospace !default;
+$headings-font-weight: 700 !default;
+
+// =============================================================================
+// 3. SEMANTIC THEME MAPPINGS (Solarized Light Default)
+// =============================================================================
+$body-bg: $sol-base3 !default;
+$body-color: $sol-base00 !default;
+
+$link-color: $sol-blue !default;
+$link-hover-color: $sol-orange !default;
+$link-decoration: none !default;
+
+// Left Navigation Sidebar
+$sidebar-bg: $sol-base2 !default;
+$sidebar-fg: $sol-base01 !default;
+
+// Top Navigation Bar
+$navbar-bg: $sol-base2 !default;
+$navbar-fg: $sol-base01 !default;
+
+// Inline & Block Code Elements
+$code-block-bg: $sol-base2 !default;
+$code-text-color: $sol-base01 !default;
+
+// =============================================================================
+// 4. BOOTSTRAP UTILITY COLOR OVERRIDES
+// =============================================================================
+$primary: $sol-blue !default;
+$secondary: $sol-base1 !default;
+$success: $sol-green !default;
+$info: $sol-cyan !default;
+$warning: $sol-yellow !default;
+$danger: $sol-red !default;
+$light: $sol-base2 !default;
+$dark: $sol-base02 !default;
+
+// Global Border Color
+$border-color: rgba($sol-base1, 0.25) !default;

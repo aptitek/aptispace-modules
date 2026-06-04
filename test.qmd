@@ -1,0 +1,51 @@
+---
+ojs: true
+---
+
+::: {.card .card-window data-layout="sidebar-left"}
+#### Title {.bi-search}
+
+:::: {.tabs}
+##### [Tab1]{.bi-person}
+Ici, tu peux mettre du texte long, une image, ou même un petit bloc OJS sans rien casser.
+
+##### [Tab2]{.bi-people}
+Contenu du deuxième onglet.
+
+##### Recherche {.tab-right .bi-search .search-bar}
+::::
+:::: {.grid}
+
+::::: {.col-md-12 .topbar}
+
+- [Loss]{.label} [42]{.slider #loss min=0 max=100}
+- [Accuracy]{.label} [0.7]{.slider #acc min=0 max=1 step=0.1}
+- [Epochs]{.label} [10]{.number #epochs min=1}
+:::::
+
+::::: {.col-md-2 .leftbar}
+
+- [Variable]{.label} [42]{.slider #loss_vertical_left vertical=true}
+:::::
+
+::::: {.col-md-8 .simulator}
+[import #simulateur-ml](./assets/js/custom/simulation.js)
+:::::
+
+::::: {.col-md-2 .rightbar}
+
+- [Variable]{.label} [42]{.slider #loss_vertical_right vertical=true}
+:::::
+
+::::
+
+:::: {.metrics}
+| Loss         | Accuracy    |
+| :----------- | :---------- |
+| [loss]{.val} | [acc]{.val} |
+::::
+
+:::: {.output}
+Après **${epochs}** epochs, l'explication de la dynamique entre ${loss} et ${acc} s'affiche ici.
+::::
+:::

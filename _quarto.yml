@@ -1,0 +1,28 @@
+project:
+  type: website
+  output-dir: _site
+
+filters:
+  - timeline
+  - live
+  - aptitek/tabs
+  - aptitek/ojs-inputs
+  - aptitek/bi-icons
+  - aptitek/embed
+  - aptitek/grid
+
+website:
+  title: "Aptispace"
+  search: false
+  sidebar:
+    style: "docked"
+    search: false
+    contents: auto
+
+format:
+  html:
+    theme:
+      - theme/solarized/variables.scss
+      - theme/solarized/base.scss
+    toc: true
+    code-copy: true

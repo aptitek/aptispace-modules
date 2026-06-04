@@ -1,0 +1,123 @@
+[
+  {
+    "objectID": "modules/example.html",
+    "href": "modules/example.html",
+    "title": "Exemple de module",
+    "section": "",
+    "text": "Ceci est un module exemple.",
+    "crumbs": [
+      "Modules",
+      "Exemple de module"
+    ]
+  },
+  {
+    "objectID": "modules/example.html#test-dicônes",
+    "href": "modules/example.html#test-dicônes",
+    "title": "Exemple de module",
+    "section": " Test d’Icônes",
+    "text": "Test d’Icônes\nVoici une icône en ligne :  Information",
+    "crumbs": [
+      "Modules",
+      "Exemple de module"
+    ]
+  },
+  {
+    "objectID": "modules/example.html#test-dintégration-embed",
+    "href": "modules/example.html#test-dintégration-embed",
+    "title": "Exemple de module",
+    "section": "Test d’Intégration (Embed)",
+    "text": "Test d’Intégration (Embed)",
+    "crumbs": [
+      "Modules",
+      "Exemple de module"
+    ]
+  },
+  {
+    "objectID": "modules/example.html#test-de-grille-grid",
+    "href": "modules/example.html#test-de-grille-grid",
+    "title": "Exemple de module",
+    "section": "Test de Grille (Grid)",
+    "text": "Test de Grille (Grid)\n\nVia Tableau :\n\n\n\nContenu du bloc gauche (col-md-6)\n\n\nContenu du bloc droit (col-md-6)\n\n\n\n\n\nVia Divs :\n\n\n\nColonne 1 (un tiers)\n\n\nColonne 2 (un tiers)\n\n\nColonne 3 (un tiers)",
+    "crumbs": [
+      "Modules",
+      "Exemple de module"
+    ]
+  },
+  {
+    "objectID": "test.html",
+    "href": "test.html",
+    "title": "Aptispace",
+    "section": "",
+    "text": "Title\n\n\n Tab1 Tab2\n\n\n\nIci, tu peux mettre du texte long, une image, ou même un petit bloc OJS sans rien casser.\n\n\nContenu du deuxième onglet.\n\n\n\n\n\n\n\nLoss \nAccuracy \nEpochs \n\n\n\n\nVariable \n\n\n\n\n\n\n\nVariable \n\n\n\n\n\n\n\n\nLoss\nAccuracy\n\n\n\n\n\n\n\n\n\n\n\nAprès  epochs, l’explication de la dynamique entre  et  s’affiche ici.",
+    "crumbs": [
+      "Title"
+    ]
+  },
+  {
+    "objectID": "migration_process.html",
+    "href": "migration_process.html",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Ce guide documente le processus de migration des anciens contenus de cours de différents formats (fichiers Markdown volumineux, Notebooks Jupyter, pages HTML) vers le nouveau système de modules d’apprentissage courts d’Aptispace.\n\n\nPour éviter le modèle d’un projet par cours (avec un site Cloudflare Pages distinct par cours), le nouveau système unifie tout le contenu au sein d’une unique arborescence structurée par Discipline et par Thème.\nLes modules doivent être créés sous le répertoire modules/ selon l’arborescence suivante :\n2.Aptispace/\n└── modules/\n    ├── &lt;discipline-slug&gt;/\n    │   └── &lt;theme-slug&gt;/\n    │       ├── assets/                 # Images et fichiers associés à ce thème\n    │       ├── index.qmd               # Page de garde du thème (Facultatif)\n    │       ├── &lt;module-1-slug&gt;.qmd     # Module notionnel 1\n    │       ├── &lt;module-2-slug&gt;.qmd     # Module notionnel 2\n    │       └── resources.qmd           # Téléchargements (PDFs, ZIPs, PPTXs)\n\n\n\n\n\n\n\n\n\n\n\nRépertoire d’origine\nDiscipline (discipline-slug)\nThème (theme-slug)\nTitre du Thème\n\n\n\n\nDocker\nsysteme-reseau\ndocker\nDocker\n\n\nLinux\nsysteme-reseau\nlinux\nLinux\n\n\nSQL\nsysteme-reseau\nsql\nSQL\n\n\nPOO Avancé\ndeveloppement\npoo-avance\nProgrammation Orientée Objet\n\n\nUML\ndeveloppement\numl\nModélisation UML\n\n\nDevelopement Desktop\ndeveloppement\ndesktop\nDéveloppement Desktop\n\n\nInformatique\ndeveloppement\ninformatique\nBases de l’Informatique\n\n\nIA\ndata-ia\nia\nIntelligence Artificielle\n\n\nDatasciences\ndata-ia\ndatascience\nData Science\n\n\n\n\n\n\n\nChaque page .qmd générée doit être un module court expliquant une seule notion à la fois.\n\n\n\nIdentifier les sections H2 dans les fichiers d’origine. Par exemple, dans Bases de Docker.md :\n\n## 1.1. Introduction : Pourquoi Docker ?\n## 1.2. Architecture de Docker\n\nCréer un fichier distinct pour chaque section H2.\nNettoyer le titre du module :\n\nRetirer les numéros (ex: 1.1., 1.2.).\nRetirer les styles de titre (ex: pas de ** ou de * dans les titres).\nRetirer les émojis en début de titre.\nExemple : ## 1.1. Introduction : Pourquoi Docker ? devient le titre de module : \"Introduction : Pourquoi Docker ?\"\n\nGénérer le Slug :\n\nConvertir le titre nettoyé en minuscules, remplacer les espaces et caractères spéciaux par des tirets -.\nExemple de fichier : intro-pourquoi-docker.qmd.\n\n\n\n\n\n\n\n\n\nExtraire chaque bloc compris entre deux balises ## (ou de la première balise ## jusqu’à la fin de la section).\nÉcrire un nouveau fichier .qmd en insérant le frontmatter Quarto :\n---\ntitle: \"Titre du Module Nettoyé\"\n---\n\n[Contenu du module...]\n\n\n\n\nPour les répertoires contenant uniquement des notebooks (ou si les notebooks sont plus complets que les .md) :\n\nLire le fichier .ipynb au format JSON.\nParcourir les cellules :\n\nLes cellules de type markdown sont ajoutées telles quelles au document de travail.\nLes cellules de type code doivent être enveloppées dans un bloc de code correspondant au langage de programmation spécifié dans les métadonnées du notebook (ex: ```java pour Java, ```python pour Python).\n\nUne fois le document reconstruit sous forme de texte markdown, appliquer la même méthode de découpage par H2 pour générer les modules unitaires.\n\n\n\n\nPour les ressources historiques au format HTML (ex: dans Informatique/HTML/) :\n\nExtraire le contenu textuel et structurel en ignorant les balises &lt;script&gt;, &lt;style&gt; et les conteneurs d’en-tête/pied de page.\nConvertir les balises sémantiques principales en syntaxe Markdown :\n\n&lt;h1&gt; / &lt;h2&gt; / &lt;h3&gt; \\(\\rightarrow\\) # / ## / ###\n&lt;p&gt; \\(\\rightarrow\\) Paragraphe de texte\n&lt;ul&gt; / &lt;ol&gt; / &lt;li&gt; \\(\\rightarrow\\) Listes à puces * ou ordonnées 1.\n&lt;code&gt; / &lt;pre&gt; \\(\\rightarrow\\) Blocs ou lignes de code ```\n&lt;a&gt; \\(\\rightarrow\\) Liens [texte](url)\n\nDécouper ensuite le texte converti en modules .qmd unifiés.\n\n\n\n\n\n\n\n\nRepérer toutes les images locales référencées dans les cours (ex: ![Description](image.png)).\nDéplacer l’image dans le répertoire modules/&lt;discipline-slug&gt;/&lt;theme-slug&gt;/assets/.\nCorriger le chemin dans le fichier .qmd : ![Description](assets/image.png).\n\n\n\n\nPour les supports complémentaires (ex: polytech-se-memo.pdf dans Linux, devoir.zip dans Réseaux, présentations PowerPoint) :\n\nDéplacer les fichiers dans modules/&lt;discipline-slug&gt;/&lt;theme-slug&gt;/assets/.\nCréer une page resources.qmd dans le dossier du thème avec le frontmatter suivant :\n---\ntitle: \"Ressources et Téléchargements\"\n---\n\nRetrouvez ci-dessous les supports de cours complémentaires :\n\n- [Fiche Mémo - PDF](assets/polytech-se-memo.pdf)\n- [Sujet de Devoir - ZIP](assets/devoir.zip)\n\n\n\n\n\nUne fois les modules générés, ils doivent être référencés de façon ordonnée dans la navigation globale.\nOuvrir 2.Aptispace/_quarto.yml et remplacer contents: auto de la barre latérale par une configuration de contenu structurée :\nwebsite:\n  sidebar:\n    style: \"docked\"\n    search: false\n    contents:\n      - section: \"💻 Développement\"\n        contents:\n          - section: \"Programmation Orientée Objet\"\n            contents:\n              - modules/developpement/poo-avance/outils.qmd\n              - modules/developpement/poo-avance/rappels.qmd\n              - modules/developpement/poo-avance/solid.qmd\n              - modules/developpement/poo-avance/resources.qmd\n          - section: \"Modélisation UML\"\n            contents:\n              - modules/developpement/uml/modeliser-systemes.qmd\n              - modules/developpement/uml/resources.qmd\n      - section: \"🌐 Systèmes & Infrastructure\"\n        contents:\n          - section: \"Docker\"\n            contents:\n              - modules/systeme-reseau/docker/intro-pourquoi-docker.qmd\n              - modules/systeme-reseau/docker/architecture-docker.qmd\n              - modules/systeme-reseau/docker/dockerfile.qmd\n              - modules/systeme-reseau/docker/docker-compose.qmd\n              - modules/systeme-reseau/docker/resources.qmd",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  },
+  {
+    "objectID": "migration_process.html#structure-hiérarchique-cible",
+    "href": "migration_process.html#structure-hiérarchique-cible",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Pour éviter le modèle d’un projet par cours (avec un site Cloudflare Pages distinct par cours), le nouveau système unifie tout le contenu au sein d’une unique arborescence structurée par Discipline et par Thème.\nLes modules doivent être créés sous le répertoire modules/ selon l’arborescence suivante :\n2.Aptispace/\n└── modules/\n    ├── &lt;discipline-slug&gt;/\n    │   └── &lt;theme-slug&gt;/\n    │       ├── assets/                 # Images et fichiers associés à ce thème\n    │       ├── index.qmd               # Page de garde du thème (Facultatif)\n    │       ├── &lt;module-1-slug&gt;.qmd     # Module notionnel 1\n    │       ├── &lt;module-2-slug&gt;.qmd     # Module notionnel 2\n    │       └── resources.qmd           # Téléchargements (PDFs, ZIPs, PPTXs)\n\n\n\n\n\n\n\n\n\n\n\nRépertoire d’origine\nDiscipline (discipline-slug)\nThème (theme-slug)\nTitre du Thème\n\n\n\n\nDocker\nsysteme-reseau\ndocker\nDocker\n\n\nLinux\nsysteme-reseau\nlinux\nLinux\n\n\nSQL\nsysteme-reseau\nsql\nSQL\n\n\nPOO Avancé\ndeveloppement\npoo-avance\nProgrammation Orientée Objet\n\n\nUML\ndeveloppement\numl\nModélisation UML\n\n\nDevelopement Desktop\ndeveloppement\ndesktop\nDéveloppement Desktop\n\n\nInformatique\ndeveloppement\ninformatique\nBases de l’Informatique\n\n\nIA\ndata-ia\nia\nIntelligence Artificielle\n\n\nDatasciences\ndata-ia\ndatascience\nData Science",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  },
+  {
+    "objectID": "migration_process.html#découpage-en-modules-notionnels",
+    "href": "migration_process.html#découpage-en-modules-notionnels",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Chaque page .qmd générée doit être un module court expliquant une seule notion à la fois.\n\n\n\nIdentifier les sections H2 dans les fichiers d’origine. Par exemple, dans Bases de Docker.md :\n\n## 1.1. Introduction : Pourquoi Docker ?\n## 1.2. Architecture de Docker\n\nCréer un fichier distinct pour chaque section H2.\nNettoyer le titre du module :\n\nRetirer les numéros (ex: 1.1., 1.2.).\nRetirer les styles de titre (ex: pas de ** ou de * dans les titres).\nRetirer les émojis en début de titre.\nExemple : ## 1.1. Introduction : Pourquoi Docker ? devient le titre de module : \"Introduction : Pourquoi Docker ?\"\n\nGénérer le Slug :\n\nConvertir le titre nettoyé en minuscules, remplacer les espaces et caractères spéciaux par des tirets -.\nExemple de fichier : intro-pourquoi-docker.qmd.",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  },
+  {
+    "objectID": "migration_process.html#traduction-des-formats-sources",
+    "href": "migration_process.html#traduction-des-formats-sources",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Extraire chaque bloc compris entre deux balises ## (ou de la première balise ## jusqu’à la fin de la section).\nÉcrire un nouveau fichier .qmd en insérant le frontmatter Quarto :\n---\ntitle: \"Titre du Module Nettoyé\"\n---\n\n[Contenu du module...]\n\n\n\n\nPour les répertoires contenant uniquement des notebooks (ou si les notebooks sont plus complets que les .md) :\n\nLire le fichier .ipynb au format JSON.\nParcourir les cellules :\n\nLes cellules de type markdown sont ajoutées telles quelles au document de travail.\nLes cellules de type code doivent être enveloppées dans un bloc de code correspondant au langage de programmation spécifié dans les métadonnées du notebook (ex: ```java pour Java, ```python pour Python).\n\nUne fois le document reconstruit sous forme de texte markdown, appliquer la même méthode de découpage par H2 pour générer les modules unitaires.\n\n\n\n\nPour les ressources historiques au format HTML (ex: dans Informatique/HTML/) :\n\nExtraire le contenu textuel et structurel en ignorant les balises &lt;script&gt;, &lt;style&gt; et les conteneurs d’en-tête/pied de page.\nConvertir les balises sémantiques principales en syntaxe Markdown :\n\n&lt;h1&gt; / &lt;h2&gt; / &lt;h3&gt; \\(\\rightarrow\\) # / ## / ###\n&lt;p&gt; \\(\\rightarrow\\) Paragraphe de texte\n&lt;ul&gt; / &lt;ol&gt; / &lt;li&gt; \\(\\rightarrow\\) Listes à puces * ou ordonnées 1.\n&lt;code&gt; / &lt;pre&gt; \\(\\rightarrow\\) Blocs ou lignes de code ```\n&lt;a&gt; \\(\\rightarrow\\) Liens [texte](url)\n\nDécouper ensuite le texte converti en modules .qmd unifiés.",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  },
+  {
+    "objectID": "migration_process.html#gestion-des-fichiers-annexes-et-médias",
+    "href": "migration_process.html#gestion-des-fichiers-annexes-et-médias",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Repérer toutes les images locales référencées dans les cours (ex: ![Description](image.png)).\nDéplacer l’image dans le répertoire modules/&lt;discipline-slug&gt;/&lt;theme-slug&gt;/assets/.\nCorriger le chemin dans le fichier .qmd : ![Description](assets/image.png).\n\n\n\n\nPour les supports complémentaires (ex: polytech-se-memo.pdf dans Linux, devoir.zip dans Réseaux, présentations PowerPoint) :\n\nDéplacer les fichiers dans modules/&lt;discipline-slug&gt;/&lt;theme-slug&gt;/assets/.\nCréer une page resources.qmd dans le dossier du thème avec le frontmatter suivant :\n---\ntitle: \"Ressources et Téléchargements\"\n---\n\nRetrouvez ci-dessous les supports de cours complémentaires :\n\n- [Fiche Mémo - PDF](assets/polytech-se-memo.pdf)\n- [Sujet de Devoir - ZIP](assets/devoir.zip)",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Aptispace",
+    "section": "",
+    "text": "Bienvenue sur Aptispace."
+  },
+  {
+    "objectID": "migration_process.html#déclaration-dans-la-navigation-quarto",
+    "href": "migration_process.html#déclaration-dans-la-navigation-quarto",
+    "title": "Guide de Migration de Contenu : Aptispace",
+    "section": "",
+    "text": "Une fois les modules générés, ils doivent être référencés de façon ordonnée dans la navigation globale.\nOuvrir 2.Aptispace/_quarto.yml et remplacer contents: auto de la barre latérale par une configuration de contenu structurée :\nwebsite:\n  sidebar:\n    style: \"docked\"\n    search: false\n    contents:\n      - section: \"💻 Développement\"\n        contents:\n          - section: \"Programmation Orientée Objet\"\n            contents:\n              - modules/developpement/poo-avance/outils.qmd\n              - modules/developpement/poo-avance/rappels.qmd\n              - modules/developpement/poo-avance/solid.qmd\n              - modules/developpement/poo-avance/resources.qmd\n          - section: \"Modélisation UML\"\n            contents:\n              - modules/developpement/uml/modeliser-systemes.qmd\n              - modules/developpement/uml/resources.qmd\n      - section: \"🌐 Systèmes & Infrastructure\"\n        contents:\n          - section: \"Docker\"\n            contents:\n              - modules/systeme-reseau/docker/intro-pourquoi-docker.qmd\n              - modules/systeme-reseau/docker/architecture-docker.qmd\n              - modules/systeme-reseau/docker/dockerfile.qmd\n              - modules/systeme-reseau/docker/docker-compose.qmd\n              - modules/systeme-reseau/docker/resources.qmd",
+    "crumbs": [
+      "Guide de Migration de Contenu : Aptispace"
+    ]
+  }
+]
