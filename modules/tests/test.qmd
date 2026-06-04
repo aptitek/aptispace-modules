@@ -374,14 +374,14 @@ viewof rawInput = document.querySelector("#rawInput")
 ::::::: {.ram-motherboard}
 
 :::::::: {.ram-stick #ram-stick-1}
-![](assets/ui/ram-bar.svg){.background}
+![](/assets/ui/ram-bar.svg){.background}
 
 ::::::::: {.ram-bytes-container #ram-bytes-container-1}
 :::::::::
 ::::::::
 
 :::::::: {.ram-stick #ram-stick-2}
-![](assets/ui/ram-bar.svg){.background}
+![](/assets/ui/ram-bar.svg){.background}
 
 ::::::::: {.ram-bytes-container #ram-bytes-container-2}
 :::::::::
@@ -392,7 +392,7 @@ viewof rawInput = document.querySelector("#rawInput")
 ::::::: {.ram-byte-template .d-none}
 :::::::: {.d-flex .flex-column .align-items-center .m-1}
 ::::::::: {.ram-byte-box class="{{inactiveClass}}" title="Bits: {{binary}}"}
-![](assets/ui/chip.svg){.background}
+![](/assets/ui/chip.svg){.background}
 {{hex}}
 :::::::::
 [Octet {{index}}]{.badge .bg-secondary .mb-1 .font-code}
@@ -607,7 +607,7 @@ Tout en haut de la pyramide, les registres internes du cœur traitent les donné
 :::::::
 ::::::: {.card-body}
 :::::::: {.motherboard-view #motherboard-view .w-100}
-![](assets/ui/motherboard.svg){.background}
+![](/assets/ui/motherboard.svg){.background}
 ::::::::
 ```{ojs}
 initMobo = initMoboSvg("#motherboard-view")

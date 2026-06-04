@@ -31,7 +31,6 @@ format:
     theme:
       - theme/solarized/variables.scss
       - theme/solarized/base.scss
-    css:
       - styles/components/index.scss
       - styles/simulators/index.scss
     toc: true
