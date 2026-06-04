@@ -1,0 +1,486 @@
+.lever-wrapper {
+        flex: 0 0 100px;
+        margin: 0;
+    }
+}
+
+#cabling-canvas {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.cabling-gap {
+    flex: 1 1 auto;
+    min-width: 80px;
+}
+
+.cabling-col {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+
+    &--left { width: 210px; }
+    &--right { width: 120px; }
+}
+
+.cabling-pill {
+    width: 100%;
+    padding: 12px 18px;
+    border: 1px solid rgba(var(--sol-base1-rgb), 0.12);
+    border-radius: 10px;
+    background: var(--sol-base02);
+    box-shadow: 0 4px 6px rgba(var(--sol-base03-rgb), 0.15);
+    color: var(--sol-base0);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    white-space: nowrap;
+
+    .cabling-col--left & {
+        border-left: 3px solid var(--sol-base01);
+        text-align: right;
+    }
+
+    .cabling-col--right & {
+        border-right: 3px solid var(--sol-base01);
+        color: var(--sol-base1);
+        font-family: var(--font-code);
+        font-size: 0.82rem;
+        text-align: left;
+    }
+
+    &:hover {
+        border-color: rgba(var(--sol-blue-rgb), 0.5);
+        box-shadow: 0 6px 16px rgba(var(--sol-base03-rgb), 0.25);
+        color: var(--sol-base1);
+        transform: translateY(-2px);
+    }
+
+    &.is-active {
+        border-color: var(--sol-yellow) !important;
+        box-shadow: 0 0 0 3px rgba(var(--sol-yellow-rgb), 0.25), 0 6px 16px rgba(var(--sol-base03-rgb), 0.25) !important;
+        color: var(--sol-yellow) !important;
+    }
+
+    &.is-validated {
+        cursor: default;
+        transform: none !important;
+    }
+}
+
+#cabling-canvas .jtk-endpoint circle {
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.cabling-ep-left,
+.cabling-ep-right {
+    cursor: crosshair;
+    position: relative;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 7px;
+        height: 7px;
+        margin: auto;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, var(--sol-base1), var(--sol-base01));
+        box-shadow: 0 0 2px rgba(var(--sol-base03-rgb), 0.8), inset 0 1px 1px rgba(var(--sol-base3-rgb), 0.2);
+        pointer-events: none;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+        z-index: 2;
+    }
+
+    &:hover::after {
+        background: radial-gradient(circle at 35% 35%, var(--sol-cyan), color-mix(in srgb, var(--sol-cyan) 72%, var(--sol-base03)));
+        box-shadow:
+            0 0 6px rgba(var(--sol-cyan-rgb), 0.9),
+            0 0 14px rgba(var(--sol-cyan-rgb), 0.5);
+    }
+}
+
+#cabling-canvas .jtk-connector path {
+    filter: drop-shadow(0 3px 5px rgba(var(--sol-base03-rgb), 0.35));
+    stroke-linecap: round;
+    transition: stroke 0.3s ease, filter 0.3s ease;
+}
+
+#cabling-canvas .jtk-dragging path {
+    animation: cable-flow 0.4s;
+    opacity: 0.65;
+    stroke-dasharray: 7 5;
+}
+
+#cabling-canvas .conn-correct path:not(.jtk-connector-outline) {
+    animation: cable-flow-correct 0.8s linear infinite;
+    filter: drop-shadow(0 0 8px rgba(var(--sol-green-rgb), 0.8));
+    stroke: var(--sol-green) !important;
+    stroke-dasharray: 10 6;
+    stroke-width: 4 !important;
+}
+
+#cabling-canvas .conn-incorrect path:not(.jtk-connector-outline) {
+    animation: cable-spark 0.14s linear infinite;
+    filter: drop-shadow(0 0 8px rgba(var(--sol-red-rgb), 0.7));
+    stroke: var(--sol-red) !important;
+    stroke-dasharray: 4 3;
+    stroke-width: 3.5 !important;
+}
+
+.cabling-spark {
+    position: absolute;
+    top: var(--spark-y);
+    left: var(--spark-x);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform-origin: center center;
+    animation: spark-fly 0.55s ease-out infinite;
+    animation-delay: var(--spark-delay);
+    z-index: 10;
+}
+
+@keyframes cable-flow {
+    to { stroke-dashoffset: -12; }
+}
+
+@keyframes cable-flow-correct {
+    to { stroke-dashoffset: -16; }
+}
+
+@keyframes cable-spark {
+    0% {
+        filter: drop-shadow(0 0 3px var(--sol-red));
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        filter: drop-shadow(0 0 14px rgba(var(--sol-red-rgb), 0.85)) drop-shadow(0 0 5px rgba(var(--sol-orange-rgb), 0.4));
+    }
+
+    100% {
+        filter: drop-shadow(0 0 3px var(--sol-red));
+        stroke-dashoffset: -14;
+    }
+}
+
+@keyframes spark-fly {
+    0% {
+        background: var(--sol-base3);
+        box-shadow: 0 0 5px var(--sol-base3), 0 0 10px var(--sol-orange), 0 0 16px var(--sol-red);
+        opacity: 1;
+        transform: rotate(var(--angle)) translateX(0) scale(1.2);
+    }
+
+    50% {
+        background: var(--sol-orange);
+        box-shadow: 0 0 5px var(--sol-orange);
+        opacity: 0.8;
+    }
+
+    100% {
+        background: var(--sol-red);
+        box-shadow: 0 0 2px var(--sol-red);
+        opacity: 0;
+        transform: rotate(var(--angle)) translateX(18px) scale(0);
+    }
+}
+
+.lever-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+}
+
+.lever-housing {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 80px;
+    height: 160px;
+    padding: 6px 0;
+    border: 1px solid var(--sol-base02);
+    border-radius: 12px;
+    background: var(--sol-base03);
+    box-shadow:
+        0 10px 30px rgba(var(--sol-base03-rgb), 0.35),
+        inset 0 1px 3px rgba(var(--sol-base3-rgb), 0.04);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        width: 34px;
+        height: 3px;
+        border: 1px solid rgba(var(--sol-base1-rgb), 0.08);
+        border-radius: 2px;
+        background: var(--sol-base02);
+        transform: translateX(-50%);
+        z-index: 0;
+    }
+
+    &::before { top: 32px; }
+    &::after { bottom: 32px; }
+
+    &.is-on {
+        border-color: rgba(var(--sol-green-rgb), 0.3);
+        box-shadow:
+            0 10px 30px rgba(var(--sol-base03-rgb), 0.35),
+            0 0 20px rgba(var(--sol-green-rgb), 0.15),
+            inset 0 1px 3px rgba(var(--sol-base3-rgb), 0.04);
+    }
+}
+
+.lever-housing > p,
+.lever-wrapper > p {
+    width: 100%;
+    margin: 0;
+    line-height: 1;
+    text-align: center;
+}
+
+.lever-label-top,
+.lever-label-bottom,
+.lever-housing > p > .lever-label-top,
+.lever-housing > p > .lever-label-bottom {
+    z-index: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-code);
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+.lever-label-top {
+    position: relative;
+    top: -6px;
+    background: rgba(var(--sol-green-rgb), 0.1);
+    color: var(--sol-green);
+
+    .is-on & {
+        background: rgba(var(--sol-green-rgb), 0.2);
+        text-shadow: 0 0 8px rgba(var(--sol-green-rgb), 0.7);
+    }
+}
+
+.lever-label-bottom {
+    background: rgba(var(--sol-base1-rgb), 0.05);
+    color: var(--sol-base01);
+
+    .is-on & {
+        opacity: 0.4;
+    }
+}
+
+.lever-slot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 96px;
+    border: 1px solid var(--sol-base02);
+    border-radius: 4px;
+    background: var(--cabling-socket-bg);
+    box-shadow: inset 0 2px 6px rgba(var(--sol-base03-rgb), 0.7);
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.lever-handle {
+    position: absolute;
+    top: 82px;
+    left: 50%;
+    width: 36px;
+    height: 52px;
+    cursor: grab;
+    transform: translateX(-50%);
+    transition: top 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    z-index: 3;
+
+    .is-on & {
+        top: 18px;
+    }
+
+    .is-dragging & {
+        cursor: grabbing;
+        transition: none;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 1px solid rgba(var(--sol-base1-rgb), 0.25);
+        border-radius: 8px;
+        background: linear-gradient(170deg, var(--sol-base1) 0%, var(--sol-base01) 50%, var(--sol-base00) 100%);
+        box-shadow:
+            0 4px 12px rgba(var(--sol-base03-rgb), 0.4),
+            inset 0 1px 2px rgba(var(--sol-base3-rgb), 0.15);
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 8px 5px;
+        border-radius: 3px;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 4px,
+            rgba(var(--sol-base03-rgb), 0.15) 4px,
+            rgba(var(--sol-base03-rgb), 0.15) 5px
+        );
+    }
+
+    .is-on &::before {
+        border-color: rgba(var(--sol-green-rgb), 0.4);
+        background: linear-gradient(170deg, var(--sol-green) 0%, color-mix(in srgb, var(--sol-green) 70%, var(--sol-base03)) 60%, color-mix(in srgb, var(--sol-green) 40%, var(--sol-base03)) 100%);
+        box-shadow:
+            0 4px 12px rgba(var(--sol-base03-rgb), 0.4),
+            0 0 16px rgba(var(--sol-green-rgb), 0.5),
+            inset 0 1px 2px rgba(var(--sol-base3-rgb), 0.2);
+    }
+}
+
+.lever-led {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border: 1px solid rgba(var(--sol-base1-rgb), 0.2);
+    border-radius: 50%;
+    background: var(--sol-base02);
+    transform: translateX(-50%);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    z-index: 4;
+
+    .is-on & {
+        animation: lever-led-pulse 1.8s ease-in-out infinite;
+        background: var(--sol-green);
+        box-shadow:
+            0 0 6px var(--sol-green),
+            0 0 14px rgba(var(--sol-green-rgb), 0.6);
+    }
+}
+
+.lever-status {
+    color: var(--sol-base01);
+    display: inline-block;
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+
+    &.is-on {
+        display: none;
+    }
+}
+
+.lever-wrapper.is-on {
+    .lever-status.is-on {
+        animation: lever-status-glow 1.8s ease-in-out infinite;
+        color: var(--sol-green);
+        display: inline-block;
+    }
+
+    .lever-status.is-off {
+        display: none;
+    }
+}
+
+@keyframes lever-led-pulse {
+    0%, 100% {
+        box-shadow: 0 0 6px var(--sol-green), 0 0 14px rgba(var(--sol-green-rgb), 0.6);
+    }
+
+    50% {
+        box-shadow: 0 0 10px var(--sol-green), 0 0 24px rgba(var(--sol-green-rgb), 0.9);
+    }
+}
+
+@keyframes lever-status-glow {
+    0%, 100% { text-shadow: 0 0 8px rgba(var(--sol-green-rgb), 0.5); }
+    50% { text-shadow: 0 0 16px rgba(var(--sol-green-rgb), 0.85); }
+}
+
+.lever-arc {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    color: var(--sol-yellow);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+
+    &.arc-flash {
+        animation: arc-flash-anim 0.45s ease-out forwards;
+    }
+}
+
+@keyframes arc-flash-anim {
+    0% {
+        filter: brightness(3);
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.4);
+    }
+
+    30% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    60% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+}
+
+@media (max-width: 768px) {
+    .cabling-workspace-wrapper {
+        flex-direction: column;
+        gap: 32px;
+
+        #cabling-canvas {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .lever-wrapper {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+    }
+}

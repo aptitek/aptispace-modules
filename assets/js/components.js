@@ -199,6 +199,7 @@ export function createVerticalDragToggle(options = {}) {
   async function applyState(on) {
     wrapper.value = on;
     stateElement.classList.toggle(options.activeClass || "is-on", on);
+    wrapper.classList.toggle(options.wrapperActiveClass || options.activeClass || "is-on", on);
     handle.style.removeProperty("top");
     if (typeof options.onChange === "function") {
       await options.onChange(on, wrapper);
@@ -219,7 +220,7 @@ export function createVerticalDragToggle(options = {}) {
     if (!dragging) return;
     event.preventDefault();
     const raw = startTop + (getY(event) - startY);
-    handle.style.top = `${Math.min(offPosition, Math.max(onPosition, raw))}px`;
+    handle.style.setProperty("top", `${Math.min(offPosition, Math.max(onPosition, raw))}px`);
   }
 
   function onDragEnd() {

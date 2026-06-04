@@ -152,7 +152,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     .linkColor((link) => {
       const status = options.getLinkStatus(link);
       const style = styles[status] || styles.default;
-      return resolveColor(link.color || link.stroke || style.linkStroke, "#586e75");
+      return resolveColor(link.color || link.stroke || style.linkStroke, SOL_FALLBACKS.base01);
     })
     .linkWidth((link) => {
       const status = options.getLinkStatus(link);
@@ -161,7 +161,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     .linkDirectionalArrowColor((link) => {
       const status = options.getLinkStatus(link);
       const style = styles[status] || styles.default;
-      return resolveColor(link.color || link.stroke || style.linkStroke, "#586e75");
+      return resolveColor(link.color || link.stroke || style.linkStroke, SOL_FALLBACKS.base01);
     });
 
   // Dynamic flow particles based on link status
@@ -174,7 +174,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     .linkDirectionalParticleColor((link) => {
       const status = options.getLinkStatus(link);
       const style = styles[status] || styles.default;
-      return resolveColor(link.color || link.particleColor || style.particleColor || style.linkStroke, "#2aa198");
+      return resolveColor(link.color || link.particleColor || style.particleColor || style.linkStroke, SOL_FALLBACKS.cyan);
     })
     .linkDirectionalParticleWidth((link) => {
       const status = options.getLinkStatus(link);
@@ -246,9 +246,9 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     const rawBorder = node.borderColor || node.nodeBorder || node.border || style.nodeBorder || style.border;
     const rawText = node.textColor || node.nodeText || style.nodeText;
 
-    const nodeBg = resolveColor(rawBg, "#eee8d5");
-    const nodeBorder = resolveColor(rawBorder, "#586e75");
-    const nodeText = resolveColor(rawText, "#657b83");
+    const nodeBg = resolveColor(rawBg, SOL_FALLBACKS.base2);
+    const nodeBorder = resolveColor(rawBorder, SOL_FALLBACKS.base01);
+    const nodeText = resolveColor(rawText, SOL_FALLBACKS.base00);
     
     const r = options.nodeRadius;
 
@@ -268,7 +268,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
 
     // Opaque background backing path to hide the link lines underneath
     defineNodePath(ctx, node.x, node.y, shape, r, 1.0);
-    ctx.fillStyle = resolveColor("var(--sol-base3)", "#fdf6e3");
+    ctx.fillStyle = resolveColor("var(--sol-base3)", SOL_FALLBACKS.base3);
     ctx.fill();
 
     // Main shape Background
@@ -359,12 +359,12 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
         const pillW = textWidth + 6;
 
         const tagBg = isTrue ? "rgba(133, 153, 0, 0.15)" : "rgba(220, 50, 47, 0.15)";
-        const tagBorder = resolveColor(isTrue ? "var(--sol-green)" : "var(--sol-red)", isTrue ? "#859900" : "#dc322f");
+        const tagBorder = resolveColor(isTrue ? "var(--sol-green)" : "var(--sol-red)", isTrue ? SOL_FALLBACKS.green : SOL_FALLBACKS.red);
         const tagText = tagBorder;
 
         ctx.beginPath();
         drawRoundedRect(ctx, -pillW / 2, -pillH / 2, pillW, pillH, 3);
-        ctx.fillStyle = resolveColor("var(--sol-base3)", "#fdf6e3");
+        ctx.fillStyle = resolveColor("var(--sol-base3)", SOL_FALLBACKS.base3);
         ctx.fill();
 
         ctx.beginPath();
@@ -385,8 +385,8 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
       // ================= DRAW LINK CENTER LABEL =================
       const label = options.getLinkLabel(link);
       if (label) {
-        const linkText = resolveColor(style.linkText, "#657b83");
-        const labelBg = resolveColor("var(--sol-base3)", "#fdf6e3");
+        const linkText = resolveColor(style.linkText, SOL_FALLBACKS.base00);
+        const labelBg = resolveColor("var(--sol-base3)", SOL_FALLBACKS.base3);
 
         const x = source.x + (target.x - source.x) * 0.5;
         const y = source.y + (target.y - source.y) * 0.5;
@@ -405,7 +405,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
         const rectH = fSize + paddingY * 2;
 
         ctx.fillStyle = labelBg;
-        ctx.strokeStyle = resolveColor(style.linkStroke, "#586e75");
+        ctx.strokeStyle = resolveColor(style.linkStroke, SOL_FALLBACKS.base01);
         ctx.lineWidth = 1;
         
         drawRoundedRect(ctx, x - rectW / 2, y - rectH / 2, rectW, rectH, rectH / 2);
@@ -472,37 +472,37 @@ export function createWordCloud(containerSelector, words, options = {}) {
     // 1. Specific colors for color names (French & English)
     const colorMap = {
       // French
-      'rouge': 'var(--sol-red, #dc322f)',
-      'bleu': 'var(--sol-blue, #268bd2)',
-      'vert': 'var(--sol-green, #859900)',
-      'jaune': 'var(--sol-yellow, #b58900)',
-      'orange': 'var(--sol-orange, #cb4b16)',
-      'violet': 'var(--sol-violet, #6c71c4)',
-      'rose': 'var(--sol-magenta, #d33682)',
-      'cyan': 'var(--sol-cyan, #2aa198)',
-      'magenta': 'var(--sol-magenta, #d33682)',
+      'rouge': 'var(--sol-red)',
+      'bleu': 'var(--sol-blue)',
+      'vert': 'var(--sol-green)',
+      'jaune': 'var(--sol-yellow)',
+      'orange': 'var(--sol-orange)',
+      'violet': 'var(--sol-violet)',
+      'rose': 'var(--sol-magenta)',
+      'cyan': 'var(--sol-cyan)',
+      'magenta': 'var(--sol-magenta)',
       // English
-      'red': 'var(--sol-red, #dc322f)',
-      'blue': 'var(--sol-blue, #268bd2)',
-      'green': 'var(--sol-green, #859900)',
-      'yellow': 'var(--sol-yellow, #b58900)',
-      'purple': 'var(--sol-violet, #6c71c4)',
-      'pink': 'var(--sol-magenta, #d33682)'
+      'red': 'var(--sol-red)',
+      'blue': 'var(--sol-blue)',
+      'green': 'var(--sol-green)',
+      'yellow': 'var(--sol-yellow)',
+      'purple': 'var(--sol-violet)',
+      'pink': 'var(--sol-magenta)'
     };
 
     if (colorMap[text]) {
-      item.style.color = colorMap[text];
-      item.style.fontWeight = 'bold';
+      item.style.setProperty("color", colorMap[text]);
+      item.classList.add("fw-bold");
     } else {
       // 2. Cohesive theme palette for non-color-name words
       const palette = [
-        'var(--sol-cyan, #2aa198)',
-        'var(--sol-violet, #6c71c4)',
-        'var(--sol-magenta, #d33682)',
-        'var(--sol-orange, #cb4b16)',
-        'var(--sol-yellow, #b58900)',
-        'var(--sol-base01, #586e75)',
-        'var(--sol-base00, #657b83)'
+        'var(--sol-cyan)',
+        'var(--sol-violet)',
+        'var(--sol-magenta)',
+        'var(--sol-orange)',
+        'var(--sol-yellow)',
+        'var(--sol-base01)',
+        'var(--sol-base00)'
       ];
       // Deterministic color assignment based on word content
       let hash = 0;
@@ -510,7 +510,7 @@ export function createWordCloud(containerSelector, words, options = {}) {
         hash = text.charCodeAt(i) + ((hash << 5) - hash);
       }
       const colorIndex = Math.abs(hash) % palette.length;
-      item.style.color = palette[colorIndex];
+      item.style.setProperty("color", palette[colorIndex]);
     }
   });
 
@@ -553,20 +553,18 @@ class CablingManager {
     this.container.innerHTML = "";
 
     // Structure de base
-    this.container.style.position = "relative";
-    this.container.style.display  = "flex";
-    this.container.style.alignItems = "center";
+    this.container.classList.add("cabling-canvas");
 
     // ── Colonnes HTML ───────────────────────────────
     const colLeft  = this._makeColumn("left");
     const colMid   = this._makeMidColumn();
     const colRight = this._makeColumn("right");
 
-    this.leftItems.forEach((it, i) => {
-      colLeft.appendChild(this._makePill(it, "left", i));
+    this.leftItems.forEach((it) => {
+      colLeft.appendChild(this._makePill(it, "left"));
     });
-    this.rightItems.forEach((it, i) => {
-      colRight.appendChild(this._makePill(it, "right", i));
+    this.rightItems.forEach((it) => {
+      colRight.appendChild(this._makePill(it, "right"));
     });
 
     this.container.append(colLeft, colMid, colRight);
@@ -583,13 +581,13 @@ class CablingManager {
       paintStyle: { 
         stroke: "var(--sol-cyan)", 
         strokeWidth: 4,
-        outlineStroke: "rgba(0,0,0,0.3)",
+        outlineStroke: "rgba(var(--sol-base03-rgb), 0.3)",
         outlineWidth: 2
       },
       hoverPaintStyle: { 
         stroke: "var(--sol-yellow)", 
         strokeWidth: 5,
-        outlineStroke: "rgba(0,0,0,0.4)",
+        outlineStroke: "rgba(var(--sol-base03-rgb), 0.4)",
         outlineWidth: 2
       },
       endpoint: "Dot",
@@ -598,13 +596,13 @@ class CablingManager {
 
     // ── Endpoints jsPlumb ───────────────────────────
     const SOCKET_STYLE = {
-      fill: "#02161b",
-      stroke: "#586e75",
+      fill: "var(--cabling-socket-bg)",
+      stroke: "var(--sol-base01)",
       strokeWidth: 4,
     };
     const SOCKET_HOVER = {
-      fill: "#02161b",
-      stroke: "#2aa198",
+      fill: "var(--cabling-socket-bg)",
+      stroke: "var(--sol-cyan)",
       strokeWidth: 4,
     };
 
@@ -673,13 +671,13 @@ class CablingManager {
       connection.setPaintStyle({ 
         stroke, 
         strokeWidth: 4,
-        outlineStroke: "rgba(0,0,0,0.3)",
+        outlineStroke: "rgba(var(--sol-base03-rgb), 0.3)",
         outlineWidth: 2
       });
       connection.setHoverPaintStyle({ 
         stroke: "var(--sol-yellow)", 
         strokeWidth: 5,
-        outlineStroke: "rgba(0,0,0,0.4)",
+        outlineStroke: "rgba(var(--sol-base03-rgb), 0.4)",
         outlineWidth: 2
       });
 
@@ -750,11 +748,11 @@ class CablingManager {
 
   _makeMidColumn() {
     const mid = document.createElement("div");
-    mid.style.cssText = "flex: 1 1 auto; min-width: 80px;";
+    mid.className = "cabling-gap";
     return mid;
   }
 
-  _makePill(item, group, index) {
+  _makePill(item, group) {
     const pill = document.createElement("div");
     pill.className = "cabling-pill";
     pill.dataset.id    = `${group === "left" ? "L" : "R"}_${item.id}`;
@@ -826,10 +824,10 @@ class CablingManager {
     for (let i = 0; i < COUNT; i++) {
       const spark = document.createElement("span");
       spark.className = "cabling-spark";
-      spark.style.left  = `${x}px`;
-      spark.style.top   = `${y}px`;
+      spark.style.setProperty("--spark-x", `${x}px`);
+      spark.style.setProperty("--spark-y", `${y}px`);
       spark.style.setProperty("--angle", `${i * (360 / COUNT)}deg`);
-      spark.style.animationDelay = `${(i * 0.1) % 0.6}s`;
+      spark.style.setProperty("--spark-delay", `${(i * 0.1) % 0.6}s`);
       this.container.appendChild(spark);
       this._sparks.push(spark);
     }
@@ -886,11 +884,6 @@ class CablingManager {
     this._sparks = [];
 
     this.container.querySelectorAll(".cabling-pill").forEach(el => {
-      if (el.style.cursor) {
-        el.style.cursor      = "pointer";
-        el.style.borderColor = "#586e75";
-        el.style.color       = "#93a1a1";
-      }
       el.classList.remove('is-active', 'is-validated');
     });
 
@@ -911,11 +904,6 @@ class CablingManager {
     this._sparks = [];
 
     this.container.querySelectorAll(".cabling-pill").forEach(el => {
-      if (el.style.cursor) {
-        el.style.cursor      = "pointer";
-        el.style.borderColor = "#586e75";
-        el.style.color       = "#93a1a1";
-      }
       el.classList.remove('is-active', 'is-validated');
     });
 
@@ -1047,16 +1035,16 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   const links = [];
 
   // Theme Colors Resolution (Safe for Canvas API)
-  const colorHit = getThemeColor("--sol-green", "#859900");
-  const colorMiss = getThemeColor("--sol-red", "#dc322f");
-  const colorLoad = getThemeColor("--sol-blue", "#268bd2");
-  const colorActive = getThemeColor("--sol-yellow", "#b58900");
+  const colorHit = getThemeColor("--sol-green", SOL_FALLBACKS.green);
+  const colorMiss = getThemeColor("--sol-red", SOL_FALLBACKS.red);
+  const colorLoad = getThemeColor("--sol-blue", SOL_FALLBACKS.blue);
+  const colorActive = getThemeColor("--sol-yellow", SOL_FALLBACKS.yellow);
   
   const colorPalette = [ 
-    getThemeColor("--sol-cyan", "#2aa198"),
-    getThemeColor("--sol-magenta", "#d33682"),
-    getThemeColor("--sol-orange", "#cb4b16"),
-    getThemeColor("--sol-violet", "#6c71c4")
+    getThemeColor("--sol-cyan", SOL_FALLBACKS.cyan),
+    getThemeColor("--sol-magenta", SOL_FALLBACKS.magenta),
+    getThemeColor("--sol-orange", SOL_FALLBACKS.orange),
+    getThemeColor("--sol-violet", SOL_FALLBACKS.violet)
   ];
   const colColors = {};
   columns.forEach((col, i) => colColors[col] = colorPalette[i % colorPalette.length]);
@@ -1174,17 +1162,17 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   };
 
   const cfg = {
-    nodeText: getStr('--canvas-node-text', '#fdf6e3'),
+    nodeText: getStr('--canvas-node-text', SOL_FALLBACKS.base3),
     nodeFont: getNum('--canvas-node-font-size', 12),
     addrFont: getNum('--canvas-addr-font-size', 9),
     nodePadX: getNum('--canvas-node-pad-x', 14),
     labelFont: getNum('--canvas-label-font-size', 10),
-    labelBg: getStr('--canvas-label-bg', 'rgba(0, 43, 54, 0.9)'),
+    labelBg: getStr('--canvas-label-bg', utils.rgba(SOL_FALLBACKS.base03, 0.9)),
     wActive: getNum('--canvas-wire-width-active', 2.5),
     wPast: getNum('--canvas-wire-width-past', 1.5),
     wIdle: getNum('--canvas-wire-width-idle', 1),
-    cPast: getStr('--canvas-wire-color-past', 'rgba(88, 110, 117, 0.4)'),
-    cIdle: getStr('--canvas-wire-color-idle', 'rgba(88, 110, 117, 0.12)')
+    cPast: getStr('--canvas-wire-color-past', utils.rgba(SOL_FALLBACKS.base01, 0.4)),
+    cIdle: getStr('--canvas-wire-color-idle', utils.rgba(SOL_FALLBACKS.base01, 0.12))
   };
 
   const fontMono = getThemeColor('--font-mono', 'monospace');
@@ -1192,7 +1180,7 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   // 7. Initialize Graph
   const graph = ForceGraph()(container)
     .graphData({ nodes, links })
-    .backgroundColor('rgba(0,0,0,0)')
+    .backgroundColor('transparent')
     .nodeRelSize(7)
     .cooldownTicks(0)
     .enableZoomInteraction(false)
@@ -1220,7 +1208,7 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
     const resolvedFill = resolveCssValue(fillColor) || fillColor;
     
     if (node.isActive) {
-      ctx.shadowColor = node.type === "cpu" ? (resolveCssValue("var(--sol-violet)") || "#6c71c4") : colorActive;
+      ctx.shadowColor = node.type === "cpu" ? (resolveCssValue("var(--sol-violet)") || SOL_FALLBACKS.violet) : colorActive;
       ctx.shadowBlur = 12 / globalScale;
     } else {
       ctx.shadowColor = "transparent";

@@ -6,6 +6,49 @@
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap");
 
 // =============================================================================
+// 1.1 RUNTIME DESIGN TOKENS
+// =============================================================================
+:root {
+    --sol-base03: #{$sol-base03};
+    --sol-base02: #{$sol-base02};
+    --sol-base01: #{$sol-base01};
+    --sol-base00: #{$sol-base00};
+    --sol-base0: #{$sol-base0};
+    --sol-base1: #{$sol-base1};
+    --sol-base2: #{$sol-base2};
+    --sol-base3: #{$sol-base3};
+    --sol-yellow: #{$sol-yellow};
+    --sol-orange: #{$sol-orange};
+    --sol-red: #{$sol-red};
+    --sol-magenta: #{$sol-magenta};
+    --sol-violet: #{$sol-violet};
+    --sol-blue: #{$sol-blue};
+    --sol-cyan: #{$sol-cyan};
+    --sol-green: #{$sol-green};
+    --sol-base03-rgb: #{red($sol-base03)}, #{green($sol-base03)}, #{blue($sol-base03)};
+    --sol-base02-rgb: #{red($sol-base02)}, #{green($sol-base02)}, #{blue($sol-base02)};
+    --sol-base01-rgb: #{red($sol-base01)}, #{green($sol-base01)}, #{blue($sol-base01)};
+    --sol-base00-rgb: #{red($sol-base00)}, #{green($sol-base00)}, #{blue($sol-base00)};
+    --sol-base0-rgb: #{red($sol-base0)}, #{green($sol-base0)}, #{blue($sol-base0)};
+    --sol-base1-rgb: #{red($sol-base1)}, #{green($sol-base1)}, #{blue($sol-base1)};
+    --sol-base2-rgb: #{red($sol-base2)}, #{green($sol-base2)}, #{blue($sol-base2)};
+    --sol-base3-rgb: #{red($sol-base3)}, #{green($sol-base3)}, #{blue($sol-base3)};
+    --sol-yellow-rgb: #{red($sol-yellow)}, #{green($sol-yellow)}, #{blue($sol-yellow)};
+    --sol-orange-rgb: #{red($sol-orange)}, #{green($sol-orange)}, #{blue($sol-orange)};
+    --sol-red-rgb: #{red($sol-red)}, #{green($sol-red)}, #{blue($sol-red)};
+    --sol-magenta-rgb: #{red($sol-magenta)}, #{green($sol-magenta)}, #{blue($sol-magenta)};
+    --sol-violet-rgb: #{red($sol-violet)}, #{green($sol-violet)}, #{blue($sol-violet)};
+    --sol-blue-rgb: #{red($sol-blue)}, #{green($sol-blue)}, #{blue($sol-blue)};
+    --sol-cyan-rgb: #{red($sol-cyan)}, #{green($sol-cyan)}, #{blue($sol-cyan)};
+    --sol-green-rgb: #{red($sol-green)}, #{green($sol-green)}, #{blue($sol-green)};
+    --font-sans: #{$font-family-base};
+    --font-code: #{$font-family-code};
+    --accent-primary: var(--sol-blue);
+    --accent-danger: var(--sol-red);
+    --accent-success: var(--sol-green);
+}
+
+// =============================================================================
 // 2. SCROLLBARS AESTHETICS
 // =============================================================================
 ::-webkit-scrollbar {
@@ -33,19 +76,6 @@ body {
     font-family: $font-family-base;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-
-    &.is-user-select-disabled {
-        user-select: none;
-    }
-}
-
-.dynamic-svg-interactive {
-    cursor: pointer;
-    transition: filter 0.2s ease, transform 0.2s ease;
-
-    &:hover {
-        filter: brightness(1.3) drop-shadow(0 0 5px rgba($sol-base3, 0.4));
-    }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -276,176 +306,3 @@ table, .table {
         color: $sol-base3 !important;
     }
 }
-
-// =============================================================================
-// 10. PEDAGOGICAL & PRESENTATIONAL CONTAINERS
-// =============================================================================
-.comparison-container {
-    display: flex;
-    flex-direction: row;
-    gap: 24px;
-    margin: 1.75rem 0;
-    
-    @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .comparison-item {
-        flex: 1;
-        padding: 20px;
-        border: 1px solid rgba($sol-base1, 0.22);
-        border-radius: 8px;
-        background-color: rgba($sol-base1, 0.04);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        
-        h4 {
-            margin-top: 0;
-            color: $sol-base02;
-        }
-    }
-}
-
-// =============================================================================
-// 11. CUSTOM TABS & CONTROLS STYLING
-// =============================================================================
-.tabset-container {
-    margin: 1.5rem 0;
-
-    .nav-tabs {
-        border-bottom: 2px solid rgba($sol-base1, 0.2);
-        
-        .nav-item {
-            margin-bottom: -2px;
-        }
-
-        .nav-link {
-            border: none;
-            background: none;
-            color: $sol-base01;
-            font-weight: 500;
-            padding: 0.6rem 1rem;
-            border-bottom: 2px solid transparent;
-            transition: all 0.25s ease;
-
-            &:hover {
-                color: $sol-orange;
-                border-bottom-color: rgba($sol-orange, 0.5);
-            }
-
-            &.active {
-                color: $sol-green !important;
-                background-color: transparent !important;
-                border-bottom: 2px solid $sol-green !important;
-                font-weight: 600;
-            }
-        }
-    }
-}
-
-// Custom Search Bar inside tab headers or generic elements
-.search-bar {
-    display: inline-flex;
-    align-items: center;
-    background-color: rgba($sol-base1, 0.08);
-    border: 1px solid rgba($sol-base1, 0.22);
-    border-radius: 20px;
-    padding: 0.25rem 0.75rem;
-    transition: all 0.2s ease;
-    
-    i.bi {
-        color: $sol-base01;
-        font-size: 0.85rem;
-        margin-right: 0.4rem;
-        pointer-events: none;
-    }
-
-    input {
-        background: transparent;
-        border: none;
-        outline: none;
-        color: $sol-base02;
-        font-size: 0.85rem;
-        width: 140px;
-        transition: width 0.2s ease;
-        padding: 0;
-
-        &::placeholder {
-            color: rgba($sol-base01, 0.5);
-        }
-
-        &:focus {
-            width: 180px;
-        }
-    }
-
-    &:focus-within {
-        background-color: rgba($sol-base3, 1);
-        border-color: $sol-blue;
-        box-shadow: 0 0 0 3px rgba($sol-blue, 0.15);
-    }
-}
-
-// Dynamic value display styles (.val)
-.val {
-    font-weight: 600;
-    color: $sol-violet;
-    font-family: $font-family-code;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background-color: rgba($sol-violet, 0.08);
-    display: inline-block;
-}
-
-// Globally hide copy buttons for hidden cells (e.g. echo: false / echo: off)
-.code-copy-outer-scaffold:has(.sourceCode.hidden),
-.sourceCode.hidden + .code-copy-button {
-    display: none !important;
-}
-
-// Custom layout overrides to guarantee Bootstrap row/col flex display
-.row {
-  display: flex !important;
-  flex-flow: row wrap !important;
-  margin-left: -0.75rem;
-  margin-right: -0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-// Columns base styles
-[class*="col-"] {
-  box-sizing: border-box !important;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-
-.col-12 {
-  flex: 0 0 100% !important;
-  max-width: 100% !important;
-  width: 100% !important;
-}
-
-@media (min-width: 768px) {
-  .col-md-6 {
-    flex: 0 0 50% !important;
-    max-width: 50% !important;
-    width: 50% !important;
-  }
-  .col-md-4 {
-    flex: 0 0 33.333333% !important;
-    max-width: 33.333333% !important;
-    width: 33.333333% !important;
-  }
-}
-
-@media (min-width: 992px) {
-  .col-lg-3 {
-    flex: 0 0 25% !important;
-    max-width: 25% !important;
-    width: 25% !important;
-  }
-}
-
-
-
-

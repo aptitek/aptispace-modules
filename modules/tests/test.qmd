@@ -155,7 +155,7 @@ Valeurs décimales mesurables sur une échelle infinie. Il existe un nombre infi
 ::::
 :::: {.card-body}
 
-::::: {#cabling-data style="display: none;"}
+::::: {#cabling-data .d-none}
 
 | id      | label                       | match    | feedback                                                                |
 | :------ | :-------------------------- | :------- | :---------------------------------------------------------------------- |
@@ -202,21 +202,8 @@ Reliez chaque pièce à conviction de gauche à sa catégorie de données logiqu
 
 ::::::::
 
-[Circuit alimenté]{#lever-status-on .lever-status .is-on style="display: none;"}
+[Circuit alimenté]{#lever-status-on .lever-status .is-on}
 [Circuit coupé]{#lever-status-off .lever-status .is-off}
-
-```{ojs}
-{
-  powerOn;
-  const elOn = document.querySelector("#lever-status-on");
-  const elOff = document.querySelector("#lever-status-off");
-  if (elOn && elOff) {
-    elOn.style.display = powerOn ? "inline-block" : "none";
-    elOff.style.display = powerOn ? "none" : "inline-block";
-  }
-  return html`<span style="display: none;"></span>`;
-}
-```
 
 :::::::
 
@@ -228,7 +215,7 @@ Reliez chaque pièce à conviction de gauche à sa catégorie de données logiqu
 viewof powerOn = createLever("#power-lever", invalidation)
 ```
 
-::::: {#cabling-feedback-panel .terminal .mt-4 style="display: none;"}
+::::: {#cabling-feedback-panel .terminal .mt-4 .d-none}
 
 :::::: {.card-header}
 ::::::

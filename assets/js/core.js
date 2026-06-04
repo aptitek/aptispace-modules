@@ -227,8 +227,8 @@ export function renderFeedbackUI(panelSelector, state, listData = []) {
   if (!panel) return;
 
   // 1. Affichage global du panneau
-  panel.style.display = state.status === "hidden" ? "none" : "block";
-  panel.querySelectorAll('.feedback-card').forEach(card => card.style.display = "none");
+  panel.classList.toggle("d-none", state.status === "hidden");
+  panel.querySelectorAll('.feedback-card').forEach(card => card.classList.add("d-none"));
 
   if (state.status === "hidden") return;
 
@@ -244,9 +244,6 @@ export function renderFeedbackUI(panelSelector, state, listData = []) {
     if (!titleSpan) {
       titleSpan = document.createElement('span');
       titleSpan.className = 'terminal-header-title';
-      titleSpan.style.fontFamily = "var(--font-code, monospace)";
-      titleSpan.style.fontSize = "0.85em";
-      titleSpan.style.fontWeight = "bold";
       header.appendChild(titleSpan);
     }
     titleSpan.textContent = title;
@@ -255,7 +252,7 @@ export function renderFeedbackUI(panelSelector, state, listData = []) {
   // 2. Affichage dynamique de la carte active via le Moteur 1
   const activeCard = panel.querySelector(`.feedback-${state.status}`);
   if (activeCard) {
-    activeCard.style.display = "block";
+    activeCard.classList.remove("d-none");
     renderTemplate(activeCard, { score: state.score, total: state.total });
   }
 
