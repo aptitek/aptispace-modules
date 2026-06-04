@@ -10,3 +10,4 @@ lab/**/*.html
 *.min.js
 *.min.css
 *_files
+legacy/
