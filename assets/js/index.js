@@ -24,6 +24,25 @@ export {
 } from "./core.js";
 
 export {
+  createTokenStream,
+  createVerticalDragToggle
+} from "./components.js";
+
+export {
+  encodeValueToBytes,
+  groupBytesIntoSlots,
+  tokenizeText
+} from "./encoding.js";
+
+export {
+  getBackgroundImageUrl,
+  loadInlineSvg,
+  bindSvgElements,
+  bindSvgToTabs,
+  applySvgState
+} from "./svg.js";
+
+export {
   createWordCloud,
   createCabling,
   createRamStorageGraph,
@@ -38,7 +57,7 @@ export {
 } from "./plots.js";
 
 export { registerTabset } from "./custom/card.js";
-export { bindSvgToTabset } from "./custom/dynamic-svg.js";
+export { createDynamicSvg, bindSvgToTabset } from "./custom/dynamic-svg.js";
 export { createLever } from "./custom/lever.js";
 export { initMoboSvg, renderMobo } from "./custom/mobo.js";
 export { getRamData, renderRam } from "./custom/ram.js";
@@ -51,13 +70,13 @@ export const ui = {
   text: ({ content, type = "body", color = "inherit" }) => {
     const classMap = {
       title: "font-size: 1.4em; font-weight: bold; margin-bottom: 0.5em;",
-      label: "ui-card-header", 
-      value: "ui-value",
+      label: "card-header", 
+      value: "value",
       body: "font-size: 1em;"
     };
     const className = classMap[type] || "";
     const styleAttr = color !== "inherit" ? `style="color: ${color};"` : "";
-    return `<div class="${className} atom-text-${type}" ${styleAttr}>${content}</div>`;
+    return `<div class="${className} text-${type}" ${styleAttr}>${content}</div>`;
   },
   badge: ({ text, colorClass = "" }) => `
     <span class="badge ${colorClass}">${text}</span>
@@ -65,8 +84,8 @@ export const ui = {
   progressBar: ({ value, max = 100, colorClass = "" }) => {
     const percent = Math.min(100, Math.max(0, (value / max) * 100));
     return `
-      <div class="ui-progress">
-        <div class="ui-progress-bar ${colorClass}" style="width: ${percent}%;"></div>
+      <div class="progress">
+        <div class="progress-bar ${colorClass}" style="width: ${percent}%;"></div>
       </div>
     `;
   },
@@ -91,7 +110,7 @@ export const ui = {
   `,
   multitab: ({ options = [], value = "", colorClass = "is-info" }) => {
     const container = document.createElement("div");
-    container.className = "ui-multitab-container";
+    container.className = "multitab-container";
     container.style.cssText = `
       display: inline-flex;
       background: var(--sol-base2);
@@ -149,7 +168,7 @@ export const ui = {
   },
   label: (text) => {
     const el = document.createElement('span');
-    el.className = 'atom-label';
+    el.className = 'label';
     el.innerText = text;
     return el;
   },
@@ -305,18 +324,12 @@ export const ui = {
     return container;
   },
 
-  org,
   plots,
   networks,
   
   // Alias directs à la racine
-  ...org,
   ...plots,
   ...networks,
-  
-  // Rétrocompatibilité avec ui.atom.* et ui.mol.*
-  get atom() { return ui; },
-  get mol() { return ui; },
   
   // 3. Source de vérité dynamique pour les couleurs CSS
   get colors() {
@@ -410,18 +423,18 @@ const decorateCodeBlocks = () => {
         let icon = "bi-file-earmark-code";
         if (isDark) {
           icon = "bi-terminal-fill";
-          sourceCode.classList.add("ui-macos-dark");
+          sourceCode.classList.add("window-dark");
         } else {
-          sourceCode.classList.add("ui-macos-light");
+          sourceCode.classList.add("window-light");
         }
         
         const header = document.createElement("div");
-        header.className = "ui-code-header ui-macos-header";
+        header.className = "code-header window-header";
         header.innerHTML = `
-          <div class="ui-code-tabs">
-            <div class="ui-code-tab">
-              <i class="bi ${icon} ui-code-tab-icon"></i>
-              <span class="ui-code-tab-title">${filename}</span>
+          <div class="code-tabs">
+            <div class="code-tab">
+              <i class="bi ${icon} code-tab-icon"></i>
+              <span class="code-tab-title">${filename}</span>
             </div>
           </div>
         `;
@@ -468,18 +481,18 @@ const decorateCodeBlocks = () => {
     const isDark = (lowerLang === "sh" || lowerLang === "bash");
     if (isDark) {
       icon = "bi-terminal-fill";
-      div.classList.add("ui-macos-dark");
+      div.classList.add("window-dark");
     } else {
-      div.classList.add("ui-macos-light");
+      div.classList.add("window-light");
     }
     
     const header = document.createElement("div");
-    header.className = "ui-code-header ui-macos-header";
+    header.className = "code-header window-header";
     header.innerHTML = `
-      <div class="ui-code-tabs">
-        <div class="ui-code-tab">
-          <i class="bi ${icon} ui-code-tab-icon"></i>
-          <span class="ui-code-tab-title">${displayLang}</span>
+      <div class="code-tabs">
+        <div class="code-tab">
+          <i class="bi ${icon} code-tab-icon"></i>
+          <span class="code-tab-title">${displayLang}</span>
         </div>
       </div>
     `;
@@ -492,9 +505,9 @@ const decorateCodeBlocks = () => {
   exercises.forEach(ex => {
     const header = ex.querySelector(".card-header");
     if (header) {
-      header.classList.add("ui-macos-header");
-      header.classList.add("ui-pyodide-header");
-      ex.classList.add("ui-macos-light"); // Make exercise-editor explicitly light theme!
+      header.classList.add("window-header");
+      header.classList.add("pyodide-header");
+      ex.classList.add("window-light"); // Make exercise-editor explicitly light theme!
     }
   });
 };
@@ -528,7 +541,7 @@ const decorateExerciseHeader = (header) => {
   if (!header) return;
   
   // If already decorated, skip to avoid duplicate tabs or infinite recursion
-  if (header.querySelector(".ui-code-tabs")) {
+  if (header.querySelector(".code-tabs")) {
     translateExerciseButtons(header);
     return;
   }
@@ -555,11 +568,11 @@ const decorateExerciseHeader = (header) => {
   
   // Create tabs container
   const tabsContainer = document.createElement("div");
-  tabsContainer.className = "ui-code-tabs";
+  tabsContainer.className = "code-tabs";
   tabsContainer.innerHTML = `
-    <div class="ui-code-tab">
-      <i class="bi bi-cpu-fill ui-code-tab-icon"></i>
-      <span class="ui-code-tab-title">Exercice</span>
+    <div class="code-tab">
+      <i class="bi bi-cpu-fill code-tab-icon"></i>
+      <span class="code-tab-title">Exercice</span>
     </div>
   `;
   

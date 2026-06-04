@@ -1,12 +1,15 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - "assets/**"
 
 filters:
   - timeline
   - live
   - aptitek/download-fonts
   - aptitek/tabs
+  - aptitek/ojs-bridge
   - aptitek/ojs-inputs
   - aptitek/bi-icons
   - aptitek/embed
@@ -27,6 +30,8 @@ format:
       - theme/solarized/base.scss
     toc: true
     code-copy: true
+    echo: false
+    ojs: true
     include-in-header:
       - text: '<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>'
       - text: |

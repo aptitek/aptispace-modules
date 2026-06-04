@@ -1,6 +1,3 @@
----
-ojs: true
----
 
 ::: {.card .card-window data-layout="sidebar-left"}
 #### Title {.bi-search}

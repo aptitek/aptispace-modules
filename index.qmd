@@ -1,17 +1,9 @@
 ---
 title: "Nature variable"
 ---
-```{ojs}
-//| echo: false
-// 📦 Imports centralisés pour tout le bloc
-import { createWordCloud } from "./assets/js/networks.js"
-import { createBar, createLine, createFunnel, createPiramid } from "./assets/js/plots.js"
-import { getThemeColor } from "./assets/js/core.js"
-```
+::: {.row}
 
-::: {.grid}
-
-:::: {.g-col-12 .g-col-md-6}
+:::: {.col}
 ::::: {.card .card-concept .h-100}
 :::::: {.card-header}
 Nominale [Qualitative]{.badge .bg-info .float-end}
@@ -20,12 +12,10 @@ Nominale [Qualitative]{.badge .bg-info .float-end}
 
 ::::::: {#plot-nominale style="height: 180px;"}
 ```{ojs}
-//| echo: false
-
 motsNominal = ["Rouge", "France", "Standard", "69003", "Bleu", "Genre", "Directeur", "Italie", "Vert"]
 
 renderNominale = {
-  createWordCloud('plot-nominale', motsNominal, { radius: 80 }) //TODO: if not specified use current div instead of fixed id
+  createWordCloud('plot-nominale', motsNominal, { radius: 80 })
 }
 ```
 :::::::
@@ -41,7 +31,7 @@ Catégories ou étiquettes sans aucun ordre de grandeur ni hiérarchie naturelle
 :::::
 ::::
 
-:::: {.g-col-12 .g-col-md-6}
+:::: {.col}
 ::::: {.card .card-concept .h-100}
 :::::: {.card-header}
 Ordinale [Qualitative]{.badge .bg-info .float-end}
@@ -49,7 +39,6 @@ Ordinale [Qualitative]{.badge .bg-info .float-end}
 :::::: {.card-body}
 ::::::: {#plot-ordinale style="height: 180px;"}
 ```{ojs}
-//| echo: false
 renderOrdinale = {
   createPiramid("plot-ordinale", {
     text: ["Rang 3", "Rang 2", "Rang 1"],
@@ -75,8 +64,10 @@ Catégories textuelles dotées d'une hiérarchie stricte et d'une logique de ran
 ::::::
 :::::
 ::::
+:::
 
-:::: {.g-col-12 .g-col-md-6}
+::: {.row .mt-4}
+:::: {.col}
 ::::: {.card .card-concept .h-100}
 :::::: {.card-header}
 Discrète [Quantitative]{.badge .bg-success .float-end}
@@ -84,7 +75,6 @@ Discrète [Quantitative]{.badge .bg-success .float-end}
 :::::: {.card-body}
 ::::::: {#plot-discrete style="height: 180px;"}
 ```{ojs}
-//| echo: false
 dataDiscrete = {
   let vals = Array.from({length: 5}, () => 10 + Math.floor(Math.random() * 80));
   return { x: ["0", "1", "2", "3", "4+"], y: vals };
@@ -92,7 +82,7 @@ dataDiscrete = {
 
 renderDiscrete = {
   createBar("plot-discrete", dataDiscrete, "", {
-    marker: { color: getThemeColor("--sol-green", "#859900") }, // Variable dynamique
+    marker: { color: getThemeColor("--sol-green", "#859900") },
     layout: { margin: { t: 10, b: 20, l: 30, r: 10 }, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent' }
   });
 }
@@ -110,7 +100,7 @@ Valeurs numériques entières dénombrables. On compte des unités distinctes et
 :::::
 ::::
 
-:::: {.g-col-12 .g-col-md-6}
+:::: {.col}
 ::::: {.card .card-concept .h-100}
 :::::: {.card-header}
 Continue [Quantitative]{.badge .bg-success .float-end}
@@ -118,7 +108,6 @@ Continue [Quantitative]{.badge .bg-success .float-end}
 :::::: {.card-body}
 ::::::: {#plot-continuous style="height: 180px;"}
 ```{ojs}
-//| echo: false
 dataContinuous = {
   let x = [], y = [];
   for(let i = 15; i <= 135; i += 2) {
@@ -160,13 +149,6 @@ Valeurs décimales mesurables sur une échelle infinie. Il existe un nombre infi
 ## Cablage
 
 ::: {.card .card-window .mb-4}
-```{ojs}
-//| echo: false
-import { parseTableData, renderFeedbackUI } from "./assets/js/core.js"
-import { createCabling } from "./assets/js/networks.js"
-import { createLever } from "./assets/js/custom/lever.js"
-
-```
 
 :::: {.card-header}
 🔌 Panneau de brassage des indices
@@ -224,7 +206,6 @@ Reliez chaque pièce à conviction de gauche à sa catégorie de données logiqu
 [Circuit coupé]{#lever-status-off .lever-status .is-off}
 
 ```{ojs}
-//| echo: false
 {
   powerOn;
   const elOn = document.querySelector("#lever-status-on");
@@ -244,7 +225,6 @@ Reliez chaque pièce à conviction de gauche à sa catégorie de données logiqu
 :::::
 
 ```{ojs}
-//| echo: false
 viewof powerOn = createLever("#power-lever", invalidation)
 ```
 
@@ -275,16 +255,12 @@ viewof powerOn = createLever("#power-lever", invalidation)
 :::::
 
 ```{ojs}
-//| echo: false
-
-// A. Chargement et déduction des listes
 leftItems = parseTableData("#cabling-data table")
 rightItems = Array.from(new Set(leftItems.map(item => item.match))).map(id => ({
   id: id,
   label: id.charAt(0).toUpperCase() + id.slice(1)
 }))
 
-// B. Cycle de vie du moteur graphique
 engine = {
   const m = createCabling("#cabling-canvas", leftItems, rightItems, (state) => {
     if(state.score < leftItems.length) renderFeedbackUI("#cabling-feedback-panel", { status: "hidden" });
@@ -293,17 +269,13 @@ engine = {
   return m;
 }
 
-// C. Pipeline réactif d'affichage du Feedback (déclenché par le levier)
 uiLogic = {
-  powerOn; // Réactivité sur le levier
-
+  powerOn;
   let state = { status: "hidden" };
 
   if (powerOn === true) {
-    // Levier ON  → valider le brassage
     state = engine.validate();
   } else {
-    // Levier OFF → masquer les résultats, enlever les étincelles et la validation (garder les câbles)
     engine.clearValidation();
     renderFeedbackUI("#cabling-feedback-panel", { status: "hidden" });
     return;
@@ -327,10 +299,8 @@ uiLogic = {
     });
   }
 
-  // Distribution vers l'interface via core.js
   renderFeedbackUI("#cabling-feedback-panel", state, listData);
 }
-
 ```
 
 ## Encodage en Mémoire (RAM)
@@ -345,14 +315,8 @@ uiLogic = {
 ::::::
 
 ```{ojs}
-//| echo: false
-import { renderTemplate, renderListTemplate } from "./assets/js/core.js"
-import { createTabsetWatcher } from "./assets/js/custom/card.js"
-
-// Reactive value — driven by the tab watcher below
 mutable dataType = "int32"
 
-// Icon injection + MutationObserver + value sync — all handled by core.js
 _ramTabWatcher = {
   const w = createTabsetWatcher(
     ".ram-tabset",
@@ -368,47 +332,33 @@ _ramTabWatcher = {
 
 #### <i class="bi bi-toggles"></i> bool
 
-::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-:::::::: {.card-body .p-0 .pb-2}
 | Caractéristique     | Spécification                                                                                |                           |
 | :------------------ | :------------------------------------------------------------------------------------------- | :------------------------ |
 | **Type de donnée**  | Booléen (Logique)                                                                            |                           |
 | **Taille Physique** | 1 octet (8 bits)                                                                             |                           |
 | **Encodage RAM**    | `00000001` (True / Vrai) \                                                                   | `00000000` (False / Faux) |
 | **Comportement**    | Bien que 1 bit suffise théoriquement, la mémoire est adressée par octets complets physiques. |                           |
-::::::::
-:::::::
 
 #### <i class="bi bi-1-circle"></i> int8
 
-::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-:::::::: {.card-body .p-0 .pb-2}
 | Caractéristique      | Spécification                                                                      |                           |
 | :------------------- | :--------------------------------------------------------------------------------- | :------------------------ |
 | **Type de donnée**   | Entier 8 bits (Byte / Octet)                                                       |                           |
 | **Taille Physique**  | 1 octet (8 bits)                                                                   |                           |
 | **Plage de valeurs** | de `0` à `255` (non signé) \                                                       | de `-128` à `127` (signé) |
 | **Comportement**     | Encodage binaire direct. Les valeurs négatives sont stockées en complément à deux. |                           |
-::::::::
-:::::::
 
 #### <i class="bi bi-hash"></i> int32
 
-::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-:::::::: {.card-body .p-0 .pb-2}
 | Caractéristique      | Spécification                                                                                     |
 | :------------------- | :------------------------------------------------------------------------------------------------ |
 | **Type de donnée**   | Entier 32 bits (Mot Standard)                                                                     |
 | **Taille Physique**  | 4 octets (32 bits)                                                                                |
 | **Plage de valeurs** | de `-2 147 483 648` à `+2 147 483 647`                                                            |
 | **Comportement**     | Découpé en 4 octets consécutifs en mémoire, respectant l'endianness (boutisme) de l'architecture. |
-::::::::
-:::::::
 
 #### <i class="bi bi-infinity"></i> float64
 
-::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-:::::::: {.card-body .p-0 .pb-2}
 | Caractéristique     | Spécification                                                           |
 | :------------------ | :---------------------------------------------------------------------- |
 | **Type de donnée**  | Réel double précision (Double / Float64)                                |
@@ -416,32 +366,22 @@ _ramTabWatcher = {
 | **Standard**        | Norme internationale IEEE 754                                           |
 | **Structure**       | 1 bit de signe, 11 bits d'exposant, 52 bits de mantisse                 |
 | **Comportement**    | Représentation scientifique précise, découpée sur 8 octets consécutifs. |
-::::::::
-:::::::
 
 #### <i class="bi bi-fonts"></i> string
 
-::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-:::::::: {.card-body .p-0 .pb-2}
 | Caractéristique     | Spécification                                                                                    |
 | :------------------ | :----------------------------------------------------------------------------------------------- |
 | **Type de donnée**  | Chaîne de caractères (String)                                                                    |
 | **Taille Physique** | Variable (1 octet par caractère en ASCII / UTF-8 standard)                                       |
 | **Encodage RAM**    | Code numérique de chaque caractère (Table ASCII / Points de code Unicode)                        |
 | **Comportement**    | Séquence contiguë d'octets. Les caractères spéciaux hors ASCII peuvent prendre plusieurs octets. |
-::::::::
-:::::::
 
 ::::::
 
 :::::: {.card-body}
 
 ```{ojs}
-//| echo: false
-viewof rawInput = {
-  const el = document.querySelector("#rawInput");
-  return el;
-}
+viewof rawInput = document.querySelector("#rawInput")
 ```
 
 ::::::: {.ram-motherboard}
@@ -475,13 +415,7 @@ viewof rawInput = {
 ::::::
 
 ```{ojs}
-//| echo: false
-import { getRamData, renderRam } from "./assets/js/custom/ram.js";
-
-// 1. Logique de conversion réactive
 ramData = getRamData(rawInput, dataType)
-
-// 2. Déclenchement réactif de l'affichage (Effet de bord OJS)
 updateRamUI = renderRam(ramData)
 ```
 
@@ -496,19 +430,11 @@ updateRamUI = renderRam(ramData)
 
 #### []{.bi-hdd-fill} Stockage en Ligne
 
-:::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-::::::::: {.card-body .p-0 .pb-2}
 Le stockage **Orienté Ligne** est le standard transactionnel (SQL classique, fichiers CSV). Les attributs d'une même ligne (ID, Âge, Salaire) sont enregistrés de manière strictement contiguë en mémoire. Idéal pour écrire de nouvelles transactions rapidement, mais très lent pour extraire ou analyser une colonne spécifique sur des millions d'enregistrements.
-:::::::::
-::::::::
 
 #### []{.bi-layout-three-columns} Stockage en Colonne
 
-:::::::: {.card .border-0 .shadow-none .bg-transparent .mb-0}
-::::::::: {.card-body .p-0 .pb-2}
 Le stockage **Orienté Colonne** est le standard de la Data Science moderne (DataFrames Polars/Pandas, fichiers Parquet, Apache Arrow). Les valeurs d'une même colonne sont regroupées de manière continue en RAM. Idéal pour calculer des moyennes ou filtrer sur un attribut précis à la vitesse de la lumière !
-:::::::::
-::::::::
 
 :::::::: {.tab-actions}
 
@@ -532,14 +458,8 @@ Le stockage **Orienté Colonne** est le standard de la Data Science moderne (Dat
 ::::::::
 
 ```{ojs}
-//| echo: false
-import { createRamStorageGraph } from "./assets/js/networks.js"
-import { initTabActions } from "./assets/js/custom/card.js"
-
-// 0. Inject tab action buttons into nav bars (must run before graph init)
 initTabActions()
 
-// 1. Détecteur réactif du Tabset de stockage RAM
 mutable storageMode = "ligne"
 
 _ramStorageTabWatcher = {
@@ -552,7 +472,6 @@ _ramStorageTabWatcher = {
   return html`<span style="display:none"></span>`;
 }
 
-// 2. Extraction dynamique des données depuis la table Markdown
 ramTableData = parseTableData("#ram-data-source table")
 
 renderRamGraph = {
@@ -560,7 +479,6 @@ renderRamGraph = {
   invalidation.then(() => { if (graph && graph.destroy) graph.destroy(); });
   return html`<span style="display:none"></span>`;
 }
-
 ```
 
 :::::::
@@ -705,14 +623,8 @@ Tout en haut de la pyramide, les registres internes du cœur traitent les donné
 ![](assets/ui/motherboard.svg){.background}
 ::::::::
 ```{ojs}
-//| echo: false
-import { initMoboSvg, renderMobo } from "./assets/js/custom/mobo.js";
-import { bindSvgToTabset } from "./assets/js/custom/dynamic-svg.js";
-
-// 1. Initialisation dynamique de la carte mère vectorielle (Inline SVG)
 initMobo = initMoboSvg("#motherboard-view")
 
-// 2. Détecteur réactif du Tabset de la carte mère (géré via card.js)
 mutable hardwareState = "ssd"
 
 _moboTabWatcher = {
@@ -725,11 +637,8 @@ _moboTabWatcher = {
   return html`<span style="display:none"></span>`;
 }
 
-// 3. Déclenchement réactif des animations de flux physiques et highlights
 updateMotherboardUI = {
-  initMobo; // Attente inlining SVG
-
-  // Applique les styles et l'interactivité dynamique
+  initMobo;
   bindSvgToTabset("#motherboard-view", ".mobo-tabset", {
     "part-ssd": "SSD",
     "part-ram": "RAM",
@@ -740,7 +649,6 @@ updateMotherboardUI = {
     "cpu-core-3": "Caches L2 & L1",
     "register": "Registres"
   });
-
   renderMobo(hardwareState);
 }
 ```
@@ -749,11 +657,7 @@ updateMotherboardUI = {
 
 ## []{.bi-cpu} Diagnostic Machine à États
 
-:::::: {.card .border-0 .shadow-none .bg-transparent}
-::::::: {.card-body .p-0 .pb-2}
 Test diagnostic pour valider le moteur générique de machine à états.
-:::::::
-::::::
 
 :::::: {.tab-actions}
 
@@ -766,12 +670,7 @@ Test diagnostic pour valider le moteur générique de machine à états.
 ::::::
 
 ```{ojs}
-//| echo: false
-import { renderStateMachineGraph } from "./assets/js/networks.js"
-import { StateMachine } from "./assets/js/core.js"
-
 testSmGraph = {
-  // 1. Définir les nœuds et les transitions avec coordonnées fixes pour stabiliser la structure 2D
   const nodes = [
     { id: "A", label: "Initial", fx: -120, fy: 0, status: "entry", shape: "circle" },
     { id: "B", label: "Traitement", fx: 0, fy: -80, status: "default", shape: "rounded rect" },
@@ -788,18 +687,12 @@ testSmGraph = {
 
   const graphData = { nodes, links };
 
-  // Helper pour réinitialiser le graphe à l'état de repos (sans nœud actif, nœud A surbrillé en "entry")
   const resetGraph = () => {
-    nodes.forEach(n => {
-      n.status = n.id === "A" ? "entry" : "default";
-    });
-    links.forEach(l => {
-      l.status = "default";
-    });
+    nodes.forEach(n => { n.status = n.id === "A" ? "entry" : "default"; });
+    links.forEach(l => { l.status = "default"; });
     graph.graphData({ nodes, links });
   };
 
-  // 2. Initialiser le renderer de graphe
   const graph = renderStateMachineGraph("#test-sm-graph", graphData, {
     width: 600,
     height: 300,
@@ -810,7 +703,6 @@ testSmGraph = {
     enableDrag: true,
     zoomToFit: true,
     zoomToFitPadding: 60,
-    // Style sémantique des transitions et nœuds
     styles: {
       default: {
         nodeBg: "var(--sol-base3)",
@@ -821,7 +713,7 @@ testSmGraph = {
         particles: 0
       },
       entry: {
-        nodeBg: "rgba(38, 139, 210, 0.15)", // Surbrillance bleue pour l'entrée
+        nodeBg: "rgba(38, 139, 210, 0.15)",
         nodeBorder: "var(--sol-blue)",
         nodeText: "var(--sol-blue)",
         linkStroke: "var(--sol-base1)",
@@ -849,10 +741,8 @@ testSmGraph = {
     }
   });
 
-  // Appliquer le style "entry" initial immédiatement après le chargement du graphe
   resetGraph();
 
-  // 3. Modèle d'états ordonné pour le scénario de diagnostic
   const steps = [
     { activeNode: "A", activeLink: null, pastNodes: [], pastLinks: [] },
     { activeNode: "B", activeLink: "A-B", pastNodes: ["A"], pastLinks: [] },
@@ -860,42 +750,28 @@ testSmGraph = {
     { activeNode: "D", activeLink: "B-D", pastNodes: ["A", "B", "C"], pastLinks: ["A-B", "A-C"] }
   ];
 
-  // 4. Moteur de Machine à États
   const sm = new StateMachine({
     states: steps,
     interval: 1200,
     loop: false,
     onStateChange: (step, index) => {
-      // Met à jour le status de chaque nœud
       nodes.forEach(n => {
-        if (n.id === step.activeNode) {
-          n.status = "current";
-        } else if (step.pastNodes.includes(n.id)) {
-          n.status = "past";
-        } else {
-          n.status = "default";
-        }
+        if (n.id === step.activeNode) n.status = "current";
+        else if (step.pastNodes.includes(n.id)) n.status = "past";
+        else n.status = "default";
       });
 
-      // Met à jour le status de chaque lien avec extraction robuste d'ID
       links.forEach(l => {
         const srcId = typeof l.source === "object" ? l.source.id : l.source;
         const tgtId = typeof l.target === "object" ? l.target.id : l.target;
         const linkId = `${srcId}-${tgtId}`;
-
-        if (linkId === step.activeLink) {
-          l.status = "current";
-        } else if (step.pastLinks.includes(linkId)) {
-          l.status = "past";
-        } else {
-          l.status = "default";
-        }
+        if (linkId === step.activeLink) l.status = "current";
+        else if (step.pastLinks.includes(linkId)) l.status = "past";
+        else l.status = "default";
       });
 
-      // Force-directed graph re-render avec les nouveaux statuts réactifs
       graph.graphData({ nodes, links });
 
-      // Si c'est le dernier état, réinitialiser l'état du bouton et arrêter proprement après affichage
       if (index === steps.length - 1) {
         setTimeout(() => {
           playing = false;
@@ -905,14 +781,13 @@ testSmGraph = {
             btn.classList.remove("btn-danger");
           }
           sm.stop();
-          sm.currentIndex = 0; // Réinitialise l'index à 0 sans déclencher d'état actif
-          resetGraph(); // Rétablit le style repos (nœud A en "entry")
+          sm.currentIndex = 0;
+          resetGraph();
         }, 1200);
       }
     }
   });
 
-  // 5. Gestionnaire de bouton
   const btn = document.querySelector("#btn-sm-start");
   let playing = false;
 
@@ -928,8 +803,8 @@ testSmGraph = {
       btn.classList.add("btn-success");
       btn.classList.remove("btn-danger");
       sm.stop();
-      sm.currentIndex = 0; // Réinitialise l'index
-      resetGraph(); // Rétablit le style repos (nœud A en "entry")
+      sm.currentIndex = 0;
+      resetGraph();
     }
   };
 
@@ -939,53 +814,44 @@ testSmGraph = {
     btn.addEventListener("click", handleToggle);
   }
 
-  // Nettoyage complet à l'invalidation d'Observable (KISS/SRP-compliant)
   invalidation.then(() => {
     sm.stop();
-    if (btn) {
-      btn.removeEventListener("click", handleToggle);
-    }
-    if (graph && graph.destroy) {
-      graph.destroy();
-    }
+    if (btn) btn.removeEventListener("click", handleToggle);
+    if (graph && graph.destroy) graph.destroy();
   });
 
   return graph;
 }
 ```
 
-:::::
-::::
-:::
-
 ## Flux de Tokens interactif (Composant Labeled Text)
 
-::: {.card .card-window .mb-4}
-:::: {.card-header}
+:::::: {.card .card-window .mb-4}
+::::::: {.card-header}
 🏷️ Visualisation Interactive de Texte & Tokens
-::::
+:::::::
 
-:::: {.card-control-row}
+::::::: {.card-control-row}
 [L'IA comprend-elle le mot anticonstitutionnellement ? 🤔]{#customTextInput .search-bar .bi-keyboard placeholder="Entrez du texte à tokeniser…"}
-::::
+:::::::
 
-:::: {.card-body}
+::::::: {.card-body}
 Pour un Transformer, le texte brut est illisible : il doit d'abord être découpé en unités d'information (tokens) repérées par des IDs numériques.
 
-::::: {.row .mt-4}
-:::::: {.col-12 .col-lg-8}
-::::::: {.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider}
+:::::::: {.row .mt-4}
+::::::::: {.col-12 .col-lg-8}
+:::::::::: {.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider}
 Flux de Tokens (Capsules)
-:::::::
-::::::: {#test-token-stream}
-:::::::
-::::::
-:::::: {.col-12 .col-lg-4 .mt-3 .mt-lg-0}
-::::::: {.card}
-:::::::: {.card-header .ps-0 .bg-transparent .border-bottom .border-secondary .mb-3 .pb-2}
+::::::::::
+:::::::::: {#test-token-stream}
+::::::::::
+:::::::::
+::::::::: {.col-12 .col-lg-4 .mt-3 .mt-lg-0}
+:::::::::: {.card}
+::::::::::: {.card-header .ps-0 .bg-transparent .border-bottom .border-secondary .mb-3 .pb-2}
 **[]{.bi-info-circle .me-2}Inspecteur de Token**
-::::::::
-:::::::: {.card-body .p-0 #token-inspector-details}
+:::::::::::
+::::::::::: {.card-body .p-0 #token-inspector-details}
 
 | Propriété      | Valeur                                                                                                                                                                                                                                                                                                  |
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -996,36 +862,27 @@ Flux de Tokens (Capsules)
 
 : {.table .table-sm .table-borderless .mb-0}
 
+:::::::::::
+::::::::::
+:::::::::
 ::::::::
+
 :::::::
-::::::
-:::::
 
-::::
-
-:::: {.results}
+::::::: {.results}
 
 ```{ojs}
-//| echo: false
-viewof customTextInput = {
-  const el = document.querySelector("#customTextInput");
-  return el;
-}
+viewof customTextInput = document.querySelector("#customTextInput")
 ```
 
 ```{ojs}
-//| echo: false
-import { createLabeledText } from "./assets/js/custom/text.js"
-
 tokenWidget = {
-  // Wait until the container exists in the DOM to avoid race conditions
   let container = document.querySelector("#test-token-stream");
   for (let i = 0; i < 20 && !container; i++) {
     await Promises.delay(100);
     container = document.querySelector("#test-token-stream");
   }
 
-  // Pre-initialize the inspector details with empty/welcome placeholders
   const details = document.querySelector("#token-inspector-details");
   if (details) {
     details.style.setProperty("--inspector-color", "var(--sol-base01)");
@@ -1046,7 +903,7 @@ tokenWidget = {
         d.style.setProperty("--inspector-color", tok.color);
         renderTemplate(d, {
           text: tok.text,
-          index: `${idx + 1} / ${widget.element.querySelectorAll('.mol-token').length}`,
+          index: `${idx + 1} / ${widget.element.querySelectorAll('.token-item').length}`,
           label: tok.label || "-",
           fragmentText: tok.isFragment ? "Oui (BPE)" : "Non (Complet)",
           badgeClass: tok.isFragment ? "bg-warning text-dark" : "bg-success"
@@ -1059,9 +916,8 @@ tokenWidget = {
   return widget;
 }
 
-// Réactivité sur l'input utilisateur
 updateWidgetInput = {
-  const text = customTextInput; // Dépendance réactive pure
+  const text = customTextInput;
   if (tokenWidget && typeof tokenWidget.update === "function") {
     tokenWidget.update(text);
   }
@@ -1069,5 +925,9 @@ updateWidgetInput = {
 }
 ```
 
+:::::::
+::::::
+
+:::::
 ::::
 :::

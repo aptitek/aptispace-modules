@@ -66,16 +66,62 @@ end
 -- ── Div handler ───────────────────────────────────────────────────────────────
 -- Converts a flat list of child divs/blocks or a wrapped table into a Bootstrap grid.
 function Div(el)
+  -- Case 1: Simple auto-balanced grid system (row with col children)
+  if el.classes:includes('row') then
+    -- Find all direct children that are Divs with class 'col'
+    local cols = {}
+    for _, child in ipairs(el.content) do
+      if child.t == 'Div' and child.classes:includes('col') then
+        table.insert(cols, child)
+      end
+    end
+    
+    local num_cols = #cols
+    if num_cols > 0 then
+      -- Automatically map column count to standard Bootstrap classes:
+      -- 1 column: col-12
+      -- 2 columns: col-12 col-md-6 (50% each)
+      -- 3 columns: col-12 col-md-4 (33% each)
+      -- 4 columns: col-12 col-md-6 (2x2 grid is best for concept cards)
+      -- >=5 columns: col-12 col-md-4 col-lg-3
+      local col_class = "col-12"
+      if num_cols == 2 then
+        col_class = "col-12 col-md-6"
+      elseif num_cols == 3 then
+        col_class = "col-12 col-md-4"
+      elseif num_cols == 4 then
+        col_class = "col-12 col-md-6"
+      elseif num_cols >= 5 then
+        col_class = "col-12 col-md-4 col-lg-3"
+      end
+      
+      -- Replace simple 'col' class with standard Bootstrap responsive class definitions
+      for _, col_div in ipairs(cols) do
+        local new_classes = {}
+        for _, cls in ipairs(col_div.classes) do
+          if cls ~= "col" then
+            table.insert(new_classes, cls)
+          end
+        end
+        for word in string.gmatch(col_class, "%S+") do
+          table.insert(new_classes, word)
+        end
+        col_div.classes = new_classes
+      end
+    end
+    
+    return el
+  end
+
+  -- Case 2: Legacy .grid and .bootstrap-grid handlers
   if el.classes:includes('bootstrap-grid') or el.classes:includes('grid') then
-    -- Case 1: Check if the Div contains a Table. If so, convert the table into a grid.
+    -- Check if the Div contains a Table. If so, convert the table into a grid.
     for _, child in ipairs(el.content) do
       if child.t == 'Table' then
         return parse_table_to_grid(child)
       end
     end
     
-    -- Case 2: Standard flat list of elements/divs inside the grid container.
-    -- Check if it already has a .row child to prevent double wrapping.
     local has_row = false
     for _, child in ipairs(el.content) do
       if child.t == 'Div' and child.classes:includes('row') then
@@ -95,9 +141,19 @@ function Div(el)
       end
       
       for _, child in ipairs(el.content) do
-        -- If the child is already a column, keep it
         local is_col = false
         if child.t == 'Div' then
+          -- Translate any g-col-* classes to col-*
+          local translated_classes = {}
+          for _, cls in ipairs(child.classes) do
+            if has_prefix(cls, "g-col-") then
+              table.insert(translated_classes, string.sub(cls, 3))
+            else
+              table.insert(translated_classes, cls)
+            end
+          end
+          child.classes = translated_classes
+          
           for _, cls in ipairs(child.classes) do
             if cls == "col" or has_prefix(cls, "col-") then
               is_col = true
@@ -109,15 +165,24 @@ function Div(el)
         if is_col then
           table.insert(cols, child)
         else
-          -- Wrap the block inside a column div
           table.insert(cols, pandoc.Div({child}, {class = col_class}))
         end
       end
       
-      -- Wrap all columns in a single Bootstrap row
       local row_div = pandoc.Div(cols, {class = "row"})
       el.content = {row_div}
     end
+    
+    -- Replace 'grid' and 'bootstrap-grid' classes with 'container-fluid px-0' to prevent CSS grid conflicts
+    local new_classes = {}
+    for _, cls in ipairs(el.classes) do
+      if cls ~= "grid" and cls ~= "bootstrap-grid" then
+        table.insert(new_classes, cls)
+      end
+    end
+    table.insert(new_classes, "container-fluid")
+    table.insert(new_classes, "px-0")
+    el.classes = new_classes
     
     return el
   end

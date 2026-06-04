@@ -8,7 +8,27 @@
 //   updateMotherboardUI = renderMobo(hardwareState)
 //
 
-import { renderTemplate } from "../core.js";
+import { applySvgState, getBackgroundImageUrl, loadInlineSvg } from "../svg.js";
+
+const MOTHERBOARD_SVG = new URL('../../ui/motherboard.svg', import.meta.url).href;
+const MOTHERBOARD_SELECTOR = "#motherboard-view";
+const HARDWARE_STATES = ["ssd", "ram", "l3", "l2_l1", "cpu_reg"];
+const BUS_IDS = [
+  "bus-ssd-chipset",
+  "bus-chipset-ram",
+  "bus-ram-chipset",
+  "bus-chipset-cpu",
+  "bus-cpu-internal",
+  "bus-cpu-internal-6",
+  "bus-cpu-internal-6-5",
+  "bus-ram-cpu"
+];
+const HARDWARE_FLOW_MAP = {
+  ram: ["bus-ssd-chipset", "bus-chipset-ram"],
+  l3: ["bus-ram-chipset", "bus-chipset-ram", "bus-chipset-cpu", "bus-ram-cpu"],
+  l2_l1: ["bus-cpu-internal", "bus-cpu-internal-6"],
+  cpu_reg: ["bus-cpu-internal-6-5"]
+};
 
 /**
  * Charge dynamiquement l'SVG de la carte mère et l'intègre en ligne dans le conteneur
@@ -16,29 +36,11 @@ import { renderTemplate } from "../core.js";
  *
  * @param {string} selector - Sélecteur CSS du conteneur
  */
-export async function initMoboSvg(selector) {
-  const container = document.querySelector(selector);
-  if (!container) return;
-
-  // L'URL de l'SVG par défaut
-  let svgUrl = new URL('../../ui/motherboard.svg', import.meta.url).href;
-  
-  const style = getComputedStyle(container).backgroundImage;
-  const match = style.match(/url\("?([^"\)]+)"?\)/);
-  if (match && match[1]) {
-    svgUrl = match[1];
-  }
-
-  try {
-    const res = await fetch(svgUrl);
-    if (res.ok) {
-      const svgText = await res.text();
-      container.innerHTML = svgText;
-      container.style.backgroundImage = 'none'; // Efface l'image de fond statique
-    }
-  } catch (e) {
-    console.error("initMoboSvg: Impossible de charger l'SVG en ligne —", e);
-  }
+export async function initMoboSvg(selector, options = {}) {
+  return loadInlineSvg(selector, {
+    url: options.url || getBackgroundImageUrl(selector) || MOTHERBOARD_SVG,
+    errorLabel: "initMoboSvg"
+  });
 }
 
 /**
@@ -47,52 +49,9 @@ export async function initMoboSvg(selector) {
  * @param {string} hardwareState - L'état actif ('ssd', 'ram', 'l3', 'l2_l1', 'cpu_reg')
  */
 export function renderMobo(hardwareState) {
-  // A. Cible le conteneur principal du simulateur
-  const container = document.querySelector("#motherboard-view");
-  if (!container) return;
-
-  // Nettoyage des anciennes classes d'états
-  const states = ["is-active-ssd", "is-active-ram", "is-active-l3", "is-active-l2-l1", "is-active-cpu-reg"];
-  states.forEach(s => container.classList.remove(s));
-
-  // Injection du nouvel état actif
-  const activeClass = `is-active-${hardwareState}`;
-  container.classList.add(activeClass);
-
-  // B. Contrôle dynamique des bus de données animés
-  const busSsdChipset = container.querySelector("#bus-ssd-chipset");
-  const busChipsetRam = container.querySelector("#bus-chipset-ram");
-  const busRamChipset = container.querySelector("#bus-ram-chipset");
-  const busChipsetCpu = container.querySelector("#bus-chipset-cpu");
-  const busCpuInternal = container.querySelector("#bus-cpu-internal");
-  const busCpuInternalL2L1 = container.querySelector("#bus-cpu-internal-6");
-  const busCpuInternalL1Reg = container.querySelector("#bus-cpu-internal-6-5");
-  const busRamCpu = container.querySelector("#bus-ram-cpu");
-
-  // Reset des bus
-  [
-    busSsdChipset, busChipsetRam, busRamChipset, busChipsetCpu, 
-    busCpuInternal, busCpuInternalL2L1, busCpuInternalL1Reg, busRamCpu
-  ].forEach(bus => {
-    if (bus) bus.classList.remove("is-flowing");
+  applySvgState(MOTHERBOARD_SELECTOR, hardwareState, {
+    stateClasses: HARDWARE_STATES.map(state => `is-active-${state}`),
+    flowIds: BUS_IDS,
+    flowMap: HARDWARE_FLOW_MAP
   });
-
-  // Activation des flux néons selon l'état
-  if (hardwareState === "ram") {
-    if (busSsdChipset) busSsdChipset.classList.add("is-flowing");
-    if (busChipsetRam) busChipsetRam.classList.add("is-flowing");
-  } 
-  else if (hardwareState === "l3") {
-    if (busRamChipset) busRamChipset.classList.add("is-flowing");
-    if (busChipsetRam) busChipsetRam.classList.add("is-flowing");
-    if (busChipsetCpu) busChipsetCpu.classList.add("is-flowing");
-    if (busRamCpu) busRamCpu.classList.add("is-flowing");
-  } 
-  else if (hardwareState === "l2_l1") {
-    if (busCpuInternal) busCpuInternal.classList.add("is-flowing");
-    if (busCpuInternalL2L1) busCpuInternalL2L1.classList.add("is-flowing");
-  } 
-  else if (hardwareState === "cpu_reg") {
-    if (busCpuInternalL1Reg) busCpuInternalL1Reg.classList.add("is-flowing");
-  }
 }
