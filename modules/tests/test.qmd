@@ -4,7 +4,7 @@ title: "Nature variable"
 ::: {.row}
 
 :::: {.col}
-::::: {.card .card-concept .h-100}
+::::: {.card .h-100}
 :::::: {.card-header}
 Nominale [Qualitative]{.badge .bg-info .float-end}
 ::::::
@@ -32,7 +32,7 @@ Catégories ou étiquettes sans aucun ordre de grandeur ni hiérarchie naturelle
 ::::
 
 :::: {.col}
-::::: {.card .card-concept .h-100}
+::::: {.card .h-100}
 :::::: {.card-header}
 Ordinale [Qualitative]{.badge .bg-info .float-end}
 ::::::
@@ -68,7 +68,7 @@ Catégories textuelles dotées d'une hiérarchie stricte et d'une logique de ran
 
 ::: {.row .mt-4}
 :::: {.col}
-::::: {.card .card-concept .h-100}
+::::: {.card .h-100}
 :::::: {.card-header}
 Discrète [Quantitative]{.badge .bg-success .float-end}
 ::::::
@@ -101,7 +101,7 @@ Valeurs numériques entières dénombrables. On compte des unités distinctes et
 ::::
 
 :::: {.col}
-::::: {.card .card-concept .h-100}
+::::: {.card .h-100}
 :::::: {.card-header}
 Continue [Quantitative]{.badge .bg-success .float-end}
 ::::::
@@ -290,6 +290,10 @@ uiLogic = {
 }
 ```
 
+::::
+:::
+
+
 ## Encodage en Mémoire (RAM)
 
 ::::: {.card .card-window .mb-4}
@@ -311,7 +315,7 @@ _ramTabWatcher = {
     (val) => { mutable dataType = val; }
   );
   invalidation.then(() => w.destroy());
-  return html`<span style="display:none"></span>`;
+  return null;
 }
 ```
 
@@ -374,15 +378,11 @@ viewof rawInput = document.querySelector("#rawInput")
 ::::::: {.ram-motherboard}
 
 :::::::: {.ram-stick #ram-stick-1}
-![](/assets/ui/ram-bar.svg){.background}
-
 ::::::::: {.ram-bytes-container #ram-bytes-container-1}
 :::::::::
 ::::::::
 
 :::::::: {.ram-stick #ram-stick-2}
-![](/assets/ui/ram-bar.svg){.background}
-
 ::::::::: {.ram-bytes-container #ram-bytes-container-2}
 :::::::::
 ::::::::
@@ -392,7 +392,6 @@ viewof rawInput = document.querySelector("#rawInput")
 ::::::: {.ram-byte-template .d-none}
 :::::::: {.d-flex .flex-column .align-items-center .m-1}
 ::::::::: {.ram-byte-box class="{{inactiveClass}}" title="Bits: {{binary}}"}
-![](/assets/ui/chip.svg){.background}
 {{hex}}
 :::::::::
 [Octet {{index}}]{.badge .bg-secondary .mb-1 .font-code}
@@ -405,6 +404,8 @@ viewof rawInput = document.querySelector("#rawInput")
 ramData = getRamData(rawInput, dataType)
 updateRamUI = renderRam(ramData)
 ```
+
+:::::
 
 ## Stockage Colonnaire vs Ligne (RAM)
 
@@ -456,7 +457,7 @@ _ramStorageTabWatcher = {
     (val) => { mutable storageMode = val; }
   );
   invalidation.then(() => w.destroy());
-  return html`<span style="display:none"></span>`;
+  return null;
 }
 
 ramTableData = parseTableData("#ram-data-source table")
@@ -464,7 +465,7 @@ ramTableData = parseTableData("#ram-data-source table")
 renderRamGraph = {
   const graph = createRamStorageGraph("ram-graph-container", storageMode, 'Salaire', ramTableData);
   invalidation.then(() => { if (graph && graph.destroy) graph.destroy(); });
-  return html`<span style="display:none"></span>`;
+  return null;
 }
 ```
 
@@ -621,7 +622,7 @@ _moboTabWatcher = {
     (val) => { mutable hardwareState = val; }
   );
   invalidation.then(() => w.destroy());
-  return html`<span style="display:none"></span>`;
+  return null;
 }
 
 updateMotherboardUI = {
@@ -908,13 +909,9 @@ updateWidgetInput = {
   if (tokenWidget && typeof tokenWidget.update === "function") {
     tokenWidget.update(text);
   }
-  return html`<span style="display:none"></span>`;
+  return null;
 }
 ```
 
 :::::::
 ::::::
-
-:::::
-::::
-:::

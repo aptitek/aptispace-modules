@@ -1,7 +1,6 @@
 /*-- scss:rules --*/
 
-@import "tokens";
-@import "interactions";
-@import "layout";
-@import "tabs";
-@import "cards";
+@import "../../_extensions/aptitek/cards/cards";
+@import "../../_extensions/aptitek/grid/grid";
+@import "../../_extensions/aptitek/tabs/tabs";
+@import "../../_extensions/aptitek/ojs-inputs/ojs-inputs";

@@ -9,9 +9,9 @@ function Pandoc(doc)
     -- Execute the font download script
     os.execute("bash " .. script_path)
 
-    -- If rendering for Typst, ensure font-paths is set correctly to project root fonts folder
+    -- If rendering for Typst, ensure font-paths is set correctly to the generated web font folder.
     if project_dir and quarto.doc.is_format("typst") then
-        local fonts_dir = project_dir .. "/fonts"
+        local fonts_dir = project_dir .. "/assets/fonts"
         if doc.meta['font-paths'] == nil then
             doc.meta['font-paths'] = pandoc.MetaList({pandoc.MetaString(fonts_dir)})
         else

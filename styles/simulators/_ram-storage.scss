@@ -1,0 +1,102 @@
+.ram-simulator-wrapper {
+    --canvas-node-text: var(--sol-base3);
+    --canvas-node-font-size: 14;
+    --canvas-addr-font-size: 9;
+    --canvas-node-pad-x: 18;
+    --canvas-label-font-size: 12;
+    --canvas-label-bg: rgba(var(--sol-base03-rgb), 0.9);
+    --canvas-wire-width-active: 2.5;
+    --canvas-wire-width-past: 1.5;
+    --canvas-wire-width-idle: 1;
+    --canvas-wire-color-past: rgba(var(--sol-base01-rgb), 0.5);
+    --canvas-wire-color-idle: rgba(var(--sol-base01-rgb), 0.15);
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 380px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: transparent;
+
+    > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    canvas {
+        display: block !important;
+        margin: 0 auto !important;
+    }
+}
+
+#btn-ram-start,
+.btn-ram-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 12px;
+    border: 1px solid var(--sol-yellow);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--sol-yellow);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: background 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out;
+
+    &:hover,
+    &:focus {
+        background: rgba(var(--sol-yellow-rgb), 0.12);
+        box-shadow: 0 0 10px rgba(var(--sol-yellow-rgb), 0.4);
+        color: var(--sol-yellow);
+        outline: none;
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+.nav-tabs {
+    align-items: center !important;
+}
+
+.btn-tab-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: fit-content !important;
+    padding: 6px 12px !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--sol-yellow) !important;
+    cursor: pointer !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease-in-out, opacity 0.15s ease-in-out, transform 0.15s ease-in-out !important;
+
+    i {
+        color: inherit !important;
+        font-size: 0.95rem !important;
+    }
+
+    &:hover,
+    &:focus {
+        background: transparent !important;
+        color: var(--sol-orange) !important;
+        opacity: 0.9 !important;
+        outline: none !important;
+    }
+
+    &:active {
+        transform: translateY(1px) !important;
+    }
+}

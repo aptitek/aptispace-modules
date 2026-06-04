@@ -8,6 +8,19 @@
 
 local tab_counter = 0
 
+local function extract_bi_class(classes)
+  local bi_class = nil
+  local remaining = {}
+  for _, cls in ipairs(classes) do
+    if not bi_class and cls:match("^bi%-") then
+      bi_class = cls
+    else
+      table.insert(remaining, cls)
+    end
+  end
+  return bi_class, remaining
+end
+
 -- Helper function to check if a list of classes contains control keywords
 local function is_control_header(classes)
   for _, cls in ipairs(classes) do
@@ -88,8 +101,13 @@ function Div(el)
       end
       
       local title_inlines = tab.header.content
+      local bi_class = nil
+      bi_class, tab.header.classes = extract_bi_class(tab.header.classes)
       
       if tab.is_control then
+        if bi_class then
+          table.insert(tab.header.classes, bi_class)
+        end
         -- Case A: Control Tab (Searchbars, Sliders, Buttons)
         -- Wrap the header inlines in a Span carrying all its classes
         local span_node = pandoc.Span(title_inlines, tab.header.attr)
@@ -119,6 +137,9 @@ function Div(el)
         )
         
         table.insert(nav_items, pandoc.RawInline('html', button_html))
+        if bi_class then
+          table.insert(nav_items, pandoc.RawInline('html', '<i class="bi ' .. bi_class .. '" aria-hidden="true"></i> '))
+        end
         for _, inl in ipairs(title_inlines) do
           table.insert(nav_items, inl)
         end
@@ -166,6 +187,6 @@ function Div(el)
     end
     table.insert(final_blocks, content_end)
     
-    return pandoc.Div(final_blocks, {class = "tabset-container"})
+    return pandoc.Div(final_blocks, {class = "panel-tabset tabset-container"})
   end
 end

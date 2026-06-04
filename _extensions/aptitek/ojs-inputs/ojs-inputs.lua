@@ -4,6 +4,11 @@
   Converts spans carrying class names (.slider, .number, .text, .select, etc.)
   into styled native HTML input elements and binds them to Observable JS (OJS)
   at compile time so they can be referenced reactively (e.g. `${myvar}`).
+
+  Syntax:  [Label text]{.slider #id value=42 min=0 max=100}
+  — The span content is used as the <label> for the input.
+  — The default value is read from the `value` attribute.
+  — If the span content is empty, no label is rendered.
   
   Also parses links matching `[import #id](path.js)` and converts them into
   HTML container divs (`<div id="id"></div>`) and binds them as reactive
@@ -27,33 +32,50 @@ local function get_attr(el, name, default)
   return el.attributes[name] or default
 end
 
+-- Helper to build a <label> HTML string for an input
+local function make_label(id, text, extra_classes)
+  if text == "" then return "" end
+  local cls = "form-label ojs-input-label"
+  if extra_classes then cls = cls .. " " .. extra_classes end
+  return string.format('<label for="%s" class="%s">%s</label>', id, cls, text)
+end
+
 -- Walk spans and transform them
 local function transform_span(el)
+  -- Skip .label spans — they are now obsolete (label lives in input span content)
+  if has_class(el.classes, 'label') then
+    return {}
+  end
+
   -- 1. Slider / Range Input
   if has_class(el.classes, 'slider') then
     local id = el.identifier or ""
     if id == "" then id = "slider_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "slider" })
     
-    local val = pandoc.utils.stringify(el.content)
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "0")
     local min = get_attr(el, "min", "0")
     local max = get_attr(el, "max", "100")
     local step = get_attr(el, "step", "1")
     local is_vertical = has_class(el.classes, 'vertical') or get_attr(el, "vertical", nil) ~= nil
     
-    local html = ""
+    local label_html = ""
+    local input_html = ""
     if is_vertical then
-      html = string.format(
+      label_html = make_label(id, label_text, "vertical")
+      input_html = string.format(
         '<input type="range" class="form-range slider-inline vertical" id="%s" min="%s" max="%s" step="%s" value="%s" style="writing-mode: vertical-lr; direction: rtl; width: 12px; height: 120px; padding: 0; margin: 0 auto; display: block;" />',
         id, min, max, step, val
       )
     else
-      html = string.format(
+      label_html = make_label(id, label_text)
+      input_html = string.format(
         '<input type="range" class="form-range slider-inline" id="%s" min="%s" max="%s" step="%s" value="%s" style="display: inline-block; vertical-align: middle; width: 130px; height: 20px; margin: 0 8px;" />',
         id, min, max, step, val
       )
     end
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 2. Number Input
@@ -62,7 +84,8 @@ local function transform_span(el)
     if id == "" then id = "number_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "number" })
     
-    local val = pandoc.utils.stringify(el.content)
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "0")
     local min = get_attr(el, "min", "")
     local max = get_attr(el, "max", "")
     local step = get_attr(el, "step", "1")
@@ -70,11 +93,12 @@ local function transform_span(el)
     local min_attr = min ~= "" and string.format(' min="%s"', min) or ""
     local max_attr = max ~= "" and string.format(' max="%s"', max) or ""
     
-    local html = string.format(
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<input type="number" class="form-control number-inline" id="%s" step="%s" value="%s"%s%s style="display: inline-block; width: 70px; height: 26px; padding: 2px 6px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;" />',
       id, step, val, min_attr, max_attr
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 3. Text Input
@@ -83,12 +107,14 @@ local function transform_span(el)
     if id == "" then id = "text_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "text" })
     
-    local val = pandoc.utils.stringify(el.content)
-    local html = string.format(
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "")
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<input type="text" class="form-control text-inline" id="%s" value="%s" style="display: inline-block; width: 140px; height: 26px; padding: 2px 6px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;" />',
       id, val
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 4. Textarea Input
@@ -97,13 +123,15 @@ local function transform_span(el)
     if id == "" then id = "textarea_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "textarea" })
     
-    local val = pandoc.utils.stringify(el.content)
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "")
     local rows = get_attr(el, "rows", "3")
-    local html = string.format(
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<textarea class="form-control textarea-inline" id="%s" rows="%s" style="font-size: 0.85rem; margin-top: 4px;">%s</textarea>',
       id, rows, val
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 5. Checkbox / Toggle
@@ -112,15 +140,17 @@ local function transform_span(el)
     if id == "" then id = "checkbox_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "checkbox" })
     
-    local val = pandoc.utils.stringify(el.content)
-    local is_checked = val == "checked" or val == "true" or has_class(el.classes, 'checked')
+    local label_text = pandoc.utils.stringify(el.content)
+    local is_checked = has_class(el.classes, 'checked') or get_attr(el, "checked", nil) ~= nil
     local checked_attr = is_checked and " checked" or ""
     
-    local html = string.format(
+    local input_html = string.format(
       '<input type="checkbox" class="form-check-input checkbox-inline" id="%s"%s style="width: 16px; height: 16px; margin: 0 6px; vertical-align: middle;" />',
       id, checked_attr
     )
-    return pandoc.RawInline('html', html)
+    -- For checkboxes, label comes after the input (standard form-check pattern)
+    local label_html = make_label(id, label_text)
+    return pandoc.RawInline('html', input_html .. label_html)
   end
 
   -- 6. Dropdown / Select
@@ -129,7 +159,8 @@ local function transform_span(el)
     if id == "" then id = "select_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "select" })
     
-    local selected_val = pandoc.utils.stringify(el.content)
+    local label_text = pandoc.utils.stringify(el.content)
+    local selected_val = get_attr(el, "value", "")
     local options_str = get_attr(el, "options", "")
     
     local html_opts = {}
@@ -139,11 +170,12 @@ local function transform_span(el)
       table.insert(html_opts, string.format('<option value="%s"%s>%s</option>', opt, selected_attr, opt))
     end
     
-    local html = string.format(
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<select class="form-select select-inline" id="%s" style="display: inline-block; width: auto; height: 26px; padding: 2px 24px 2px 8px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;">%s</select>',
       id, table.concat(html_opts, "")
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 7. Color Input
@@ -152,14 +184,15 @@ local function transform_span(el)
     if id == "" then id = "color_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "color" })
     
-    local val = pandoc.utils.stringify(el.content)
-    if val == "" then val = "#000000" end
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "#000000")
     
-    local html = string.format(
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<input type="color" class="form-control form-control-color color-inline" id="%s" value="%s" style="display: inline-block; width: 40px; height: 26px; padding: 2px; vertical-align: middle; margin: 0 4px;" />',
       id, val
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
   -- 8. Date Input
@@ -168,15 +201,17 @@ local function transform_span(el)
     if id == "" then id = "date_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "date" })
     
-    local val = pandoc.utils.stringify(el.content)
-    local html = string.format(
+    local label_text = pandoc.utils.stringify(el.content)
+    local val = get_attr(el, "value", "")
+    local label_html = make_label(id, label_text)
+    local input_html = string.format(
       '<input type="date" class="form-control date-inline" id="%s" value="%s" style="display: inline-block; width: auto; height: 26px; padding: 2px 6px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;" />',
       id, val
     )
-    return pandoc.RawInline('html', html)
+    return pandoc.RawInline('html', label_html .. input_html)
   end
 
-  -- 9. Button Input
+  -- 9. Button Input (content = button text, no separate label needed)
   if has_class(el.classes, 'button') or has_class(el.classes, 'btn') then
     local id = el.identifier or ""
     if id == "" then id = "button_" .. tostring(#input_items + 1) end

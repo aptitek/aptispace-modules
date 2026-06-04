@@ -1,0 +1,773 @@
+---
+title: "Référence des extensions Aptitek"
+---
+
+<!-- ================================================================
+  RÉFÉRENCE COMPLÈTE — Extensions Aptitek pour Quarto / Pandoc
+
+  Ce fichier démontre chaque extension par des exemples vivants et
+  sert de référence pour les agents LLM qui génèrent du contenu.
+
+  Extensions couvertes :
+    aptitek/cards      → Cartes et terminaux style macOS
+    aptitek/tabs       → Onglets Bootstrap (icônes, alignement, contrôles)
+    aptitek/ojs-inputs → Inputs HTML réactifs liés à Observable JS
+    aptitek/bi-icons   → Injection d'icônes Bootstrap Icons dans l'AST Pandoc
+    aptitek/grid       → Grille Bootstrap responsive auto-équilibrée
+    aptitek/embed      → Iframes responsives embarquées
+
+  Fonctions JS globales (window.aptitek, injectées dans OJS par ojs-bridge) :
+    Plots Plotly  → createBar / createLine / createFunnel / createPiramid
+    Réseaux       → createWordCloud / renderStateMachineGraph / createGraph
+    Utilitaires   → getThemeColor / getPlotlyTheme / parseTableData
+    Moteur        → StateMachine / utils / renderTemplate / renderFeedbackUI
+================================================================ -->
+
+## Cartes — `aptitek/cards`
+
+Le filtre `cards` transforme tout bloc `:::` portant la classe `.card-window`
+(ou `.terminal`, `.apt-card`) en carte Bootstrap. Le **premier Header** du bloc
+(H4 recommandé) devient le `.card-header` ; le reste devient le `.card-body`.
+Les classes `bi-*` sur ce Header sont converties en icône par `bi-icons`.
+
+### Syntaxe
+
+```markdown
+::: {.card-window}
+#### Titre de la carte {.bi-icon-optionnel}
+Corps de la carte. Tout Markdown valide est accepté ici.
+:::
+```
+
+### Carte simple
+
+::: {.card-window}
+#### Atelier interactif {.bi-stars}
+Ceci est le corps de la carte. Le titre est promu en `.card-header` avec la
+barre macOS (pastilles rouge · jaune · vert) générée automatiquement en CSS.
+L'icône `.bi-stars` est injectée dans le titre par le filtre `bi-icons`.
+:::
+
+### Carte avec attribut `layout`
+
+L'attribut `layout` est converti en `data-layout` sur le `div.card` pour
+pilotage CSS. Valeurs courantes : `sidebar-left`, `sidebar-right`, `full`.
+
+```markdown
+::: {.card-window layout="sidebar-left"}
+#### Titre {.bi-layout-sidebar}
+Contenu avec disposition latérale pilotée par CSS.
+:::
+```
+
+::: {.card-window layout="sidebar-left"}
+#### Disposition latérale {.bi-layout-sidebar}
+L'attribut `layout="sidebar-left"` est transmis au DOM tel quel via
+`data-layout`. Il ne produit pas de style par défaut : c'est votre feuille
+SCSS qui lit cet attribut pour adapter la mise en page.
+:::
+
+### Terminal
+
+`.terminal` est un alias de carte au thème sombre. Sans titre, une barre
+macOS avec le label "aptitek terminal" est générée automatiquement. Le
+premier `<p>` dans le corps reçoit une animation de frappe typewriter.
+
+```markdown
+::: {.terminal}
+#### Sortie du modèle  ← titre optionnel
+Texte animé en typewriter.
+:::
+```
+
+::: {.terminal}
+#### Sortie du modèle {.bi-terminal}
+Epoch 10/10 — loss: **0.043** — accuracy: **0.981**
+:::
+
+::: {.terminal}
+Terminal sans titre : la barre "aptitek terminal" est générée automatiquement.
+:::
+
+---
+
+## Onglets — `aptitek/tabs`
+
+Le filtre `tabs` convertit tout bloc `:::` portant la classe `.tabs` en un
+tabset Bootstrap. Les **Headers à l'intérieur** délimitent chaque onglet ; le
+niveau du premier Header trouvé est utilisé pour tous les onglets du bloc.
+H5 (`#####`) est recommandé pour éviter les conflits de niveaux.
+
+### Syntaxe
+
+```markdown
+:::: {.tabs}
+##### Onglet A {.bi-icon-optionnel}
+Contenu de l'onglet A.
+
+##### Onglet B {.bi-cpu}
+Contenu de l'onglet B.
+::::
+```
+
+### Onglets simples avec icônes
+
+:::: {.tabs}
+##### Vue d'ensemble {.bi-grid-1x2}
+Premier onglet, actif par défaut. L'icône `.bi-grid-1x2` est injectée dans
+le bouton du tab par `bi-icons` au moment de la compilation.
+
+Tout Markdown est valide ici : paragraphes, listes, tableaux, blocs de code,
+sous-cartes, et même d'autres composants OJS.
+
+##### Détails {.bi-list-ul}
+Deuxième onglet. L'icône `.bi-list-ul` est extraite de la classe du Header
+et placée avant le label dans le `<button>` Bootstrap.
+
+##### Code {.bi-code-slash}
+```python
+# Les blocs de code s'affichent normalement dans les onglets.
+def entrainement(lr=0.01, epochs=10):
+    for e in range(epochs):
+        print(f"Epoch {e+1}/{epochs}")
+```
+::::
+
+### Classes spéciales sur les Headers de tabs
+
+| Classe         | Effet                                                       |
+|:---------------|:------------------------------------------------------------|
+| `.tab-right`   | Pousse l'onglet à droite avec `ms-auto`                     |
+| `.search-bar`  | Rend le Header comme un champ de recherche inline           |
+| `.no-pane`     | Onglet sans panneau de contenu (contrôle pur)               |
+| `.btn` `.button` | Rend le Header comme un bouton d'action                   |
+| `.slider`      | Rend le Header comme un slider inline                       |
+
+### Onglet droit + barre de recherche
+
+Le dernier onglet `.tab-right` reçoit `ms-auto` pour s'aligner à droite.
+La classe `.no-pane` supprime la création d'un panneau de contenu, ce qui est
+nécessaire pour les contrôles (search-bar, boutons) qui ne sont pas des vues.
+
+```markdown
+:::: {.tabs}
+##### Résultats {.bi-bar-chart}
+Contenu principal.
+
+##### [Filtrer…]{.search-bar #tab-search .bi-search placeholder="Rechercher…"} {.tab-right .no-pane}
+::::
+```
+
+:::: {.tabs}
+##### Résultats {.bi-bar-chart}
+Contenu affiché dans le panneau principal.
+
+##### Aide {.bi-question-circle}
+Documentation ou aide contextuelle dans un onglet secondaire.
+
+##### [Filtrer…]{.search-bar #tab-search .bi-search placeholder="Rechercher…"} {.tab-right .no-pane}
+::::
+
+### Onglets dans une carte
+
+Les onglets s'intègrent naturellement dans `.card-window`. Le CSS de `tabs`
+détecte ce contexte et retire la marge, la bordure et l'ombre redondantes.
+
+```markdown
+::: {.card-window}
+#### Simulateur {.bi-cpu}
+
+:::: {.tabs}
+##### Paramètres {.bi-sliders}
+Contenu…
+
+##### Vue {.bi-eye}
+Contenu…
+::::
+:::
+```
+
+::: {.card-window}
+#### Simulateur interactif {.bi-cpu}
+
+:::: {.tabs}
+##### Paramètres {.bi-sliders}
+Ajustez les paramètres ci-dessous. Les valeurs sont liées à OJS
+et mettent à jour les visualisations en temps réel.
+
+- [Loss]{.slider #demo-loss value=42 min=0 max=100}
+- [Précision]{.slider #demo-acc value=0.7 min=0 max=1 step=0.1}
+- [Époques]{.number #demo-epochs value=10 min=1 max=200}
+
+##### Métriques {.bi-activity}
+Valeurs actuelles lues depuis les inputs de l'onglet Paramètres :
+
+:::: {.metrics}
+| Loss              | Précision         | Époques             |
+| :---------------- | :---------------- | :------------------ |
+| [demo-loss]{.val} | [demo-acc]{.val}  | [demo-epochs]{.val} |
+::::
+
+##### Terminal {.bi-terminal}
+::: {.terminal}
+Après **${demo-epochs}** époques — loss: **${demo-loss}** — acc: **${demo-acc}**
+:::
+
+::::
+:::
+
+---
+
+## Inputs réactifs — `aptitek/ojs-inputs`
+
+Le filtre `ojs-inputs` parcourt l'AST Pandoc et transforme les **Spans** portant
+des classes spéciales en éléments `<input>` HTML natifs. Pour chaque input trouvé,
+il génère automatiquement le code Observable JS suivant :
+
+```js
+// Pour les inputs standard :
+monId = Generators.input(document.getElementById('mon-id'))
+
+// Pour les boutons :
+monBtn = Generators.observe(change => {
+  let clicked = 0;
+  const el = document.getElementById('mon-btn');
+  el.addEventListener('click', cb = e => { e.preventDefault(); change(++clicked); });
+  change(clicked);
+  return () => el.removeEventListener('click', cb);
+})
+```
+
+Les tirets `-` dans les IDs sont convertis en `_` pour les noms de variables OJS.
+
+### Syntaxe générale
+
+```markdown
+[Label affiché]{.type-input #mon-id attributs-html...}
+```
+
+Le **label** est le contenu du Span. L'`#id` devient le nom de variable OJS.
+Les attributs contrôlent les options de l'input (`value`, `min`, `max`, etc.).
+
+### Tous les types d'inputs
+
+::: {.card-window}
+#### Catalogue des inputs {.bi-sliders2}
+
+**Slider horizontal** — `.slider` avec `value`, `min`, `max`, `step` :
+
+- [Seuil de décision]{.slider #inp-seuil value=65 min=0 max=100}
+- [Taux d'apprentissage]{.slider #inp-lr value=0.01 min=0 max=0.1 step=0.001}
+
+**Slider vertical** — ajouter `vertical=true` ou la classe `.vertical` :
+
+- [Gauche]{.slider #inp-vert-g value=30 vertical=true}
+- [Droite]{.slider #inp-vert-d value=70 vertical=true}
+
+**Nombre** — `.number` avec `min`, `max`, `step` :
+
+- [Époques]{.number #inp-epochs value=10 min=1 max=500}
+- [Batch size]{.number #inp-batch value=32 min=1 step=8}
+
+**Texte** — `.text` avec `value` pour une valeur par défaut :
+
+- [Nom du modèle]{.text #inp-name value="modele-v1"}
+
+**Zone de texte** — `.textarea` avec `rows` :
+
+- [Description]{.textarea #inp-desc rows=3}
+
+**Liste déroulante** — `.select` avec `options="A,B,C"` et `value` pour la sélection :
+
+- [Optimiseur]{.select #inp-optim options="SGD,Adam,RMSprop,AdaGrad" value="Adam"}
+- [Activation]{.select #inp-activ options="relu,sigmoid,tanh,softmax" value="relu"}
+
+**Couleur** — `.color` avec `value` en hexadécimal :
+
+- [Couleur primaire]{.color #inp-color value="#268bd2"}
+
+**Date** — `.date` avec `value` en format `YYYY-MM-DD` :
+
+- [Date de début]{.date #inp-date value="2024-01-01"}
+
+**Case à cocher** — `.checkbox` ou `.toggle`, ajouter `.checked` ou `checked=true` pour cocher :
+
+- [Régularisation L2]{.checkbox #inp-reg}
+- [Dropout activé]{.checkbox #inp-drop checked=true}
+
+**Bouton** — `.button` ou `.btn`, le contenu est le label du bouton :
+
+- [Réinitialiser]{.button #inp-reset}
+- [Lancer l'entraînement]{.btn .bi-play-fill #inp-run}
+
+:::
+
+### Affichage réactif des valeurs
+
+Deux syntaxes génèrent un `<span class="val ojs-inline-value" data-expr="var">` :
+
+**`${variable}`** — interpolation inline dans tout texte courant :
+
+```markdown
+Optimiseur : ${inp-optim}. Activation : ${inp-activ}. Époques : ${inp-epochs}.
+```
+
+Optimiseur : ${inp-optim}. Activation : ${inp-activ}. Époques : ${inp-epochs}.
+
+**`[id]{.val}`** — span explicite ; l'attribut `for` permet de cibler un ID différent :
+
+```markdown
+Le seuil est [inp-seuil]{.val} et le batch est [inp-batch]{.val}.
+```
+
+Le seuil est [inp-seuil]{.val} et le batch est [inp-batch]{.val}.
+
+### Composant `.metrics`
+
+`.metrics` habille un tableau Markdown en métriques grand format colorées.
+La première colonne est accentuée en `--accent-primary`, les suivantes suivent
+`--accent-success`, `--accent-warning`, `--accent-danger`. Les cellules
+`[id]{.val}` sont réactives.
+
+```markdown
+:::: {.metrics}
+| Perte          | Précision        | Époques           |
+| :------------- | :--------------- | :---------------- |
+| [inp-seuil]{.val} | [inp-lr]{.val} | [inp-epochs]{.val} |
+::::
+```
+
+:::: {.metrics}
+| Perte             | Précision       | Époques             |
+| :---------------- | :-------------- | :------------------ |
+| [inp-seuil]{.val} | [inp-lr]{.val}  | [inp-epochs]{.val}  |
+::::
+
+### Import de module OJS
+
+La syntaxe `[import #id](chemin.js)` injecte un `<div id="id">` dans le DOM
+et génère le code OJS `id_var = import("chemin.js")`. Utilisez ensuite les
+exports du module dans vos blocs `{ojs}`.
+
+```markdown
+[import #mon-module](./assets/js/custom/text.js)
+```
+
+---
+
+## Icônes — `aptitek/bi-icons`
+
+Le filtre `bi-icons` extrait la **première classe `bi-*`** d'un élément Pandoc
+et injecte `<i class="bi bi-nom" aria-hidden="true"></i>` dans son contenu au
+moment de la compilation, sans JS. Cela fonctionne dans les titres, spans et divs.
+
+### Sur les titres
+
+Tout niveau de titre accepte une classe `bi-*`. L'icône est placée avant le texte.
+Ceci fonctionne aussi dans les en-têtes `.card-window` et les onglets `.tabs`.
+
+```markdown
+## Mon titre {.bi-hash}
+#### En-tête de carte {.bi-stars}
+##### Onglet {.bi-cpu}
+```
+
+### Sur les spans
+
+```markdown
+[Texte avec icône]{.bi-exclamation-circle}   → icône + texte dans un span
+[]{.bi-arrow-right-circle-fill}              → icône seule (span vide)
+```
+
+Exemple inline : [Attention]{.bi-exclamation-circle} ce paramètre est critique.
+
+Flèche de navigation : []{.bi-arrow-right-circle-fill}
+
+Badge : [Nouveau]{.bi-stars}
+
+### Barre de recherche — `{.search-bar}`
+
+La combinaison `.search-bar` + `.bi-*` + `#id` génère un `<input type="text">`
+stylisé avec l'icône comme préfixe. L'attribut `placeholder` est supporté.
+
+```markdown
+[]{.search-bar .bi-search #recherche-1 placeholder="Rechercher…"}
+[valeur]{.search-bar .bi-keyboard #saisie-1 placeholder="Entrez une valeur…"}
+```
+
+[]{.search-bar .bi-search #recherche-1 placeholder="Rechercher dans le module…"}
+
+### Boutons — `{.btn}` ou `{.button}`
+
+Ces classes génèrent un `<button class="btn-tab-action">`. L'icône `.bi-*` est
+optionnelle. Utilisés typiquement dans les barres d'actions des onglets.
+
+```markdown
+[Lancer]{.btn .bi-play-fill #btn-demo-1}
+[Exporter]{.button .bi-download #btn-demo-2}
+[]{.btn .bi-arrow-clockwise #btn-demo-3}   ← bouton icône seule
+```
+
+[Lancer]{.btn .bi-play-fill #btn-demo-1} [Exporter]{.button .bi-download #btn-demo-2} []{.btn .bi-arrow-clockwise #btn-demo-3}
+
+---
+
+## Grille — `aptitek/grid`
+
+### Grille explicite `.row` + `.col`
+
+Enveloppez des blocs `.col` dans un bloc `.row`. Le filtre calcule
+automatiquement les classes Bootstrap selon le nombre de colonnes détectées :
+
+| Colonnes | Classes appliquées            |
+|:--------:|:------------------------------|
+| 1        | `col-12`                      |
+| 2        | `col-12 col-md-6`             |
+| 3        | `col-12 col-md-4`             |
+| 4        | `col-12 col-md-6` (grille 2×2) |
+| ≥ 5      | `col-12 col-md-4 col-lg-3`   |
+
+```markdown
+::: {.row}
+:::: {.col}
+Contenu colonne 1.
+::::
+:::: {.col}
+Contenu colonne 2.
+::::
+:::: {.col}
+Contenu colonne 3.
+::::
+:::
+```
+
+::: {.row}
+:::: {.col}
+::::: {.card-window}
+##### Colonne A {.bi-1-circle}
+Première colonne — largeur 1/3 sur écran ≥ 768 px.
+:::::
+::::
+:::: {.col}
+::::: {.card-window}
+##### Colonne B {.bi-2-circle}
+Deuxième colonne — même largeur automatique.
+:::::
+::::
+:::: {.col}
+::::: {.card-window}
+##### Colonne C {.bi-3-circle}
+Troisième colonne — empilées sur mobile.
+:::::
+::::
+:::
+
+### Grille automatique `.grid`
+
+Le filtre enveloppe tous les enfants directs dans une `.row` avec des colonnes
+équilibrées. Les classes `g-col-*` sont traduites en `col-*`.
+
+```markdown
+::: {.grid}
+Bloc 1
+
+Bloc 2
+:::
+```
+
+### Tableau Markdown → grille
+
+Un tableau standard portant la classe `.grid` est converti en grille responsive,
+chaque cellule devenant une colonne Bootstrap.
+
+```markdown
+| Titre A     | Titre B     |
+| :---------- | :---------- |
+| Contenu A1  | Contenu B1  |
+{.grid}
+```
+
+---
+
+## Iframes — `aptitek/embed`
+
+Le filtre `embed` convertit un lien portant la classe `.embed` en `<iframe>`
+enveloppé dans un `.ratio-embed` pour un ratio 16:9 responsive.
+
+```markdown
+[Titre de l'iframe](https://example.com){.embed}
+```
+
+---
+
+## Graphiques Plotly — `createBar` · `createLine` · `createFunnel` · `createPiramid`
+
+Les fonctions Plotly sont exposées dans OJS via le bridge `aptitek`. Elles
+suivent toutes le même patron :
+
+```js
+createX(containerId, data, title?, options?)
+```
+
+**Règles d'ID importantes :**
+- `createBar`, `createLine`, `createFunnel`, `createPiramid` → ID **sans** `#`
+  (transmis directement à `Plotly.newPlot`)
+- `createWordCloud` → ID **sans** `#`
+- `renderStateMachineGraph`, `createGraph` → ID **avec** `#` (sélecteur CSS)
+
+Le conteneur doit être déclaré dans le DOM **avant** le bloc `{ojs}` qui l'utilise.
+Utilisez un `:::` avec un `#id` et une hauteur explicite :
+
+```markdown
+::: {#mon-graphe style="height: 300px;"}
+:::
+
+```{ojs}
+render = { createLine("mon-graphe", { x: [...], y: [...] }, "Titre") }
+```
+```
+
+### Courbe — `createLine`
+
+`createLine` appelle `Plotly.newPlot` avec `type: 'scatter'` et `mode: 'lines+markers'`.
+Lié aux inputs de la section précédente pour montrer la réactivité OJS.
+
+::: {#demo-line style="height:280px;"}
+:::
+
+```{ojs}
+renderLine = {
+  inp_epochs;
+  const n = Math.max(2, inp_epochs);
+  const xs = Array.from({ length: n + 1 }, (_, i) => i);
+  const ys = xs.map(i => 1 / (1 + Math.exp(-0.4 * (i - n / 2))));
+  createLine("demo-line", { x: xs, y: ys }, "Courbe sigmoïde (${inp-epochs} points)", {
+    shape: "spline",
+    line: { color: getThemeColor("--sol-blue", "#268bd2") },
+    lineWidth: 3,
+    layout: {
+      margin: { t: 45, b: 40, l: 50, r: 20 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent"
+    }
+  });
+}
+```
+
+### Barres — `createBar`
+
+::: {#demo-bar style="height:260px;"}
+:::
+
+```{ojs}
+renderBar = {
+  createBar("demo-bar",
+    {
+      x: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"],
+      y: [12, 19, 8, 24, 17]
+    },
+    "Activité hebdomadaire",
+    {
+      marker: { color: getThemeColor("--sol-green", "#859900") },
+      layout: {
+        margin: { t: 45, b: 40, l: 50, r: 20 },
+        paper_bgcolor: "transparent",
+        plot_bgcolor: "transparent"
+      }
+    }
+  )
+}
+```
+
+### Entonnoir et pyramide côte à côte
+
+::: {.row}
+:::: {.col}
+::::: {#demo-funnel style="height:260px;"}
+:::::
+::::
+:::: {.col}
+::::: {#demo-pyramid style="height:260px;"}
+:::::
+::::
+:::
+
+```{ojs}
+renderFunnel = {
+  createFunnel("demo-funnel",
+    {
+      text: ["Données brutes", "Nettoyage", "Modélisation", "Résultat final"],
+      values: [100, 78, 52, 31]
+    },
+    {
+      colors: [
+        getThemeColor("--sol-blue",   "#268bd2"),
+        getThemeColor("--sol-cyan",   "#2aa198"),
+        getThemeColor("--sol-green",  "#859900"),
+        getThemeColor("--sol-yellow", "#b58900")
+      ]
+    }
+  )
+}
+
+renderPyramid = {
+  createPiramid("demo-pyramid",
+    {
+      text: ["Bronze", "Argent", "Or", "Platine"],
+      values: [80, 55, 30, 10]
+    },
+    {
+      colors: [
+        getThemeColor("--sol-base01", "#586e75"),
+        getThemeColor("--sol-base0",  "#839496"),
+        getThemeColor("--sol-yellow", "#b58900"),
+        getThemeColor("--sol-cyan",   "#2aa198")
+      ]
+    }
+  )
+}
+```
+
+**Options communes** aux fonctions Plotly :
+
+| Option                    | Valeur                                         |
+|:--------------------------|:-----------------------------------------------|
+| `options.layout`          | Objet Plotly layout (marges, fond, axes…)      |
+| `options.marker.color`    | Couleur des barres / points                    |
+| `options.line.color`      | Couleur de la courbe (`createLine`)            |
+| `options.shape`           | `"spline"` \| `"linear"` \| `"hv"` (`createLine`) |
+| `options.lineWidth`       | Épaisseur de la courbe                         |
+| `options.markerSize`      | Taille des marqueurs (0 pour les masquer)      |
+| `options.colors`          | Tableau de couleurs (`createFunnel`, `createPiramid`) |
+
+Utilisez toujours `getThemeColor("--sol-variable", "#fallback")` pour les
+couleurs afin de rester cohérent avec le thème Solarized.
+
+---
+
+## Réseaux — `createWordCloud` · `renderStateMachineGraph`
+
+### Nuage de mots — `createWordCloud`
+
+```js
+// createWordCloud(containerIdSansHash, words, options)
+// options : { radius, maxSpeed, initSpeed, keep }
+```
+
+::: {#demo-wc style="height:220px;"}
+:::
+
+```{ojs}
+renderWordCloud = {
+  createWordCloud("demo-wc",
+    ["Neurone", "Réseau", "Gradient", "Poids", "Biais",
+     "Activation", "Dropout", "Batch", "Époque", "Loss",
+     "Précision", "Tenseur", "Backprop", "Softmax", "GPU"],
+    { radius: 85, maxSpeed: "slow", initSpeed: "slow" }
+  )
+}
+```
+
+### Machine à états — `renderStateMachineGraph`
+
+`renderStateMachineGraph` est un wrapper de `createGraph` avec des styles de
+statuts prédéfinis pour les machines à états. Il gère le Canvas 2D, les flèches,
+les particules et les labels de liens.
+
+```js
+// renderStateMachineGraph(sélecteurCSSavecHash, { nodes, links }, options)
+```
+
+**Statuts de nœuds prédéfinis :**
+
+| Statut      | Rendu visuel                                         |
+|:------------|:-----------------------------------------------------|
+| `"entry"`   | Fond bleu clair — état initial                       |
+| `"current"` | Fond jaune, pulsation, particules — état actif       |
+| `"past"`    | Fond vert, particules fluides — état parcouru        |
+| (défaut)    | Fond neutre — état inactif                           |
+
+**Formes de nœuds (`shape`) disponibles :**
+`"circle"` · `"square"` · `"rect"` · `"rounded rect"` · `"pill"` · `"oval"` · `"diamond"`
+
+**Attributs des liens :**
+
+```js
+{
+  source: "nodeId",        // ID source (string ou objet résolu)
+  target: "nodeId",        // ID cible
+  label: "texte",          // Label affiché au milieu du lien
+  condition: true,         // Badge "Vrai" / "Faux" sur la flèche
+  condition: {             // Badge personnalisé
+    value: true,
+    label: "x > 0"
+  },
+  status: "current"        // Style du lien (mêmes valeurs que les nœuds)
+}
+```
+
+::: {#demo-sm style="height:340px;"}
+:::
+
+```{ojs}
+smNodes = [
+  { id: "S0", label: "Début",    status: "entry",   shape: "circle"       },
+  { id: "S1", label: "Lecture",  status: "past",    shape: "rounded rect" },
+  { id: "S2", label: "Calcul",   status: "current", shape: "rounded rect" },
+  { id: "S3", label: "Écriture", status: "default", shape: "rounded rect" },
+  { id: "S4", label: "Fin",      status: "default", shape: "diamond"      }
+]
+
+smLinks = [
+  { source: "S0", target: "S1", label: "init"                              },
+  { source: "S1", target: "S2", label: "données",  condition: true         },
+  { source: "S1", target: "S4", label: "vide",     condition: false        },
+  { source: "S2", target: "S3", label: "résultat"                          },
+  { source: "S3", target: "S1", label: "boucle",   condition: { value: true, label: "encore" } },
+  { source: "S3", target: "S4", label: "fini"                              }
+]
+
+renderSM = renderStateMachineGraph("#demo-sm", { nodes: smNodes, links: smLinks }, {
+  nodeRadius: 22,
+  fontSize: 9,
+  enableZoom: false,
+  enablePan: false,
+  zoomToFit: true,
+  zoomToFitPadding: 50,
+  height: 340
+})
+```
+
+### Personnalisation des styles via `createGraph`
+
+Pour des styles arbitraires, utilisez `createGraph` directement avec `options.styles`.
+Chaque clé de `styles` est un statut personnalisé :
+
+```js
+createGraph("#conteneur", { nodes, links }, {
+  nodeRadius: 20,
+  styles: {
+    default: {
+      nodeBg:       "var(--sol-base3)",
+      nodeBorder:   "var(--sol-base01)",
+      nodeText:     "var(--sol-base00)",
+      linkStroke:   "var(--sol-base1)",
+      linkText:     "var(--sol-base01)",
+      particles:    0,
+      particleColor: "var(--sol-base1)",
+      particleWidth: 2,
+      particleSpeed: 0.01
+    },
+    actif: {
+      nodeBg:       "rgba(38, 139, 210, 0.15)",
+      nodeBorder:   "var(--sol-blue)",
+      nodeText:     "var(--sol-blue)",
+      linkStroke:   "var(--sol-blue)",
+      particles:    3,
+      particleColor: "var(--sol-blue)",
+      particleSpeed: 0.02
+    }
+  },
+  onNodeClick: (node, event) => { console.log(node.id); }
+})
+```

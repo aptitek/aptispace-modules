@@ -5,6 +5,7 @@ _site
 .jupyterlite.doit.db
 **/*.pyc
 /fonts/
+/assets/fonts/
 bin/act
 lab/**/*.html
 *.min.js

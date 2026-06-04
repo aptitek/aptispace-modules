@@ -1,3 +1,13 @@
+:root {
+    --card-bg: var(--sol-base3);
+    --card-border: rgba(var(--sol-base01-rgb), 0.12);
+    --card-shadow: 0 4px 12px rgba(var(--sol-base03-rgb), 0.03);
+    --card-shadow-hover: 0 8px 24px rgba(var(--sol-base03-rgb), 0.05);
+    --card-border-hover: rgba(var(--sol-base1-rgb), 0.4);
+    --card-header-bg: var(--sol-base2);
+    --card-header-border: rgba(var(--sol-base01-rgb), 0.08);
+}
+
 .card-window {
     --card-window-bg: var(--card-bg);
     --card-window-border: var(--card-border);
@@ -68,12 +78,16 @@
 }
 
 .terminal {
-    border: 1px solid rgba(var(--sol-base01-rgb), 0.25) !important;
+    border: 1px solid rgba(var(--sol-cyan-rgb), 0.28) !important;
     border-radius: 8px !important;
-    background-color: var(--sol-base03) !important;
+    background:
+        linear-gradient(rgba(var(--sol-base02-rgb), 0.92), rgba(var(--sol-base03-rgb), 0.98)),
+        var(--sol-base03) !important;
     box-shadow: 0 8px 32px rgba(var(--sol-base03-rgb), 0.35) !important;
-    color: var(--sol-green);
+    color: var(--sol-base1);
     font-family: var(--font-code) !important;
+    font-variation-settings: "MONO" 1, "CASL" 0.2, "wght" 520;
+    line-height: 1.55;
     overflow: hidden !important;
     position: relative !important;
 
@@ -86,6 +100,68 @@
     .card-body {
         background-color: var(--sol-base03);
     }
+}
+
+.terminal:not(:has(> .card-header)) {
+    padding: 2.25rem 1rem 1rem;
+}
+
+.terminal:not(:has(> .card-header))::before {
+    content: "aptitek terminal";
+    position: absolute;
+    inset: 0 0 auto;
+    min-height: 1.65rem;
+    padding: 0.35rem 1rem 0.35rem 3.5rem;
+    border-bottom: 1px solid rgba(var(--sol-base01-rgb), 0.18);
+    background-color: rgba(var(--sol-base02-rgb), 0.96);
+    color: var(--sol-base1);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.terminal:not(:has(> .card-header))::after {
+    content: "";
+    position: absolute;
+    top: 0.75rem;
+    left: 1rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--sol-red);
+    box-shadow: 14px 0 0 var(--sol-yellow), 28px 0 0 var(--sol-green);
+    opacity: 0.9;
+}
+
+.terminal > p,
+.terminal .card-body > p {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    border-right: 2px solid var(--sol-cyan);
+    color: var(--sol-green);
+    white-space: nowrap;
+    animation:
+        terminal-type 2.6s steps(72, end) both,
+        terminal-caret 0.8s step-end infinite;
+}
+
+.terminal > p::before,
+.terminal .card-body > p::before {
+    content: "› ";
+    color: var(--sol-cyan);
+    font-weight: 700;
+}
+
+.terminal strong,
+.terminal .val {
+    color: var(--sol-yellow);
+}
+
+.terminal.output {
+    margin: 1rem 0;
 }
 
 .terminal-header-title {
@@ -117,5 +193,26 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes terminal-type {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes terminal-caret {
+    from,
+    to {
+        border-color: transparent;
+    }
+
+    50% {
+        border-color: var(--sol-cyan);
     }
 }

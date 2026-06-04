@@ -10,7 +10,7 @@ else
   BASE_DIR="."
 fi
 
-FONT_DIR="$BASE_DIR/fonts"
+FONT_DIR="$BASE_DIR/assets/fonts"
 FONT_FILE="$FONT_DIR/Recursive_VF_1.085.ttf"
 
 if [ ! -f "$FONT_FILE" ]; then
