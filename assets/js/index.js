@@ -39,7 +39,8 @@ export {
   loadInlineSvg,
   bindSvgElements,
   bindSvgToTabs,
-  applySvgState
+  applySvgState,
+  initInteractiveSvg
 } from "./svg.js";
 
 export {

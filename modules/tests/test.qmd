@@ -332,7 +332,7 @@ _ramTabWatcher = {
 ```
 
 ```{ojs}
-viewof rawInput = document.querySelector("#rawInput")
+rawInput = Generators.input(document.getElementById('rawInput'))
 ```
 
 :::: {.ram-motherboard}
@@ -389,8 +389,6 @@ Le stockage **Orienté Colonne** est le standard de la Data Science moderne (Dat
 ::::
 
 ```{ojs}
-initTabActions()
-
 mutable storageMode = "ligne"
 
 _ramStorageTabWatcher = {
@@ -535,12 +533,48 @@ Tout en haut de la pyramide, les registres internes du cœur traitent les donné
 ::::
 
 ```{ojs}
-initMobo = initMoboSvg("#motherboard-view")
+moboComponent = aptitek.initInteractiveSvg("#motherboard-view", {
+  tabsetSelector: ".mobo-tabset",
+  tabElementMap: {
+    "part-ssd": "SSD",
+    "part-ram": "RAM",
+    "cpu-l3": "Cache L3",
+    "cpu-core-0": "Caches L2 & L1",
+    "cpu-core-1": "Caches L2 & L1",
+    "cpu-core-2": "Caches L2 & L1",
+    "cpu-core-3": "Caches L2 & L1",
+    "register": "Registres"
+  },
+  states: ["ssd", "ram", "l3", "l2_l1", "cpu_reg"],
+  elementClasses: {
+    "part-ssd": ["highlight-blue"],
+    "part-ram": ["highlight-green"],
+    "cpu-l3": ["highlight-red"],
+    "cpu-core-0": ["highlight-cyan"],
+    "cpu-core-1": ["highlight-cyan"],
+    "cpu-core-2": ["highlight-cyan"],
+    "cpu-core-3": ["highlight-cyan"],
+    "register": ["highlight-violet"]
+  },
+  activeElementMap: {
+    ssd: ["part-ssd"],
+    ram: ["part-ssd", "part-ram"],
+    l3: ["part-ram", "cpu-l3"],
+    l2_l1: ["cpu-l3", "cpu-core-0", "cpu-core-1", "cpu-core-2", "cpu-core-3"],
+    cpu_reg: ["cpu-core-0", "cpu-core-1", "cpu-core-2", "cpu-core-3", "register"]
+  },
+  flowMap: {
+    ram: ["bus-ssd-chipset", "bus-chipset-ram"],
+    l3: ["bus-ram-chipset", "bus-chipset-ram", "bus-chipset-cpu", "bus-ram-cpu"],
+    l2_l1: ["bus-cpu-internal", "bus-cpu-internal-6"],
+    cpu_reg: ["bus-cpu-internal-6-5"]
+  }
+})
 
 mutable hardwareState = "ssd"
 
 _moboTabWatcher = {
-  const w = createTabsetWatcher(
+  const w = aptitek.createTabsetWatcher(
     ".mobo-tabset",
     { "SSD": "ssd", "RAM": "ram", "Cache L3": "l3", "Caches L2 & L1": "l2_l1", "Registres": "cpu_reg" },
     (val) => { mutable hardwareState = val; }
@@ -550,18 +584,7 @@ _moboTabWatcher = {
 }
 
 updateMotherboardUI = {
-  initMobo;
-  bindSvgToTabset("#motherboard-view", ".mobo-tabset", {
-    "part-ssd": "SSD",
-    "part-ram": "RAM",
-    "cpu-l3": "Cache L3",
-    "cpu-core-0": "Caches L2 & L1",
-    "cpu-core-1": "Caches L2 & L1",
-    "cpu-core-2": "Caches L2 & L1",
-    "cpu-core-3": "Caches L2 & L1",
-    "register": "Registres"
-  });
-  renderMobo(hardwareState);
+  moboComponent.update(hardwareState);
 }
 ```
 :::
@@ -596,15 +619,7 @@ testSmGraph = {
     { source: "C", target: "D", label: "validation_2", status: "default" }
   ];
 
-  const graphData = { nodes, links };
-
-  const resetGraph = () => {
-    nodes.forEach(n => { n.status = n.id === "A" ? "entry" : "default"; });
-    links.forEach(l => { l.status = "default"; });
-    graph.graphData({ nodes, links });
-  };
-
-  const graph = renderStateMachineGraph("#test-sm-graph", graphData, {
+  const graph = renderStateMachineGraph("#test-sm-graph", { nodes, links }, {
     width: 600,
     height: 300,
     nodeRadius: 20,
@@ -652,7 +667,25 @@ testSmGraph = {
     }
   });
 
-  resetGraph();
+  const resetGraph = () => {
+    nodes.forEach(n => { n.status = n.id === "A" ? "entry" : "default"; });
+    links.forEach(l => { l.status = "default"; });
+    graph.graphData({ nodes, links });
+  };
+
+  const updateBtn = (isPlaying) => {
+    const btn = document.getElementById("btn-sm-start");
+    if (!btn) return;
+    if (isPlaying) {
+      btn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+      btn.classList.add("btn-danger");
+      btn.classList.remove("btn-success");
+    } else {
+      btn.innerHTML = '<i class="bi bi-play-fill"></i> Lancer SM';
+      btn.classList.add("btn-success");
+      btn.classList.remove("btn-danger");
+    }
+  };
 
   const steps = [
     { activeNode: "A", activeLink: null, pastNodes: [], pastLinks: [] },
@@ -685,53 +718,38 @@ testSmGraph = {
 
       if (index === steps.length - 1) {
         setTimeout(() => {
-          playing = false;
-          if (btn) {
-            btn.innerHTML = '<i class="bi bi-play-fill"></i> Lancer SM';
-            btn.classList.add("btn-success");
-            btn.classList.remove("btn-danger");
-          }
           sm.stop();
           sm.currentIndex = 0;
           resetGraph();
+          updateBtn(false);
         }, 1200);
       }
     }
   });
 
-  const btn = document.querySelector("#btn-sm-start");
-  let playing = false;
-
-  const handleToggle = () => {
-    playing = !playing;
-    if (playing) {
-      btn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
-      btn.classList.add("btn-danger");
-      btn.classList.remove("btn-success");
-      sm.start();
-    } else {
-      btn.innerHTML = '<i class="bi bi-play-fill"></i> Lancer SM';
-      btn.classList.add("btn-success");
-      btn.classList.remove("btn-danger");
-      sm.stop();
-      sm.currentIndex = 0;
-      resetGraph();
-    }
-  };
-
-  if (btn) {
-    btn.innerHTML = '<i class="bi bi-play-fill"></i> Lancer SM';
-    btn.classList.add("btn-success");
-    btn.addEventListener("click", handleToggle);
-  }
+  resetGraph();
+  updateBtn(false);
 
   invalidation.then(() => {
     sm.stop();
-    if (btn) btn.removeEventListener("click", handleToggle);
     if (graph && graph.destroy) graph.destroy();
   });
 
-  return graph;
+  return { graph, sm, resetGraph, updateBtn };
+}
+
+_smToggle = {
+  if (btn_sm_start === 0) return;
+  const { sm, resetGraph, updateBtn } = testSmGraph;
+  if (sm.isPlaying) {
+    sm.stop();
+    sm.currentIndex = 0;
+    resetGraph();
+    updateBtn(false);
+  } else {
+    sm.start();
+    updateBtn(true);
+  }
 }
 ```
 
@@ -775,17 +793,11 @@ Flux de Tokens (Capsules)
 ::::
 
 ```{ojs}
-viewof customTextInput = document.querySelector("#customTextInput")
+customTextInput = Generators.input(document.getElementById('customTextInput'))
 ```
 
 ```{ojs}
 tokenWidget = {
-  let container = document.querySelector("#test-token-stream");
-  for (let i = 0; i < 20 && !container; i++) {
-    await Promises.delay(100);
-    container = document.querySelector("#test-token-stream");
-  }
-
   const details = document.querySelector("#token-inspector-details");
   if (details) {
     details.style.setProperty("--inspector-color", "var(--sol-base01)");
@@ -798,7 +810,7 @@ tokenWidget = {
     });
   }
 
-  const widget = createLabeledText(container || "#test-token-stream", {
+  const widget = createLabeledText("#test-token-stream", {
     text: "L'IA comprend-elle le mot anticonstitutionnellement ? 🤔",
     onTokenClick: (tok, idx) => {
       const d = document.querySelector("#token-inspector-details");
@@ -820,9 +832,8 @@ tokenWidget = {
 }
 
 updateWidgetInput = {
-  const text = customTextInput;
   if (tokenWidget && typeof tokenWidget.update === "function") {
-    tokenWidget.update(text);
+    tokenWidget.update(customTextInput);
   }
   return null;
 }

@@ -187,6 +187,18 @@ function Div(el)
     end
     table.insert(final_blocks, content_end)
     
-    return pandoc.Div(final_blocks, {class = "panel-tabset tabset-container"})
+    -- Replace 'tabs' and 'bootstrap-tabs' classes with 'panel-tabset' and 'tabset-container'
+    local new_classes = {}
+    for _, cls in ipairs(el.classes) do
+      if cls ~= "tabs" and cls ~= "bootstrap-tabs" then
+        table.insert(new_classes, cls)
+      end
+    end
+    table.insert(new_classes, "panel-tabset")
+    table.insert(new_classes, "tabset-container")
+    
+    el.content = final_blocks
+    el.classes = new_classes
+    return el
   end
 end

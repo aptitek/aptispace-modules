@@ -1,0 +1,229 @@
+/* ==========================================================================
+   SIMULATEUR CARTE MÈRE & COMPOSANTS SVG INTERACTIFS
+   ========================================================================== */
+
+/* Conteneur principal de la carte mère et ratio d'aspect */
+.motherboard-view {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 2 / 1; /* Garde le ratio 800x400 fluide sur mobile et desktop */
+}
+
+/* Style de base des composants PCB et des bus */
+.mobo-part {
+    fill: var(--sol-base03);
+    stroke: var(--sol-base01);
+    stroke-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.mobo-bus {
+    fill: none;
+    stroke: var(--sol-base01) !important;
+    stroke-width: 2px !important;
+    stroke-dasharray: 5 5 !important; /* Pointillés par défaut */
+    opacity: 0.22 !important; /* Très discret comme de vraies pistes de circuit imprimé */
+    transition: all 0.3s ease;
+}
+
+/* Tiers internes du CPU et structures de cache */
+.cpu-die {
+    fill: transparent;
+    stroke: var(--sol-base01);
+    stroke-width: 1.5px;
+    transition: all 0.3s ease;
+}
+
+.cpu-core {
+    fill: var(--sol-base03);
+    stroke: var(--sol-base01);
+    stroke-width: 1px;
+    transition: all 0.3s ease;
+}
+
+.cpu-l3-region {
+    fill: var(--sol-base02);
+    stroke: var(--sol-base01);
+    stroke-width: 1px;
+    transition: all 0.3s ease;
+}
+
+.cpu-l1-region {
+    fill: var(--sol-base03);
+    stroke: var(--sol-base01);
+    stroke-width: 1px;
+    transition: all 0.3s ease;
+}
+
+.cpu-reg-region {
+    fill: var(--sol-base03);
+    stroke: var(--sol-base01);
+    stroke-width: 1px;
+    transition: all 0.3s ease;
+}
+
+/* ========================================================================= */
+/* COMPOSANT GÉNÉRIQUE & INTERACTIF POUR LES SVGS                           */
+/* ========================================================================= */
+
+.dynamic-svg-interactive {
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+    
+    &:hover {
+        filter: brightness(1.15) drop-shadow(0 0 5px rgba(255, 255, 255, 0.25));
+    }
+}
+
+.svg-active-element {
+    transition: all 0.3s ease-in-out;
+    
+    // Bleu (Primary / SSD)
+    &.highlight-blue {
+        &, rect, path, polygon, circle, ellipse {
+            stroke: var(--sol-blue) !important;
+            filter: drop-shadow(0 0 8px color-mix(in srgb, var(--sol-blue) 45%, transparent));
+        }
+    }
+    
+    // Vert (Success / RAM)
+    &.highlight-green {
+        &, rect, path, polygon, circle, ellipse {
+            stroke: var(--sol-green) !important;
+            filter: drop-shadow(0 0 8px color-mix(in srgb, var(--sol-green) 45%, transparent));
+        }
+    }
+    
+    // Rouge (Danger / L3 Cache)
+    &.highlight-red {
+        &, rect, path, polygon, circle, ellipse {
+            fill: color-mix(in srgb, var(--sol-red) 15%, transparent) !important;
+            stroke: var(--sol-red) !important;
+            filter: drop-shadow(0 0 8px color-mix(in srgb, var(--sol-red) 60%, transparent));
+        }
+    }
+    
+    // Cyan (Info / Caches L2)
+    &.highlight-cyan {
+        &, rect, path, polygon, circle, ellipse {
+            fill: color-mix(in srgb, var(--sol-cyan) 25%, transparent) !important;
+            stroke: var(--sol-cyan) !important;
+            filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sol-cyan) 50%, transparent));
+        }
+    }
+    
+    // Jaune (Warning / Caches L1)
+    &.highlight-yellow {
+        &, rect, path, polygon, circle, ellipse {
+            fill: color-mix(in srgb, var(--sol-yellow) 25%, transparent) !important;
+            stroke: var(--sol-yellow) !important;
+            filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sol-yellow) 50%, transparent));
+        }
+    }
+    
+    // Violet (Registers)
+    &.highlight-violet {
+        &, rect, path, polygon, circle, ellipse {
+            fill: color-mix(in srgb, var(--sol-violet) 30%, transparent) !important;
+            stroke: var(--sol-violet) !important;
+            filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sol-violet) 65%, transparent));
+        }
+    }
+}
+
+/* ========================================================================= */
+/* COMPATIBILITÉ RÉTROACTIVE : ÉTATS DE LA CARTE MÈRE                        */
+/* ========================================================================= */
+
+/* State 1: SSD Active */
+.is-active-ssd #part-ssd rect {
+    stroke: var(--sol-blue) !important;
+    filter: drop-shadow(0 0 8px rgba(38, 139, 210, 0.45));
+}
+
+/* State 2: RAM Active */
+.is-active-ram #part-ssd rect {
+    stroke: var(--sol-blue) !important;
+    filter: drop-shadow(0 0 6px rgba(38, 139, 210, 0.45));
+}
+.is-active-ram #part-ram rect {
+    stroke: var(--sol-green) !important;
+    filter: drop-shadow(0 0 8px rgba(133, 153, 0, 0.45));
+}
+
+/* State 3: Cache L3 Active */
+.is-active-l3 #part-ram rect {
+    stroke: var(--sol-green) !important;
+    filter: drop-shadow(0 0 6px rgba(133, 153, 0, 0.45));
+}
+.is-active-l3 #cpu-l3 {
+    fill: color-mix(in srgb, var(--sol-red) 15%, transparent) !important;
+    stroke: var(--sol-red) !important;
+    filter: drop-shadow(0 0 8px rgba(220, 50, 47, 0.6));
+}
+
+/* State 4: Caches L2 & L1 Active (Underscore & Dash) */
+.is-active-l2-l1, .is-active-l2_l1 {
+    #cpu-l3 {
+        fill: color-mix(in srgb, var(--sol-red) 10%, transparent) !important;
+        stroke: var(--sol-red) !important;
+        filter: drop-shadow(0 0 6px rgba(220, 50, 47, 0.45));
+    }
+    #cpu0-l2, #cpu1-l2, #cpu2-l2, #cpu3-l2 {
+        fill: color-mix(in srgb, var(--sol-cyan) 25%, transparent) !important;
+        stroke: var(--sol-cyan) !important;
+        filter: drop-shadow(0 0 6px rgba(42, 161, 152, 0.5));
+    }
+    #cpu0-l1, #cpu1-l1, #cpu2-l1, #cpu3-l1 {
+        fill: color-mix(in srgb, var(--sol-yellow) 25%, transparent) !important;
+        stroke: var(--sol-yellow) !important;
+        filter: drop-shadow(0 0 6px rgba(181, 137, 0, 0.5));
+    }
+}
+
+/* State 5: Registers & CPU execution active (Underscore & Dash) */
+.is-active-cpu-reg, .is-active-cpu_reg {
+    #cpu0-l1, #cpu1-l1, #cpu2-l1, #cpu3-l1 {
+        fill: color-mix(in srgb, var(--sol-yellow) 20%, transparent) !important;
+        stroke: var(--sol-yellow) !important;
+        filter: drop-shadow(0 0 6px rgba(181, 137, 0, 0.5));
+    }
+    #register {
+        fill: color-mix(in srgb, var(--sol-violet) 30%, transparent) !important;
+        stroke: var(--sol-violet) !important;
+        filter: drop-shadow(0 0 6px rgba(108, 113, 196, 0.65));
+    }
+}
+
+/* L'animation magique du flux de données sur les bus */
+.is-flowing {
+    stroke: var(--sol-yellow) !important;
+    stroke-width: 3.5px !important;
+    stroke-dasharray: 8 4 !important;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 5px var(--sol-yellow)) !important;
+    animation: dataFlow 0.5s linear infinite;
+}
+
+@keyframes dataFlow {
+    from { stroke-dashoffset: 16; }
+    to { stroke-dashoffset: 0; }
+}
+
+/* Rangs de profils de performances de mémoires (Sidebar) */
+.perf-level {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    transition: all 0.25s ease-in-out;
+}
+
+.perf-level.active-level {
+    background-color: color-mix(in srgb, var(--sol-blue) 6%, transparent);
+    border-color: color-mix(in srgb, var(--sol-blue) 20%, transparent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}

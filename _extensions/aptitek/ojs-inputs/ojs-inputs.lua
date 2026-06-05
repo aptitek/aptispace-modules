@@ -248,6 +248,109 @@ local function transform_span(el)
     end
   end
 
+  -- 11. Progress Bar (.progressbar / .progress-bar)
+  if has_class(el.classes, 'progressbar') or has_class(el.classes, 'progress-bar') then
+    local id = el.identifier or ""
+    if id == "" then id = "progressbar_" .. tostring(#input_items + 1) end
+    
+    -- Extract properties
+    local val_text = pandoc.utils.stringify(el.content)
+    val_text = string.gsub(val_text, "^%s*(.-)%s*$", "%1")
+    
+    local is_reactive = false
+    local var_name = ""
+    local static_val = 0
+    local is_from_attribute = false
+    
+    -- Check if it's empty, try attributes
+    if val_text == "" then
+      val_text = get_attr(el, "data-progress", "")
+      if val_text == "" then
+        val_text = get_attr(el, "value", "0")
+      end
+      is_from_attribute = true
+    end
+    
+    -- Parse val_text
+    -- 1. Check if it's reactive with ${var}
+    local rx_var = string.match(val_text, "^%${([%a%d%-_]+)%%?}$")
+    if rx_var then
+      is_reactive = true
+      var_name = rx_var
+    else
+      -- 2. Check if it's a number (static)
+      -- Strip trailing % if present
+      local num_str = string.match(val_text, "^([%d%.]+)%%?$")
+      if num_str then
+        local num = tonumber(num_str)
+        if num then
+          if not is_from_attribute and num <= 1.0 and num > 0 then
+            static_val = num * 100
+          else
+            static_val = num
+          end
+        end
+      else
+        -- 3. Check if it's a plain variable name (not a number)
+        -- E.g. "seuil" or "inp-seuil"
+        if string.match(val_text, "^[a-zA-Z_][a-zA-Z0-9_%-]*$") then
+          is_reactive = true
+          var_name = val_text
+        end
+      end
+    end
+    
+    -- Attributes: animated, striped, max, color
+    local animated = get_attr(el, "animated", "false") == "true" or has_class(el.classes, "animated")
+    local striped = get_attr(el, "striped", "false") == "true" or has_class(el.classes, "striped")
+    local max_val = get_attr(el, "max", nil)
+    
+    -- Color class or accent
+    local color_class = ""
+    for _, cls in ipairs(el.classes) do
+      if cls:match("^bg%-") then
+        color_class = cls
+        break
+      end
+    end
+    if color_class == "" then
+      local col_attr = get_attr(el, "color", "")
+      if col_attr ~= "" then
+        color_class = "bg-" .. col_attr
+      end
+    end
+    
+    -- Create HTML classes
+    local bar_classes = "progress-bar"
+    if striped then bar_classes = bar_classes .. " progress-bar-striped" end
+    if animated then bar_classes = bar_classes .. " progress-bar-animated" end
+    if color_class ~= "" then bar_classes = bar_classes .. " " .. color_class end
+    
+    -- If reactive, we insert it into input_items so OJS script is generated
+    if is_reactive then
+      table.insert(input_items, {
+        id = id,
+        type = "progressbar",
+        var_name = var_name,
+        max_val = max_val
+      })
+    end
+    
+    -- HTML construction
+    local width_style = ""
+    if not is_reactive then
+      width_style = string.format(' style="width: %g%%;"', static_val)
+    end
+    
+    local html = string.format(
+      '<div class="progress progressbar-inline" id="%s">' ..
+      '<div class="%s" role="progressbar"%s aria-valuenow="%g" aria-valuemin="0" aria-valuemax="100"></div>' ..
+      '</div>',
+      id, bar_classes, width_style, static_val
+    )
+    return pandoc.RawInline('html', html)
+  end
+
   return el
 end
 
@@ -332,13 +435,40 @@ function Pandoc(doc)
           var_name, id
         )
         table.insert(ojs_lines, btn_code)
+      elseif item.type == "progressbar" then
+        local ojs_var = item.var_name:gsub("%-", "_")
+        local max_str = item.max_val and tonumber(item.max_val) or "null"
+        local code = string.format(
+          "__update_%s = {\n" ..
+          "  const val = %s;\n" ..
+          "  const el = document.getElementById('%s');\n" ..
+          "  if (el) {\n" ..
+          "    const bar = el.querySelector('.progress-bar');\n" ..
+          "    if (bar) {\n" ..
+          "      let pct = val;\n" ..
+          "      const maxVal = %s;\n" ..
+          "      if (maxVal !== null) {\n" ..
+          "        pct = (val / maxVal) * 100;\n" ..
+          "      } else {\n" ..
+          "        if (val > 0 && val <= 1) {\n" ..
+          "          pct = val * 100;\n" ..
+          "        }\n" ..
+          "      }\n" ..
+          "      pct = Math.min(100, Math.max(0, pct));\n" ..
+          "      bar.style.width = pct + '%%';\n" ..
+          "    }\n" ..
+          "  }\n" ..
+          "}",
+          item.id:gsub("%-", "_"), ojs_var, item.id, max_str
+        )
+        table.insert(ojs_lines, code)
       else
         table.insert(ojs_lines, string.format("%s = Generators.input(document.getElementById('%s'))", var_name, id))
       end
     end
     
     local ojs_code = table.concat(ojs_lines, "\n\n")
-    local escaped_ojs = ojs_code:gsub("\\", "\\\\"):gsub("`", "\\`"):gsub("%%", "%%%%")
+    local escaped_ojs = ojs_code:gsub("\\", "\\\\"):gsub("`", "\\`")
     local js_script = string.format(
       '<script type="module">\n' ..
       '  const run = () => {\n' ..

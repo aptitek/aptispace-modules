@@ -81,6 +81,7 @@ function Pandoc(doc)
         getRamData = aptitek.getRamData
         renderRam = aptitek.renderRam
         createLabeledText = aptitek.createLabeledText
+        initInteractiveSvg = aptitek.initInteractiveSvg
       `);
     } else {
       setTimeout(run, 10);

@@ -339,6 +339,28 @@ La première colonne est accentuée en `--accent-primary`, les suivantes suivent
 | [inp-seuil]{.val} | [inp-lr]{.val} | [inp-epochs]{.val} |
 :::
 
+### Barres de progression — `{.progressbar}` / `{.progress-bar}`
+
+Le filtre `ojs-inputs` permet d'afficher des barres de progression horizontales compactes (inline). Elles acceptent des valeurs statiques ou réactives (OJS).
+
+#### Barres statiques
+
+Le contenu du Span définit la valeur. Il peut être exprimé sous forme de pourcentage ou de fraction :
+
+* **Pourcentage** : `[42%]{.progressbar}` ou `[42]{.progressbar}` $\rightarrow$ [42%]{.progressbar}
+* **Fraction** (valeur $\le 1.0$) : `[0.42]{.progressbar}` $\rightarrow$ [0.42]{.progressbar}
+* **Style zébré et animé** : `[65%]{.progressbar striped='true' animated='true'}` $\rightarrow$ [65%]{.progressbar striped='true' animated='true'}
+* **Variantes de couleurs sémantiques** :
+  - Succès : `[80%]{.progressbar color='success'}` $\rightarrow$ [80%]{.progressbar color='success'}
+  - Danger : `[30%]{.progressbar color='danger'}` $\rightarrow$ [30%]{.progressbar color='danger'}
+  - Avertissement : `[50%]{.progressbar color='warning'}` $\rightarrow$ [50%]{.progressbar color='warning'}
+
+#### Barres réactives (OJS)
+
+Si le contenu est un nom de variable OJS, la barre s'adapte dynamiquement. Par exemple, liée au curseur **Seuil de décision** (`inp-seuil`) ci-dessus :
+
+* `[inp-seuil]{.progressbar color='info' animated='true'}` $\rightarrow$ [inp-seuil]{.progressbar color='info' animated='true'} (valeur actuelle : [inp-seuil]{.val} %)
+
 ### Import de module OJS
 
 La syntaxe `[import #id](chemin.js)` injecte un `<div id="id">` dans le DOM

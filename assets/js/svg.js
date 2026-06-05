@@ -124,3 +124,96 @@ export function applySvgState(elementOrSelector, state, options = {}) {
     if (element) element.classList.add(flowClass);
   });
 }
+
+/**
+ * Initializes a generic interactive SVG component.
+ *
+ * @param {string|Element} elementOrSelector
+ * @param {Object} config
+ * @returns {Promise<Object>}
+ */
+export async function initInteractiveSvg(elementOrSelector, config = {}) {
+  const container = resolveElement(elementOrSelector);
+  if (!container) return { container: null, update: () => {} };
+
+  // 1. Load the inline SVG
+  await loadInlineSvg(container, {
+    url: config.url,
+    errorLabel: config.errorLabel || "initInteractiveSvg"
+  });
+
+  // 2. Add classes to elements dynamically on init if specified
+  if (config.elementClasses) {
+    Object.entries(config.elementClasses).forEach(([id, classes]) => {
+      const el = container.querySelector(`#${id}`);
+      if (el) {
+        classes.forEach(c => el.classList.add(c));
+      }
+    });
+  }
+
+  // 3. Bind elements to tabs if tabset and mapping are provided
+  if (config.tabsetSelector && config.tabElementMap) {
+    bindSvgToTabs(container, config.tabsetSelector, config.tabElementMap);
+  }
+
+  // 4. Define interactive class on clickable elements
+  if (config.tabElementMap) {
+    const interactiveClass = config.interactiveClass || "dynamic-svg-interactive";
+    Object.keys(config.tabElementMap).forEach(id => {
+      const el = container.querySelector(`#${id}`);
+      if (el) el.classList.add(interactiveClass);
+    });
+  }
+
+  // 5. Define a state updater
+  const update = (state) => {
+    // A. Update container active state class
+    if (config.states) {
+      config.states.forEach(s => {
+        container.classList.remove(config.activeStateClass?.(s) || `is-active-${s}`);
+      });
+    }
+    container.classList.add(config.activeStateClass?.(state) || `is-active-${state}`);
+
+    // B. Update active elements classes (generic styling)
+    const activeClass = config.activeClass || "svg-active-element";
+    if (config.activeElementMap) {
+      // Remove active class from all mapped elements
+      const allActiveIds = Array.from(new Set(Object.values(config.activeElementMap).flat()));
+      allActiveIds.forEach(id => {
+        const el = container.querySelector(`#${id}`);
+        if (el) el.classList.remove(activeClass);
+      });
+
+      // Add active class to elements for the current state
+      const currentActiveIds = config.activeElementMap[state] || [];
+      currentActiveIds.forEach(id => {
+        const el = container.querySelector(`#${id}`);
+        if (el) el.classList.add(activeClass);
+      });
+    }
+
+    // C. Update flow elements classes
+    if (config.flowMap) {
+      const flowClass = config.flowClass || "is-flowing";
+      const allFlowIds = config.flowIds || Array.from(new Set(Object.values(config.flowMap).flat()));
+      allFlowIds.forEach(id => {
+        const el = container.querySelector(`#${id}`);
+        if (el) el.classList.remove(flowClass);
+      });
+
+      const currentFlowIds = config.flowMap[state] || [];
+      currentFlowIds.forEach(id => {
+        const el = container.querySelector(`#${id}`);
+        if (el) el.classList.add(flowClass);
+      });
+    }
+  };
+
+  return {
+    container,
+    update
+  };
+}
+
