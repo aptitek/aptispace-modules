@@ -353,6 +353,108 @@ local function transform_span(el)
     return pandoc.RawInline('html', html)
   end
 
+  -- 12. Progress Ring (.progressring / .progress-ring)
+  if has_class(el.classes, 'progressring') or has_class(el.classes, 'progress-ring') then
+    local id = el.identifier or ""
+    if id == "" then id = "progressring_" .. tostring(#input_items + 1) end
+
+    local val_text = pandoc.utils.stringify(el.content)
+    val_text = string.gsub(val_text, "^%s*(.-)%s*$", "%1")
+
+    local is_reactive = false
+    local var_name = ""
+    local static_val = 0
+    local is_from_attribute = false
+
+    if val_text == "" then
+      val_text = get_attr(el, "data-progress", "")
+      if val_text == "" then
+        val_text = get_attr(el, "value", "0")
+      end
+      is_from_attribute = true
+    end
+
+    local rx_var = string.match(val_text, "^%${([%a%d%-_]+)%%?}$")
+    if rx_var then
+      is_reactive = true
+      var_name = rx_var
+    else
+      local num_str = string.match(val_text, "^([%d%.]+)%%?$")
+      if num_str then
+        local num = tonumber(num_str)
+        if num then
+          if not is_from_attribute and num <= 1.0 and num > 0 then
+            static_val = num * 100
+          else
+            static_val = num
+          end
+        end
+      else
+        if string.match(val_text, "^[a-zA-Z_][a-zA-Z0-9_%-]*$") then
+          is_reactive = true
+          var_name = val_text
+        end
+      end
+    end
+
+    local max_val = get_attr(el, "max", nil)
+    local label_var = get_attr(el, "label", nil)
+    if label_var and not string.match(label_var, "^[a-zA-Z_][a-zA-Z0-9_%-]*$") then
+      label_var = nil
+    end
+
+    local color_name = ""
+    for _, cls in ipairs(el.classes) do
+      local bg_match = cls:match("^bg%-(.+)")
+      if bg_match then
+        color_name = bg_match
+        break
+      end
+    end
+    if color_name == "" then
+      color_name = get_attr(el, "color", "")
+    end
+
+    local ring_classes = "progressring-inline"
+    if color_name ~= "" then
+      ring_classes = ring_classes .. " progressring-color-" .. color_name
+    end
+
+    if is_reactive then
+      table.insert(input_items, {
+        id = id,
+        type = "progressring",
+        var_name = var_name,
+        max_val = max_val,
+        label_var = label_var
+      })
+    end
+
+    local max_num = max_val and tonumber(max_val) or nil
+    local pct = static_val
+    if max_num then
+      pct = (static_val / max_num) * 100
+    end
+    pct = math.min(100, math.max(0, pct))
+
+    local radius = 18
+    local circumference = 2 * math.pi * radius
+    local dash_offset = circumference * (1 - pct / 100)
+    local label_text = string.format("%g %%", static_val)
+
+    local html = string.format(
+      '<span class="%s" id="%s" role="img" aria-label="%s">' ..
+      '<svg class="progressring-svg" viewBox="0 0 44 44" aria-hidden="true">' ..
+      '<circle class="progressring-track" cx="22" cy="22" r="%g"></circle>' ..
+      '<circle class="progressring-value" cx="22" cy="22" r="%g" stroke-dasharray="%g" stroke-dashoffset="%g"></circle>' ..
+      '</svg>' ..
+      '<span class="progressring-label">%s</span>' ..
+      '</span>',
+      ring_classes, id, label_text, radius, radius, circumference, dash_offset, label_text
+    )
+    return pandoc.RawInline('html', html)
+  end
+
   return el
 end
 
@@ -476,6 +578,42 @@ function Pandoc(doc)
           "  }\n" ..
           "}",
           item.id:gsub("%-", "_"), ojs_var, item.id, max_str
+        )
+        table.insert(ojs_lines, code)
+      elseif item.type == "progressring" then
+        local ojs_var = item.var_name:gsub("%-", "_")
+        local label_expr = item.label_var and item.label_var:gsub("%-", "_") or "null"
+        local max_str = item.max_val and tonumber(item.max_val) or "null"
+        local code = string.format(
+          "__update_%s = {\n" ..
+          "  const val = %s;\n" ..
+          "  const labelVal = %s;\n" ..
+          "  const el = document.getElementById('%s');\n" ..
+          "  if (el) {\n" ..
+          "    const ring = el.querySelector('.progressring-value');\n" ..
+          "    const label = el.querySelector('.progressring-label');\n" ..
+          "    let pct = val;\n" ..
+          "    const maxVal = %s;\n" ..
+          "    if (maxVal !== null) {\n" ..
+          "      pct = (val / maxVal) * 100;\n" ..
+          "    } else if (val > 0 && val <= 1) {\n" ..
+          "      pct = val * 100;\n" ..
+          "    }\n" ..
+          "    pct = Math.min(100, Math.max(0, pct));\n" ..
+          "    const radius = 18;\n" ..
+          "    const circumference = 2 * Math.PI * radius;\n" ..
+          "    const text = labelVal !== null && labelVal !== undefined\n" ..
+          "      ? String(labelVal)\n" ..
+          "      : (Number.isFinite(Number(val)) ? Number(val).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %%' : String(val));\n" ..
+          "    if (ring) {\n" ..
+          "      ring.setAttribute('stroke-dasharray', String(circumference));\n" ..
+          "      ring.setAttribute('stroke-dashoffset', String(circumference * (1 - pct / 100)));\n" ..
+          "    }\n" ..
+          "    if (label) label.textContent = text;\n" ..
+          "    el.setAttribute('aria-label', text);\n" ..
+          "  }\n" ..
+          "}",
+          item.id:gsub("%-", "_"), ojs_var, label_expr, item.id, max_str
         )
         table.insert(ojs_lines, code)
       else

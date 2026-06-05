@@ -51,7 +51,12 @@ Plus $p$ est petit (événement rare), plus $I(p)$ est grand (surprise élevée)
 
 Ajustez la probabilité d'un événement et observez sa valeur informationnelle sur la courbe.
 
-- [Probabilité de l'événement (%)]{.slider #inf-p value=50 min=1 max=99 step=1}
+```{ojs}
+viewof inf_p = aptitek.createSlider({
+  label: "Probabilité de l'événement (%)",
+  value: 50, min: 1, max: 99, step: 1
+})
+```
 
 ::: {.metrics}
 | Probabilité p | Information I(p) |
@@ -114,7 +119,12 @@ $$\boxed{H(X) = -\sum_{i=1}^{N} p_i \log_2 p_i \quad \text{(bits par symbole)}}$
 
 Une source émet «0» avec probabilité $p$ et «1» avec probabilité $1 - p$.
 
-- [Probabilité de «0» (p)]{.slider #inf-ep value=50 min=1 max=99 step=1}
+```{ojs}
+viewof inf_ep = aptitek.createSlider({
+  label: "Probabilité de «0» (p)",
+  value: 50, min: 1, max: 99, step: 1
+})
+```
 
 ::: {.metrics}
 | p («0») | 1 − p («1») | Entropie H |
@@ -190,7 +200,7 @@ La distribution de probabilités d'une source détermine son entropie, mais la *
 
 ##### Cyclique {.bi-arrow-repeat}
 
-##### []{.btn .bi-arrow-clockwise #inf-regen} {.tab-right .no-pane}
+##### []{.btn .bi-arrow-clockwise #inf-regen-btn} {.tab-right .no-pane}
 ::::
 
 ::: {.metrics}
@@ -229,6 +239,36 @@ _srcTabWatcher = {
   invalidation.then(() => w.destroy());
   return null;
 }
+
+inf_regen = Generators.observe((change) => {
+  let clicks = 0;
+  let retryId = null;
+  let cleanup = () => {};
+
+  const bind = () => {
+    const button = document.getElementById("inf-regen-btn");
+    if (!button) {
+      retryId = setTimeout(bind, 50);
+      return;
+    }
+
+    const onClick = (event) => {
+      event.preventDefault();
+      change(++clicks);
+    };
+
+    button.addEventListener("click", onClick);
+    change(clicks);
+    cleanup = () => button.removeEventListener("click", onClick);
+  };
+
+  bind();
+
+  return () => {
+    if (retryId) clearTimeout(retryId);
+    cleanup();
+  };
+})
 
 inf_src_data = {
   const db = {
@@ -328,22 +368,6 @@ viewof inf_unit_zoom = aptitek.createSlider({
 ::: {#inf-units-canvas .chart-container-lg}
 :::
 
-::: {.metrics}
-| Unité SI | Valeur SI | Équivalent IEC | Valeur IEC | Écart |
-| :------- | :-------- | :------------- | :--------- | :---- |
-| [inf-unit-sym]{.val} | [inf-unit-val]{.val} | [inf-unit-iec-sym]{.val} | [inf-unit-iec-val]{.val} | [inf-unit-iec-ecart-pct]{.progressbar color='warning' max='13'} [inf-unit-iec-ecart]{.val} |
-:::
-
-${inf-unit-desc}
-
-- ${inf-unit-ex1}
-- ${inf-unit-ex2}
-- ${inf-unit-ex3}
-
-Les préfixes **SI** (décimaux) et **IEC** (binaires) diffèrent légèrement — d'où les capacités qui semblent « perdues ».
-
-${inf-unit-iec-note}
-
 ```{ojs}
 INF_UNITS = [
   { name: "bit",       sym: "b",  log10: Math.log10(1/8), val: "1/8 octet",  desc: "L'unité atomique. Représente deux états : 0 ou 1.",                          ex: ["Résultat d'un lancer de pièce", "Pixel binaire (noir/blanc)", "État d'une porte logique"],   iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "Le bit est universel — aucune distinction SI/IEC." } },
@@ -440,21 +464,36 @@ renderUnitsChart = {
 }
 ```
 
+:::: {.metrics-iec}
+::: {.metrics-iec-rows}
+::: {.metrics-iec-row}
+[SI]{.metrics-iec-base} [Unité SI]{.metrics-iec-label} [inf-unit-sym]{.val} [inf-unit-val]{.val}
 :::
 
-::: {.card}
-#### À grande échelle {.bi-server}
-
-Au-delà du pétaoctet, l'information devient une infrastructure industrielle :
-
-| Ordre | Unité | Exemple |
-| :---- | :---- | :------ |
-| $10^{18}$ o | Exaoctet (Eo) | Internet mondial génère ~5 Eo/jour |
-| $10^{21}$ o | Zettaoctet (Zo) | Données mondiales créées en 2023 : ~120 Zo |
-| $10^{24}$ o | Yottaoctet (Yo) | Limite pratique actuelle des systèmes de stockage |
-
-Le CERN génère ~15 Po/an pour le LHC. Facebook stocke > 100 Po de photos. L'ensemble du génome humain brut tient dans ~200 Go.
+::: {.metrics-iec-row}
+[IEC]{.metrics-iec-base} [Équivalent IEC]{.metrics-iec-label} [inf-unit-iec-sym]{.val} [inf-unit-iec-val]{.val}
 :::
+:::
+
+::: {.metrics-iec-ring}
+[Écart]{.metrics-iec-label}
+
+[inf-unit-iec-ecart-pct]{.progressring color='warning' max='13' label='inf-unit-iec-ecart'}
+:::
+::::
+
+${inf-unit-desc}
+
+- ${inf-unit-ex1}
+- ${inf-unit-ex2}
+- ${inf-unit-ex3}
+
+Les préfixes **SI** (décimaux) et **IEC** (binaires) diffèrent légèrement — d'où les capacités qui semblent « perdues ».
+
+${inf-unit-iec-note}
+
+:::
+
 
 ::: {.callout-warning}
 ## Mb ≠ MB — un facteur 8 qui trompe tout le monde
