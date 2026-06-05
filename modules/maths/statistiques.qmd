@@ -231,7 +231,7 @@ statsRightItems = [
   { id: "quartiles", label: "Quartiles" },
   { id: "variance", label: "Variance" },
   { id: "ecarttype", label: "Écart type" }
-]
+].sort(() => Math.random() - 0.5)
 
 statsCablingEngine = {
   const engine = aptitek.createCabling("#stats-cabling-canvas", statsLeftItems, statsRightItems, (state) => {

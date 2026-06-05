@@ -44,12 +44,22 @@ const palette = () => {
   const orange = getThemeColor("--sol-orange", "var(--sol-orange)");
   const red = getThemeColor("--sol-red", "var(--sol-red)");
   const violet = getThemeColor("--sol-violet", "var(--sol-violet)");
+  const base00 = getThemeColor("--sol-base00", "var(--sol-base00)");
   const base01 = getThemeColor("--sol-base01", "var(--sol-base01)");
-  return { blue, green, yellow, orange, red, violet, base01 };
+  const base1 = getThemeColor("--sol-base1", "var(--sol-base1)");
+  return { blue, green, yellow, orange, red, violet, base00, base01, base1 };
 };
 
-const baseLayout = (title) => ({
-  title: { text: title, font: { size: 15 } },
+const axisTheme = (colors) => ({
+  gridcolor: utils.rgba(colors.base01, 0.18),
+  linecolor: utils.rgba(colors.base01, 0.45),
+  tickfont: { color: colors.base00 },
+  titlefont: { color: colors.base00 },
+  zerolinecolor: utils.rgba(colors.base01, 0.28)
+});
+
+const baseLayout = (title, colors = palette()) => ({
+  title: { text: title, font: { color: colors.base00, size: 15 } },
   template: getPlotlyTheme(),
   margin: { t: 42, b: 38, l: 42, r: 16 },
   paper_bgcolor: "transparent",
@@ -66,6 +76,7 @@ export function renderMeanGraph(divId, invalidation) {
   if (!globalThis.Plotly) return null;
 
   const colors = palette();
+  const axis = axisTheme(colors);
   const avg = mean(SAMPLE_VALUES);
   const labels = SAMPLE_VALUES.map((value, index) => `v${index + 1}`);
 
@@ -88,8 +99,9 @@ export function renderMeanGraph(divId, invalidation) {
   ];
 
   const layout = {
-    ...baseLayout("La moyenne équilibre le groupe"),
-    yaxis: { title: "Valeur", rangemode: "tozero" },
+    ...baseLayout("La moyenne équilibre le groupe", colors),
+    xaxis: { ...axis },
+    yaxis: { ...axis, title: "Valeur", rangemode: "tozero" },
     annotations: [
       {
         x: labels.at(-1),
@@ -112,6 +124,7 @@ export function renderQuartileMedianGraph(divId, invalidation) {
   if (!globalThis.Plotly) return null;
 
   const colors = palette();
+  const axis = axisTheme(colors);
   const sorted = [...SAMPLE_VALUES].sort((a, b) => a - b);
   const { q1, q2, q3 } = quartiles(sorted);
 
@@ -138,8 +151,8 @@ export function renderQuartileMedianGraph(divId, invalidation) {
   ];
 
   const layout = {
-    ...baseLayout("Les quartiles coupent la série rangée"),
-    xaxis: { title: "Valeurs triées", range: [Math.min(...sorted) - 1, Math.max(...sorted) + 1] },
+    ...baseLayout("Les quartiles coupent la série rangée", colors),
+    xaxis: { ...axis, title: "Valeurs triées", range: [Math.min(...sorted) - 1, Math.max(...sorted) + 1] },
     yaxis: { visible: false, range: [-0.45, 0.45] },
     shapes: [
       {
@@ -163,6 +176,7 @@ export function renderVarianceGraph(divId, invalidation) {
   if (!globalThis.Plotly) return null;
 
   const colors = palette();
+  const axis = axisTheme(colors);
   const avg = mean(SAMPLE_VALUES);
   const deviations = SAMPLE_VALUES.map((value) => (value - avg) ** 2);
   const valueVariance = mean(deviations);
@@ -176,9 +190,9 @@ export function renderVarianceGraph(divId, invalidation) {
   };
 
   const layout = {
-    ...baseLayout("La variance mesure les écarts au carré"),
-    xaxis: { title: "Valeur observée" },
-    yaxis: { title: "Écart au carré" },
+    ...baseLayout("La variance mesure les écarts au carré", colors),
+    xaxis: { ...axis, title: "Valeur observée" },
+    yaxis: { ...axis, title: "Écart au carré" },
     annotations: [
       {
         x: "17",
@@ -201,6 +215,7 @@ export function renderStandardDeviationGraph(divId, invalidation) {
   if (!globalThis.Plotly) return null;
 
   const colors = palette();
+  const axis = axisTheme(colors);
   const avg = mean(SAMPLE_VALUES);
   const std = standardDeviation(SAMPLE_VALUES);
   const lower = avg - std;
@@ -228,8 +243,8 @@ export function renderStandardDeviationGraph(divId, invalidation) {
   ];
 
   const layout = {
-    ...baseLayout("L'écart type revient à l'unité de départ"),
-    xaxis: { title: "Valeurs", range: [Math.min(...SAMPLE_VALUES) - 1, Math.max(...SAMPLE_VALUES) + 1] },
+    ...baseLayout("L'écart type revient à l'unité de départ", colors),
+    xaxis: { ...axis, title: "Valeurs", range: [Math.min(...SAMPLE_VALUES) - 1, Math.max(...SAMPLE_VALUES) + 1] },
     yaxis: { visible: false, range: [-0.45, 0.45] },
     shapes: [
       {
