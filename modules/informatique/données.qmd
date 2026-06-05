@@ -10,8 +10,8 @@ Classifier une variable est la première étape de toute analyse. Cette taxonomi
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Nominale [Qualitative]{.badge .bg-info .float-end} {.bi-info-circle}
+::::: {.card .h-100}
+#### Nominale [Qualitative]{.badge .bg-info .ms-auto} {.bi-info-circle}
 
 :::::: {#plot-nominale .chart-container-xs}
 ::::::
@@ -35,8 +35,8 @@ Catégories ou étiquettes **sans ordre naturel ni hiérarchie**. Les chiffres n
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Ordinale [Qualitative]{.badge .bg-info .float-end} {.bi-sort-alpha-down}
+::::: {.card .h-100}
+#### Ordinale [Qualitative]{.badge .bg-info .ms-auto} {.bi-sort-alpha-down}
 
 :::::: {#plot-ordinale .chart-container-xs}
 ::::::
@@ -69,8 +69,8 @@ Catégories dotées d'une **hiérarchie stricte**. La distance mathématique ent
 
 ::: {.row .mt-4}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Discrète [Quantitative]{.badge .bg-success .float-end} {.bi-graph-up-arrow}
+::::: {.card .h-100}
+#### Discrète [Quantitative]{.badge .bg-success .ms-auto} {.bi-graph-up-arrow}
 
 :::::: {#plot-discrete .chart-container-xs}
 ::::::
@@ -100,8 +100,8 @@ Valeurs numériques **entières dénombrables**. On compte des unités distincte
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Continue [Quantitative]{.badge .bg-success .float-end} {.bi-bezier2}
+::::: {.card .h-100}
+#### Continue [Quantitative]{.badge .bg-success .ms-auto} {.bi-bezier2}
 
 :::::: {#plot-continuous .chart-container-xs}
 ::::::
@@ -342,7 +342,7 @@ renderUnits = {
 **Types d'unités à documenter :**
 
 - **Physique :** Mètres ($m$), kilogrammes ($kg$), degrés Celsius ($°C$)
-- **Monétaire :** Euros ($€$), Dollars ($\$$), avec l'année de référence pour les données historiques
+- **Monétaire :** Euros (€), Dollars ($), avec l'année de référence pour les données historiques
 - **Temporelle :** Millisecondes ($ms$), secondes ($s$), jours
 :::
 
@@ -558,54 +558,5 @@ rawInput = Generators.input(document.getElementById('rawInput'))
 ```{ojs}
 ramData = getRamData(rawInput, dataType)
 updateRamUI = renderRam(ramData)
-```
-:::
-
-## Structure de Stockage
-
-::: {.card-window .mb-4}
-#### Simulateur de structure RAM : Ligne vs Colonne {.bi-layout-three-columns}
-
-:::: {.tabs .ram-storage-tabset}
-##### Stockage en Ligne {.bi-hdd-fill}
-Le stockage **Orienté Ligne** (utilisé par les bases OLTP, les fichiers CSV) enregistre les attributs d'un même enregistrement de manière strictement contiguë en mémoire. Optimal pour lire ou écrire un enregistrement complet d'un coup, mais inefficace pour lire une seule colonne sur l'ensemble des enregistrements.
-
-##### Stockage en Colonne {.bi-layout-three-columns}
-Le stockage **Orienté Colonne** (utilisé par les bases OLAP, les formats binaires optimisés) regroupe toutes les valeurs d'un même attribut de manière continue en mémoire. Optimal pour les opérations portant sur un attribut unique (min, max, moyenne) à travers tous les enregistrements.
-
-##### [Lancer Simulation]{#btn-ram-start .bi-play-fill .btn} {.tab-right .no-pane}
-::::
-
-:::: {#ram-data-source .d-none}
-| Age | Salaire |
-| :-- | :------ |
-| 25  | 50k     |
-| 30  | 60k     |
-| 28  | 55k     |
-::::
-
-:::: {#ram-graph-container .ram-simulator-wrapper}
-::::
-
-```{ojs}
-mutable storageMode = "ligne"
-
-_ramStorageTabWatcher = {
-  const w = createTabsetWatcher(
-    ".ram-storage-tabset",
-    { "Stockage en Ligne": "ligne", "Stockage en Colonne": "colonne" },
-    (val) => { mutable storageMode = val; }
-  );
-  invalidation.then(() => w.destroy());
-  return null;
-}
-
-ramTableData = parseTableData("#ram-data-source table")
-
-renderRamGraph = {
-  const graph = createRamStorageGraph("ram-graph-container", storageMode, 'Salaire', ramTableData);
-  invalidation.then(() => { if (graph && graph.destroy) graph.destroy(); });
-  return null;
-}
 ```
 :::

@@ -332,8 +332,8 @@ export function initTabIcons(tabsetSelector) {
     if (!biClass) return;
 
     const icon = document.createElement("i");
-    icon.className = `bi ${biClass}`;
-    icon.style.marginRight = "5px";
+    icon.className = `bi ${biClass} me-1`;
+    icon.setAttribute("aria-hidden", "true");
     link.prepend(icon);
   });
 }
@@ -394,8 +394,8 @@ export function createTabsetWatcher(tabsetSelector, labelMap, onChange) {
         link.querySelectorAll("i.bi").forEach(icon => icon.remove()); // évite les doublons
 
         const icon = document.createElement("i");
-        icon.className = `bi ${biClass}`;
-        icon.style.marginRight = "6px";
+        icon.className = `bi ${biClass} me-1`;
+        icon.setAttribute("aria-hidden", "true");
         icon.style.transition = "color 0.15s ease";
         link.prepend(icon);
       }

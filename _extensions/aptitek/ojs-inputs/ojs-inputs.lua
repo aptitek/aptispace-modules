@@ -224,7 +224,7 @@ local function transform_span(el)
     local icon_html = ""
     for _, cls in ipairs(el.classes) do
       if cls:match("^bi%-") then
-        icon_html = '<i class="bi ' .. cls .. '" aria-hidden="true"></i> '
+        icon_html = '<i class="bi ' .. cls .. ' me-1" aria-hidden="true"></i>'
         break
       end
     end

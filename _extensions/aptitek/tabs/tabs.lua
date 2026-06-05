@@ -138,7 +138,7 @@ function Div(el)
         
         table.insert(nav_items, pandoc.RawInline('html', button_html))
         if bi_class then
-          table.insert(nav_items, pandoc.RawInline('html', '<i class="bi ' .. bi_class .. '" aria-hidden="true"></i> '))
+          table.insert(nav_items, pandoc.RawInline('html', '<i class="bi ' .. bi_class .. ' me-1" aria-hidden="true"></i>'))
         end
         for _, inl in ipairs(title_inlines) do
           table.insert(nav_items, inl)

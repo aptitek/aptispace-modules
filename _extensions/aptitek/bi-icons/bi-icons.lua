@@ -9,7 +9,8 @@
 
   The filter:
     1. Extracts the first `bi-*` class found on the element.
-    2. Prepends  <i class="bi bi-<name>" aria-hidden="true"></i>  as raw HTML.
+    2. Prepends  <i class="bi bi-<name> me-1" aria-hidden="true"></i>
+       before text content, or the same icon without `me-1` when used alone.
     3. Removes the `bi-*` class from the element so the output HTML stays clean.
 
   Works on: Span, Header, Div (useful for panel-tabset panes and card headers).
@@ -42,11 +43,13 @@ end
 
 --- Build the Bootstrap Icon inline HTML element.
 ---@param bi_class string  e.g. "bi-hash"
+---@param with_text boolean|nil  add Bootstrap spacing when followed by text
 ---@return pandoc.RawInline
-local function make_icon(bi_class)
+local function make_icon(bi_class, with_text)
+  local spacing_class = with_text and " me-1" or ""
   return pandoc.RawInline(
     "html",
-    '<i class="bi ' .. bi_class .. '" aria-hidden="true"></i> '
+    '<i class="bi ' .. bi_class .. spacing_class .. '" aria-hidden="true"></i>'
   )
 end
 
@@ -79,7 +82,7 @@ function Span(el)
 
     local icon_html = ""
     if bi_class then
-      icon_html = '<i class="bi ' .. bi_class .. '" aria-hidden="true"></i> '
+      icon_html = '<i class="bi ' .. bi_class .. ' me-1" aria-hidden="true"></i>'
     end
 
     -- Construct classes string preserving all other class names
@@ -118,16 +121,14 @@ function Span(el)
   local bi_class, remaining = extract_bi_class(el.classes)
   if not bi_class then return el end
 
-  local icon = make_icon(bi_class)
-
   -- Empty span []{.bi-icon} — return just the icon, no wrapper
   if #el.content == 0 then
-    return icon
+    return make_icon(bi_class)
   end
 
   -- Non-empty span [text]{.bi-icon} — prepend icon, keep the span
   el.classes = pandoc.List(remaining)
-  el.content:insert(1, icon)
+  el.content:insert(1, make_icon(bi_class, true))
   return el
 end
 
@@ -140,7 +141,7 @@ function Header(el)
   if not bi_class then return el end
 
   el.classes = pandoc.List(remaining)
-  el.content:insert(1, make_icon(bi_class))
+  el.content:insert(1, make_icon(bi_class, true))
   return el
 end
 
@@ -201,7 +202,7 @@ function Div(el)
   -- Prepend the icon to the first Para or Plain block found
   for _, block in ipairs(el.content) do
     if block.t == "Para" or block.t == "Plain" then
-      block.content:insert(1, make_icon(bi_class))
+      block.content:insert(1, make_icon(bi_class, true))
       break
     end
   end

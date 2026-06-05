@@ -19,3 +19,13 @@
 .chart-container-md { height: 260px; }
 .chart-container-lg { height: 300px; }
 .chart-container-xl { height: 340px; }
+
+.word-cloud-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.word-cloud-container .tagcloud {
+    margin: auto;
+}

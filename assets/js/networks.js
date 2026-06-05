@@ -469,6 +469,7 @@ export function createWordCloud(containerSelector, words, options = {}) {
   }
 
   container.innerHTML = ""; // clear before re-render to avoid OJS duplicates
+  container.classList.add("word-cloud-container");
 
   const finalOptions = {
     radius: 100,

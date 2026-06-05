@@ -38,7 +38,7 @@
     align-items: center !important;
     justify-content: center !important;
     min-height: 38px !important;
-    padding: 0 16px !important;
+    padding: 0 5rem !important;
     user-select: none !important;
     background-color: var(--card-window-header-bg) !important;
     border-bottom: 1px solid var(--card-window-header-border) !important;
@@ -75,6 +75,13 @@
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1 !important;
+}
+
+.card-window > .card-header .badge.ms-auto,
+.card-window-header .badge.ms-auto {
+    position: absolute !important;
+    right: 16px !important;
+    margin-left: 0.5rem !important;
 }
 
 // Carte générique — même tokens que .card-window, sans pastilles macOS
