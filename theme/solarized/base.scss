@@ -311,7 +311,95 @@ mjx-container[display="true"] {
 }
 
 // =============================================================================
-// 8. TABLE STYLING
+// 8. PORTRAIT CARDS
+// =============================================================================
+.portrait {
+    display: flow-root;
+    margin: 1.5rem 0 2rem;
+    padding: 1rem;
+    border: 1px solid rgba($sol-base1, 0.24);
+    border-left: 5px solid var(--accent-primary);
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(var(--sol-blue-rgb), 0.08), rgba(var(--sol-cyan-rgb), 0.04)),
+        var(--sol-base3);
+    box-shadow: 0 10px 24px rgba(var(--sol-base03-rgb), 0.06);
+
+    > p {
+        margin: 0;
+        color: var(--sol-base00);
+        line-height: 1.65;
+    }
+
+    > p:has(> img:only-child) {
+        float: left;
+        width: clamp(7rem, 28%, 11rem);
+        margin: 0 1.25rem 0.75rem 0;
+    }
+
+    > p:has(> img:only-child) img {
+        width: 100%;
+        min-height: 9rem;
+        max-height: 14rem;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba($sol-base1, 0.32);
+        box-shadow: 0 8px 18px rgba(var(--sol-base03-rgb), 0.08);
+    }
+
+    blockquote {
+        position: relative;
+        margin: 0;
+        padding: 0.2rem 0 0.2rem 3rem;
+        border: 0;
+        color: var(--sol-base02);
+        font-size: 1.05rem;
+        font-weight: 650;
+        line-height: 1.45;
+    }
+
+    blockquote::before {
+        content: "\201C";
+        position: absolute;
+        top: -0.85rem;
+        left: 0;
+        color: var(--accent-primary);
+        font-family: Georgia, serif;
+        font-size: 4.5rem;
+        font-weight: 700;
+        line-height: 1;
+        opacity: 0.28;
+    }
+
+    blockquote p {
+        margin: 0;
+    }
+
+    blockquote + p {
+        color: var(--sol-base01);
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .portrait {
+        > p:has(> img:only-child) {
+            float: none;
+            width: 100%;
+            margin: 0 0 1rem;
+        }
+
+        > p:has(> img:only-child) img {
+            max-height: 16rem;
+        }
+    }
+}
+
+// =============================================================================
+// 9. TABLE STYLING
 // =============================================================================
 table, .table {
     width: 100%;
@@ -340,7 +428,7 @@ table, .table {
 }
 
 // =============================================================================
-// 9. NATIVE BOOTSTRAP BUTTONS
+// 10. NATIVE BOOTSTRAP BUTTONS
 // =============================================================================
 .btn {
     border-radius: 6px;

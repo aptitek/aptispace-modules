@@ -2,7 +2,14 @@
 title: "L'Information"
 ---
 
+:::{.portrait}
+![Claude Shannon](/assets/portraits/claude-shannon.jpeg)
+
+> Le problème fondamental de la communication est de reproduire en un point, exactement ou approximativement, un message choisi en un autre point.
+-- Claude Shannon
+
 En 1948, Claude Shannon publie *A Mathematical Theory of Communication* et pose les bases de la **théorie de l'information** : l'information devient une grandeur physique mesurable, au même titre que l'énergie ou la température. Cette théorie est le fondement invisible de tout le numérique — de la compression ZIP aux intelligences artificielles.
+:::
 
 ## L'information comme grandeur physique
 
