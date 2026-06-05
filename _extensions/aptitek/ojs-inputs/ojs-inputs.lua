@@ -65,13 +65,13 @@ local function transform_span(el)
     if is_vertical then
       label_html = make_label(id, label_text, "vertical")
       input_html = string.format(
-        '<input type="range" class="form-range slider-inline vertical" id="%s" min="%s" max="%s" step="%s" value="%s" style="writing-mode: vertical-lr; direction: rtl; width: 12px; height: 120px; padding: 0; margin: 0 auto; display: block;" />',
+        '<input type="range" class="form-range slider-inline vertical" id="%s" min="%s" max="%s" step="%s" value="%s" />',
         id, min, max, step, val
       )
     else
       label_html = make_label(id, label_text)
       input_html = string.format(
-        '<input type="range" class="form-range slider-inline" id="%s" min="%s" max="%s" step="%s" value="%s" style="display: inline-block; vertical-align: middle; width: 130px; height: 20px; margin: 0 8px;" />',
+        '<input type="range" class="form-range slider-inline" id="%s" min="%s" max="%s" step="%s" value="%s" />',
         id, min, max, step, val
       )
     end
@@ -212,15 +212,26 @@ local function transform_span(el)
   end
 
   -- 9. Button Input (content = button text, no separate label needed)
+  --    Also handles .bi-* icon classes (since bi-icons runs after us,
+  --    it would never see this Span once we convert it to RawInline).
   if has_class(el.classes, 'button') or has_class(el.classes, 'btn') then
     local id = el.identifier or ""
     if id == "" then id = "button_" .. tostring(#input_items + 1) end
     table.insert(input_items, { id = id, type = "button" })
+
+    -- Extract a .bi-* icon class if present
+    local icon_html = ""
+    for _, cls in ipairs(el.classes) do
+      if cls:match("^bi%-") then
+        icon_html = '<i class="bi ' .. cls .. '" aria-hidden="true"></i> '
+        break
+      end
+    end
     
     local val = pandoc.utils.stringify(el.content)
     local html = string.format(
-      '<button type="button" class="btn btn-secondary btn-sm button-inline" id="%s" style="padding: 2px 8px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;">%s</button>',
-      id, val
+      '<button type="button" class="btn btn-secondary btn-sm button-inline" id="%s" style="padding: 2px 8px; font-size: 0.85rem; vertical-align: middle; margin: 0 4px;">%s%s</button>',
+      id, icon_html, val
     )
     return pandoc.RawInline('html', html)
   end

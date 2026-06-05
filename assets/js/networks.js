@@ -75,6 +75,8 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     enableDrag: true,
     zoomToFit: false,
     zoomToFitPadding: 50,
+    maxZoom: 2,
+    minZoom: 0.5,
     getNodeStatus: (node) => node.status || "default",
     getLinkStatus: (link) => link.status || "default",
     getNodeLabel: (node) => node.label || node.id,
@@ -144,8 +146,17 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     .linkDirectionalArrowLength(options.linkArrowLength)
     .linkDirectionalArrowRelPos(1);
 
-  if (options.width) graph.width(options.width);
-  if (options.height) graph.height(options.height);
+  // Set dimensions: use explicit options, or fall back to the container's actual size
+  const containerRect = targetEl.getBoundingClientRect();
+  graph.width(options.width || containerRect.width || 600);
+  graph.height(options.height || containerRect.height || 300);
+  graph.minZoom(options.minZoom);
+  graph.maxZoom(options.maxZoom);
+
+  // Strengthen charge repulsion proportionally to node visual radius
+  // Default d3 charge (-30) is too weak for nodeRadius > ~12
+  graph.d3Force('charge').strength(-options.nodeRadius * 8);
+  graph.d3Force('link')?.distance(options.nodeRadius * 5);
 
   // Link basic properties
   graph
@@ -427,15 +438,20 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     });
   }
 
-  // Zoom to Fit
+  // Zoom to Fit — wait for the force simulation to fully settle
+  // maxZoom is enforced on the d3-zoom behavior so zoomToFit
+  // cannot exceed it (d3-zoom clamps internally).
   if (options.zoomToFit) {
-    setTimeout(() => {
+    let hasFitted = false;
+    graph.onEngineStop(() => {
+      if (hasFitted) return;
+      hasFitted = true;
       try {
         graph.zoomToFit(400, options.zoomToFitPadding);
       } catch (err) {
         console.warn("zoomToFit error:", err);
       }
-    }, 150);
+    });
   }
 
   return graph;

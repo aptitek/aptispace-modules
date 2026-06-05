@@ -121,3 +121,156 @@
         font-weight: inherit;
     }
 }
+
+// =============================================================================
+// 11. DYNAMIC SLIDERS / RANGE INPUTS (.form-range)
+// =============================================================================
+
+.slider-inline {
+    display: inline-block;
+    vertical-align: middle;
+    width: 130px;
+    height: 20px;
+    margin: 0 8px;
+    padding: 0;
+    background-color: transparent;
+
+    &:not(.vertical) {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    &.vertical {
+        writing-mode: vertical-lr;
+        direction: rtl;
+        -webkit-appearance: slider-vertical;
+        width: 12px;
+        height: 120px;
+        margin: 0 8px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
+
+.form-range {
+    background-color: transparent;
+
+    // A. Runnable Track Styling
+    &::-webkit-slider-runnable-track {
+        background-color: var(--sol-base2) !important;
+        height: 6px;
+        border-radius: 3px;
+        transition: background-color 0.2s ease;
+    }
+    &::-moz-range-track {
+        background-color: var(--sol-base2) !important;
+        height: 6px;
+        border-radius: 3px;
+        transition: background-color 0.2s ease;
+    }
+
+    // B. Thumb Styling
+    &::-webkit-slider-thumb {
+        background-color: var(--accent-primary) !important;
+        border: 2px solid var(--sol-base3) !important;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+        transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease !important;
+        cursor: pointer;
+        appearance: none;
+
+        &:hover {
+            background-color: darken($sol-blue, 8%) !important;
+            transform: scale(1.1);
+        }
+        &:active {
+            background-color: darken($sol-blue, 15%) !important;
+            transform: scale(0.95);
+        }
+    }
+    &::-moz-range-thumb {
+        background-color: var(--accent-primary) !important;
+        border: 2px solid var(--sol-base3) !important;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+        transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease !important;
+        cursor: pointer;
+        appearance: none;
+
+        &:hover {
+            background-color: darken($sol-blue, 8%) !important;
+            transform: scale(1.1);
+        }
+        &:active {
+            background-color: darken($sol-blue, 15%) !important;
+            transform: scale(0.95);
+        }
+    }
+
+    // Centering alignment tweak for horizontal Webkit sliders
+    &:not(.vertical) {
+        &::-webkit-slider-thumb {
+            margin-top: -5px; // (6px track height / 2) - (16px thumb height / 2)
+        }
+    }
+    &.vertical {
+        &::-webkit-slider-thumb {
+            margin-top: 0;
+            margin-left: -2px;
+        }
+    }
+
+    // C. Focus Glow state
+    &:focus {
+        outline: 0;
+        &::-webkit-slider-thumb {
+            box-shadow: 0 0 0 1px var(--sol-base3), 0 0 0 0.25rem rgba($sol-blue, 0.35) !important;
+        }
+        &::-moz-range-thumb {
+            box-shadow: 0 0 0 1px var(--sol-base3), 0 0 0 0.25rem rgba($sol-blue, 0.35) !important;
+        }
+    }
+}
+
+// D. Dark Mode Overrides
+[data-bs-theme="dark"] {
+    .form-range {
+        &::-webkit-slider-runnable-track {
+            background-color: var(--sol-base02) !important;
+        }
+        &::-moz-range-track {
+            background-color: var(--sol-base02) !important;
+        }
+        &::-webkit-slider-thumb {
+            border-color: var(--sol-base03) !important;
+            &:hover {
+                background-color: lighten($sol-blue, 8%) !important;
+            }
+            &:active {
+                background-color: lighten($sol-blue, 15%) !important;
+            }
+        }
+        &::-moz-range-thumb {
+            border-color: var(--sol-base03) !important;
+            &:hover {
+                background-color: lighten($sol-blue, 8%) !important;
+            }
+            &:active {
+                background-color: lighten($sol-blue, 15%) !important;
+            }
+        }
+        &:focus {
+            &::-webkit-slider-thumb {
+                box-shadow: 0 0 0 1px var(--sol-base03), 0 0 0 0.25rem rgba($sol-blue, 0.35) !important;
+            }
+            &::-moz-range-thumb {
+                box-shadow: 0 0 0 1px var(--sol-base03), 0 0 0 0.25rem rgba($sol-blue, 0.35) !important;
+            }
+        }
+    }
+}
+

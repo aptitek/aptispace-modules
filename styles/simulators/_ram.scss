@@ -12,10 +12,14 @@
 }
 
 .ram-stick {
+    position: relative;
     width: 100%;
     height: 120px !important;
     margin-bottom: 1rem !important;
     background-image: url("/assets/ui/ram-bar.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
 }
 
 .ram-bytes-container {

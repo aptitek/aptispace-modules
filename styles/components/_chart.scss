@@ -1,0 +1,21 @@
+// ──────────────────────────────────────────────
+// Chart / visualization container height utilities
+// ──────────────────────────────────────────────
+// Use these classes on empty `:::` divs that host
+// Plotly, Canvas or other visualizations, instead
+// of inline `style="height:…"`.
+//
+// Sizes (t-shirt scale):
+//   xs  → 180 px   (sparklines, compact plots)
+//   sm  → 220 px   (word clouds, small charts)
+//   md  → 260 px   (standard bar / funnel / pyramid)
+//   default → 280 px   (no suffix — most common)
+//   lg  → 300 px   (slightly taller plots)
+//   xl  → 340 px   (state machines, tall canvases)
+
+.chart-container    { height: 280px; }
+.chart-container-xs { height: 180px; }
+.chart-container-sm { height: 220px; }
+.chart-container-md { height: 260px; }
+.chart-container-lg { height: 300px; }
+.chart-container-xl { height: 340px; }

@@ -89,8 +89,6 @@ Epoch 10/10 — loss: **0.043** — accuracy: **0.981**
 Terminal sans titre : la barre "aptitek terminal" est générée automatiquement.
 :::
 
----
-
 ## Onglets — `aptitek/tabs`
 
 Le filtre `tabs` convertit tout bloc `:::` portant la classe `.tabs` en un
@@ -112,7 +110,7 @@ Contenu de l'onglet B.
 
 ### Onglets simples avec icônes
 
-:::: {.tabs}
+::: {.tabs}
 ##### Vue d'ensemble {.bi-grid-1x2}
 Premier onglet, actif par défaut. L'icône `.bi-grid-1x2` est injectée dans
 le bouton du tab par `bi-icons` au moment de la compilation.
@@ -131,17 +129,17 @@ def entrainement(lr=0.01, epochs=10):
     for e in range(epochs):
         print(f"Epoch {e+1}/{epochs}")
 ```
-::::
+:::
 
 ### Classes spéciales sur les Headers de tabs
 
-| Classe         | Effet                                                       |
-|:---------------|:------------------------------------------------------------|
-| `.tab-right`   | Pousse l'onglet à droite avec `ms-auto`                     |
-| `.search-bar`  | Rend le Header comme un champ de recherche inline           |
-| `.no-pane`     | Onglet sans panneau de contenu (contrôle pur)               |
-| `.btn` `.button` | Rend le Header comme un bouton d'action                   |
-| `.slider`      | Rend le Header comme un slider inline                       |
+| Classe           | Effet                                             |
+| :--------------- | :------------------------------------------------ |
+| `.tab-right`     | Pousse l'onglet à droite avec `ms-auto`           |
+| `.search-bar`    | Rend le Header comme un champ de recherche inline |
+| `.no-pane`       | Onglet sans panneau de contenu (contrôle pur)     |
+| `.btn` `.button` | Rend le Header comme un bouton d'action           |
+| `.slider`        | Rend le Header comme un slider inline             |
 
 ### Onglet droit + barre de recherche
 
@@ -158,7 +156,7 @@ Contenu principal.
 ::::
 ```
 
-:::: {.tabs}
+::: {.tabs}
 ##### Résultats {.bi-bar-chart}
 Contenu affiché dans le panneau principal.
 
@@ -166,7 +164,7 @@ Contenu affiché dans le panneau principal.
 Documentation ou aide contextuelle dans un onglet secondaire.
 
 ##### [Filtrer…]{.search-bar #tab-search .bi-search placeholder="Rechercher…"} {.tab-right .no-pane}
-::::
+:::
 
 ### Onglets dans une carte
 
@@ -202,21 +200,19 @@ et mettent à jour les visualisations en temps réel.
 ##### Métriques {.bi-activity}
 Valeurs actuelles lues depuis les inputs de l'onglet Paramètres :
 
-:::: {.metrics}
-| Loss              | Précision         | Époques             |
-| :---------------- | :---------------- | :------------------ |
-| [demo-loss]{.val} | [demo-acc]{.val}  | [demo-epochs]{.val} |
-::::
+::::: {.metrics}
+| Loss              | Précision        | Époques             |
+| :---------------- | :--------------- | :------------------ |
+| [demo-loss]{.val} | [demo-acc]{.val} | [demo-epochs]{.val} |
+:::::
 
 ##### Terminal {.bi-terminal}
-::: {.terminal}
+::::: {.terminal}
 Après **${demo-epochs}** époques — loss: **${demo-loss}** — acc: **${demo-acc}**
-:::
+:::::
 
 ::::
 :::
-
----
 
 ## Inputs réactifs — `aptitek/ojs-inputs`
 
@@ -331,17 +327,17 @@ La première colonne est accentuée en `--accent-primary`, les suivantes suivent
 
 ```markdown
 :::: {.metrics}
-| Perte          | Précision        | Époques           |
-| :------------- | :--------------- | :---------------- |
+| Perte             | Précision      | Époques            |
+| :---------------- | :------------- | :----------------- |
 | [inp-seuil]{.val} | [inp-lr]{.val} | [inp-epochs]{.val} |
 ::::
 ```
 
-:::: {.metrics}
-| Perte             | Précision       | Époques             |
-| :---------------- | :-------------- | :------------------ |
-| [inp-seuil]{.val} | [inp-lr]{.val}  | [inp-epochs]{.val}  |
-::::
+::: {.metrics}
+| Perte             | Précision      | Époques            |
+| :---------------- | :------------- | :----------------- |
+| [inp-seuil]{.val} | [inp-lr]{.val} | [inp-epochs]{.val} |
+:::
 
 ### Import de module OJS
 
@@ -352,8 +348,6 @@ exports du module dans vos blocs `{ojs}`.
 ```markdown
 [import #mon-module](./assets/js/custom/text.js)
 ```
-
----
 
 ## Icônes — `aptitek/bi-icons`
 
@@ -410,8 +404,6 @@ optionnelle. Utilisés typiquement dans les barres d'actions des onglets.
 
 [Lancer]{.btn .bi-play-fill #btn-demo-1} [Exporter]{.button .bi-download #btn-demo-2} []{.btn .bi-arrow-clockwise #btn-demo-3}
 
----
-
 ## Grille — `aptitek/grid`
 
 ### Grille explicite `.row` + `.col`
@@ -419,13 +411,13 @@ optionnelle. Utilisés typiquement dans les barres d'actions des onglets.
 Enveloppez des blocs `.col` dans un bloc `.row`. Le filtre calcule
 automatiquement les classes Bootstrap selon le nombre de colonnes détectées :
 
-| Colonnes | Classes appliquées            |
-|:--------:|:------------------------------|
-| 1        | `col-12`                      |
-| 2        | `col-12 col-md-6`             |
-| 3        | `col-12 col-md-4`             |
-| 4        | `col-12 col-md-6` (grille 2×2) |
-| ≥ 5      | `col-12 col-md-4 col-lg-3`   |
+| Colonnes | Classes appliquées             |
+| :------: | :----------------------------- |
+|    1     | `col-12`                       |
+|    2     | `col-12 col-md-6`              |
+|    3     | `col-12 col-md-4`              |
+|    4     | `col-12 col-md-6` (grille 2×2) |
+|   ≥ 5    | `col-12 col-md-4 col-lg-3`     |
 
 ```markdown
 ::: {.row}
@@ -481,13 +473,11 @@ Un tableau standard portant la classe `.grid` est converti en grille responsive,
 chaque cellule devenant une colonne Bootstrap.
 
 ```markdown
-| Titre A     | Titre B     |
-| :---------- | :---------- |
-| Contenu A1  | Contenu B1  |
+| Titre A    | Titre B    |
+| :--------- | :--------- |
+| Contenu A1 | Contenu B1 |
 {.grid}
 ```
-
----
 
 ## Iframes — `aptitek/embed`
 
@@ -497,8 +487,6 @@ enveloppé dans un `.ratio-embed` pour un ratio 16:9 responsive.
 ```markdown
 [Titre de l'iframe](https://example.com){.embed}
 ```
-
----
 
 ## Graphiques Plotly — `createBar` · `createLine` · `createFunnel` · `createPiramid`
 
@@ -510,21 +498,23 @@ createX(containerId, data, title?, options?)
 ```
 
 **Règles d'ID importantes :**
+
 - `createBar`, `createLine`, `createFunnel`, `createPiramid` → ID **sans** `#`
   (transmis directement à `Plotly.newPlot`)
+
 - `createWordCloud` → ID **sans** `#`
 - `renderStateMachineGraph`, `createGraph` → ID **avec** `#` (sélecteur CSS)
 
 Le conteneur doit être déclaré dans le DOM **avant** le bloc `{ojs}` qui l'utilise.
-Utilisez un `:::` avec un `#id` et une hauteur explicite :
+Utilisez un `:::` avec un `#id` et une classe de hauteur :
 
 ```markdown
-::: {#mon-graphe style="height: 300px;"}
+::: {#mon-graphe .chart-container-lg}
 :::
 
-```{ojs}
-render = { createLine("mon-graphe", { x: [...], y: [...] }, "Titre") }
-```
+`{ojs}
+  render = { createLine("mon-graphe", { x: [...], y: [...] }, "Titre") }
+`
 ```
 
 ### Courbe — `createLine`
@@ -532,7 +522,7 @@ render = { createLine("mon-graphe", { x: [...], y: [...] }, "Titre") }
 `createLine` appelle `Plotly.newPlot` avec `type: 'scatter'` et `mode: 'lines+markers'`.
 Lié aux inputs de la section précédente pour montrer la réactivité OJS.
 
-::: {#demo-line style="height:280px;"}
+::: {#demo-line .chart-container}
 :::
 
 ```{ojs}
@@ -556,7 +546,7 @@ renderLine = {
 
 ### Barres — `createBar`
 
-::: {#demo-bar style="height:260px;"}
+::: {#demo-bar .chart-container-md}
 :::
 
 ```{ojs}
@@ -583,11 +573,11 @@ renderBar = {
 
 ::: {.row}
 :::: {.col}
-::::: {#demo-funnel style="height:260px;"}
+::::: {#demo-funnel .chart-container-md}
 :::::
 ::::
 :::: {.col}
-::::: {#demo-pyramid style="height:260px;"}
+::::: {#demo-pyramid .chart-container-md}
 :::::
 ::::
 :::
@@ -630,20 +620,18 @@ renderPyramid = {
 
 **Options communes** aux fonctions Plotly :
 
-| Option                    | Valeur                                         |
-|:--------------------------|:-----------------------------------------------|
-| `options.layout`          | Objet Plotly layout (marges, fond, axes…)      |
-| `options.marker.color`    | Couleur des barres / points                    |
-| `options.line.color`      | Couleur de la courbe (`createLine`)            |
-| `options.shape`           | `"spline"` \| `"linear"` \| `"hv"` (`createLine`) |
-| `options.lineWidth`       | Épaisseur de la courbe                         |
-| `options.markerSize`      | Taille des marqueurs (0 pour les masquer)      |
-| `options.colors`          | Tableau de couleurs (`createFunnel`, `createPiramid`) |
+| Option                 | Valeur                                                |              |                       |
+| :--------------------- | :---------------------------------------------------- | :----------- | :-------------------- |
+| `options.layout`       | Objet Plotly layout (marges, fond, axes…)             |              |                       |
+| `options.marker.color` | Couleur des barres / points                           |              |                       |
+| `options.line.color`   | Couleur de la courbe (`createLine`)                   |              |                       |
+| `options.shape`        | `"spline"` \                                          | `"linear"` \ | `"hv"` (`createLine`) |
+| `options.lineWidth`    | Épaisseur de la courbe                                |              |                       |
+| `options.markerSize`   | Taille des marqueurs (0 pour les masquer)             |              |                       |
+| `options.colors`       | Tableau de couleurs (`createFunnel`, `createPiramid`) |              |                       |
 
 Utilisez toujours `getThemeColor("--sol-variable", "#fallback")` pour les
 couleurs afin de rester cohérent avec le thème Solarized.
-
----
 
 ## Réseaux — `createWordCloud` · `renderStateMachineGraph`
 
@@ -654,7 +642,7 @@ couleurs afin de rester cohérent avec le thème Solarized.
 // options : { radius, maxSpeed, initSpeed, keep }
 ```
 
-::: {#demo-wc style="height:220px;"}
+::: {#demo-wc .chart-container-sm}
 :::
 
 ```{ojs}
@@ -680,12 +668,12 @@ les particules et les labels de liens.
 
 **Statuts de nœuds prédéfinis :**
 
-| Statut      | Rendu visuel                                         |
-|:------------|:-----------------------------------------------------|
-| `"entry"`   | Fond bleu clair — état initial                       |
-| `"current"` | Fond jaune, pulsation, particules — état actif       |
-| `"past"`    | Fond vert, particules fluides — état parcouru        |
-| (défaut)    | Fond neutre — état inactif                           |
+| Statut      | Rendu visuel                                   |
+| :---------- | :--------------------------------------------- |
+| `"entry"`   | Fond bleu clair — état initial                 |
+| `"current"` | Fond jaune, pulsation, particules — état actif |
+| `"past"`    | Fond vert, particules fluides — état parcouru  |
+| (défaut)    | Fond neutre — état inactif                     |
 
 **Formes de nœuds (`shape`) disponibles :**
 `"circle"` · `"square"` · `"rect"` · `"rounded rect"` · `"pill"` · `"oval"` · `"diamond"`
@@ -706,7 +694,7 @@ les particules et les labels de liens.
 }
 ```
 
-::: {#demo-sm style="height:340px;"}
+::: {#demo-sm .chart-container-xl}
 :::
 
 ```{ojs}
