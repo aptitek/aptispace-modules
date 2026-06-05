@@ -132,6 +132,62 @@ code:not(pre code) {
     font-size: 0.85em;
 }
 
+// MathJax formulas follow the Solarized runtime tokens.
+mjx-container {
+    color: var(--sol-base02);
+
+    mjx-mi {
+        color: var(--accent-primary);
+    }
+
+    mjx-mn {
+        color: var(--accent-warning);
+    }
+
+    mjx-mo,
+    mjx-mrow > mjx-mo {
+        color: var(--sol-base01);
+    }
+
+    mjx-mtext {
+        color: var(--sol-base00);
+    }
+
+    mjx-msup,
+    mjx-msub,
+    mjx-msubsup {
+        color: inherit;
+    }
+}
+
+// Display MathJax blocks (inline formulas remain untouched by the card style)
+mjx-container[display="true"] {
+    display: block;
+    margin: 1.35rem 0 !important;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    border: 1px solid rgba(var(--sol-blue-rgb), 0.22);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 10px;
+    background:
+        linear-gradient(135deg, rgba(var(--sol-blue-rgb), 0.08), rgba(var(--sol-cyan-rgb), 0.035)),
+        var(--sol-base3);
+    box-shadow: 0 6px 18px rgba(var(--sol-base03-rgb), 0.04);
+    color: var(--sol-base02);
+
+    mjx-math {
+        font-size: 1.08em;
+    }
+
+    mjx-mfrac {
+        color: var(--accent-primary);
+    }
+
+    mjx-menclose {
+        color: var(--accent-primary);
+    }
+}
+
 // =============================================================================
 // 5. LEFT SIDEBAR NAVIGATION
 // =============================================================================

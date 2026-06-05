@@ -42,7 +42,7 @@ $$I(p) = -\log_2 p$$
 
 Le **bit** (binary digit) est l'unité fondamentale de l'information. Il correspond à la surprise apportée par l'un des deux résultats d'une pièce équilibrée ($p = \tfrac{1}{2}$).
 
-$$\boxed{I(p) = -\log_2 p \quad \text{(bits)}}$$
+$$I(p) = -\log_2 p \quad \text{(bits)}$$
 
 Plus $p$ est petit (événement rare), plus $I(p)$ est grand (surprise élevée).
 
@@ -112,7 +112,7 @@ renderIPChart = {
 
 L'entropie $H(X)$ mesure l'**incertitude moyenne** d'une source : c'est la quantité d'information qu'on *espère* recevoir à chaque symbole émis. C'est l'espérance de $I(p)$ :
 
-$$\boxed{H(X) = -\sum_{i=1}^{N} p_i \log_2 p_i \quad \text{(bits par symbole)}}$$
+$$H(X) = -\sum_{i=1}^{N} p_i \log_2 p_i \quad \text{(bits par symbole)}$$
 
 ::: {.card-window}
 #### Entropie d'une source binaire {.bi-activity}
@@ -286,16 +286,37 @@ inf_src_n    = inf_src_data.labels.length
 inf_src_h    = inf_src_data.probs.reduce((a, p) => a + (p > 0 ? -p * Math.log2(p) : 0), 0).toFixed(4)
 inf_src_hmax = Math.log2(inf_src_n).toFixed(4)
 
+inf_src_palette = [
+  getThemeColor("--sol-blue"),
+  getThemeColor("--sol-green"),
+  getThemeColor("--sol-orange"),
+  getThemeColor("--sol-red"),
+  getThemeColor("--sol-violet"),
+  getThemeColor("--sol-cyan"),
+  getThemeColor("--sol-magenta"),
+  getThemeColor("--sol-yellow")
+]
+
 renderSrcChart = {
   inf_src_data;
+  inf_src_palette;
   const { labels, probs } = inf_src_data;
+  const colors = labels.map((_, i) => inf_src_palette[i % inf_src_palette.length]);
   createBar("inf-src-canvas",
     { x: labels, y: probs.map(p => +(p * 100).toFixed(2)) },
     "Distribution",
     {
-      marker: { color: getThemeColor("--sol-blue", "#268bd2") },
+      marker: {
+        color: colors,
+        line: { color: colors.map(c => aptitek.utils.rgba(c, 0.55)), width: 1.5 }
+      },
       layout: {
-        yaxis: { title: "Probabilité (%)", range: [0, 110] },
+        yaxis: {
+          title: "Probabilité (%)",
+          range: [0, 110],
+          gridcolor: aptitek.utils.rgba(getThemeColor("--sol-base1"), 0.18),
+          zerolinecolor: aptitek.utils.rgba(getThemeColor("--sol-base1"), 0.35)
+        },
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         margin: { t: 40, b: 40, l: 60, r: 20 }
       }
@@ -315,28 +336,33 @@ scatter_samples = {
 
 renderScatterChart = {
   scatter_samples;
+  inf_src_palette;
   const { labels } = inf_src_data;
   const N = scatter_samples.length;
-  const palette = [
-    getThemeColor("--sol-blue",    "#268bd2"),
-    getThemeColor("--sol-green",   "#859900"),
-    getThemeColor("--sol-orange",  "#cb4b16"),
-    getThemeColor("--sol-red",     "#dc322f"),
-    getThemeColor("--sol-violet",  "#6c71c4"),
-    getThemeColor("--sol-cyan",    "#2aa198"),
-    getThemeColor("--sol-magenta", "#d33682"),
-    getThemeColor("--sol-yellow",  "#b58900"),
-  ];
   const traces = labels.map((lbl, i) => {
     const xs = scatter_samples.reduce((a, s, idx) => { if (s === i) a.push(idx); return a; }, []);
     return { x: xs, y: Array(xs.length).fill(lbl), mode: "markers", name: lbl,
-      marker: { size: 5, color: palette[i % palette.length], opacity: 0.75 },
+      marker: {
+        size: 5,
+        color: inf_src_palette[i % inf_src_palette.length],
+        opacity: 0.78,
+        line: { color: aptitek.utils.rgba(getThemeColor("--sol-base03"), 0.25), width: 0.5 }
+      },
       hovertemplate: `#%{x} → ${lbl}<extra></extra>` };
   });
   window.Plotly.newPlot("inf-scatter-canvas", traces, {
     title: { text: "Séquence — 200 tirages", font: { size: 13 } },
-    xaxis: { title: "Index", range: [-2, N + 2] },
-    yaxis: { title: "Symbole", autorange: "reversed" },
+    xaxis: {
+      title: "Index",
+      range: [-2, N + 2],
+      gridcolor: aptitek.utils.rgba(getThemeColor("--sol-base1"), 0.14),
+      zerolinecolor: aptitek.utils.rgba(getThemeColor("--sol-base1"), 0.28)
+    },
+    yaxis: {
+      title: "Symbole",
+      autorange: "reversed",
+      gridcolor: aptitek.utils.rgba(getThemeColor("--sol-base1"), 0.10)
+    },
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
     margin: { t: 40, b: 50, l: 80, r: 20 },
     template: getPlotlyTheme(), showlegend: false
@@ -370,34 +396,55 @@ viewof inf_unit_zoom = aptitek.createSlider({
 
 ```{ojs}
 INF_UNITS = [
-  { name: "bit",       sym: "b",  log10: Math.log10(1/8), val: "1/8 octet",  desc: "L'unité atomique. Représente deux états : 0 ou 1.",                          ex: ["Résultat d'un lancer de pièce", "Pixel binaire (noir/blanc)", "État d'une porte logique"],   iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "Le bit est universel — aucune distinction SI/IEC." } },
-  { name: "octet",     sym: "o",  log10: 0,               val: "8 bits",     desc: "L'unité de stockage de base. Encode un caractère ASCII ou une valeur 0–255.", ex: ["1 caractère texte (ASCII)", "1 pixel en niveaux de gris", "1 couleur RGB = 3 octets"],       iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "L'octet est universel — aucune distinction SI/IEC." } },
-  { name: "kilooctet", sym: "Ko", log10: 3,               val: "10³ octets", desc: "La plus petite unité de fichier pratique du quotidien.",                     ex: ["SMS (160 c.) ≈ 0,16 Ko", "Fichier texte court ≈ 2 Ko", "Code source d'une fonction"],         iec: { sym: "Kio", val: "2¹⁰ o = 1 024 o",     ecart: "+2,4 %", ecart_pct: 2.4,  note: "100 Ko (fabricant) = 97,7 Kio dans l'OS." } },
-  { name: "mégaoctet", sym: "Mo", log10: 6,               val: "10⁶ octets", desc: "Photo numérique, page web complète ou fichier audio court.",                  ex: ["Photo JPEG ≈ 3 Mo", "Page web complète ≈ 2 Mo", "1 min de musique MP3 ≈ 1 Mo"],            iec: { sym: "Mio", val: "2²⁰ o ≈ 1,05 Mo",     ecart: "+4,9 %", ecart_pct: 4.9,  note: "500 Mio affichés par l'OS = 524 Mo selon le fabricant." } },
-  { name: "gigaoctet", sym: "Go", log10: 9,               val: "10⁹ octets", desc: "Capacité d'un film HD, d'une barrette RAM ou du génome humain brut.",         ex: ["Film HD ≈ 4 Go", "Génome humain brut ≈ 3 Go", "Application mobile ≈ 0,1–1 Go"],           iec: { sym: "Gio", val: "2³⁰ o ≈ 1,07 Go",     ecart: "+7,4 %", ecart_pct: 7.4,  note: "Clé USB 8 Go (fabricant) = 7,45 Gio dans l'OS." } },
-  { name: "téraoctet", sym: "To", log10: 12,              val: "10¹² octets", desc: "Disques durs et SSD grand public. Des bibliothèques vidéo entières.",         ex: ["SSD 1 To ≈ 250 000 photos", "HDD 4 To ≈ 1 000 films HD", "Wikipedia intégral (texte) ≈ 22 Go"], iec: { sym: "Tio", val: "2⁴⁰ o ≈ 1,10 To",    ecart: "+10,0 %", ecart_pct: 10.0, note: "Disque 1 To (fabricant) = 931 Gio dans Windows/macOS." } },
-  { name: "pétaoctet", sym: "Po", log10: 15,              val: "10¹⁵ octets", desc: "Échelle des data centers et grandes plateformes mondiales.",                  ex: ["Facebook photos > 100 Po", "CERN LHC ≈ 15 Po/an", "Toute la musique jamais enregistrée ≈ 3 Po"], iec: { sym: "Pio", val: "2⁵⁰ o ≈ 1,13 Po",    ecart: "+12,6 %", ecart_pct: 12.6, note: "1 Po (SI) ≈ 888 Tio selon la définition IEC." } },
+  { name: "bit",       sym: "b",  icon: "⚙️", log10: Math.log10(1/8), val: "1/8 octet",  desc: "L'unité atomique. Représente deux états : 0 ou 1.",                          ex: ["Résultat d'un lancer de pièce", "Pixel binaire (noir/blanc)", "État d'une porte logique"],   iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "Le bit est universel — aucune distinction SI/IEC." } },
+  { name: "octet",     sym: "o",  icon: "🔤", log10: 0,               val: "8 bits",     desc: "L'unité de stockage de base. Encode un caractère ASCII ou une valeur 0–255.", ex: ["1 caractère texte (ASCII)", "1 pixel en niveaux de gris", "1 couleur RGB = 3 octets"],       iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "L'octet est universel — aucune distinction SI/IEC." } },
+  { name: "kilooctet", sym: "Ko", icon: "📝", log10: 3,               val: "10³ octets", desc: "La plus petite unité de fichier pratique du quotidien.",                     ex: ["SMS (160 c.) ≈ 0,16 Ko", "Fichier texte court ≈ 2 Ko", "Code source d'une fonction"],         iec: { sym: "Kio", val: "2¹⁰ o = 1 024 o",     ecart: "+2,4 %", ecart_pct: 2.4,  note: "100 Ko (fabricant) = 97,7 Kio dans l'OS." } },
+  { name: "mégaoctet", sym: "Mo", icon: "🖼️", log10: 6,               val: "10⁶ octets", desc: "Photo numérique, page web complète ou fichier audio court.",                  ex: ["Photo JPEG ≈ 3 Mo", "Page web complète ≈ 2 Mo", "1 min de musique MP3 ≈ 1 Mo"],            iec: { sym: "Mio", val: "2²⁰ o ≈ 1,05 Mo",     ecart: "+4,9 %", ecart_pct: 4.9,  note: "500 Mio affichés par l'OS = 524 Mo selon le fabricant." } },
+  { name: "gigaoctet", sym: "Go", icon: "🎬", log10: 9,               val: "10⁹ octets", desc: "Capacité d'un film HD, d'une barrette RAM ou du génome humain brut.",         ex: ["Film HD ≈ 4 Go", "Génome humain brut ≈ 3 Go", "Application mobile ≈ 0,1–1 Go"],           iec: { sym: "Gio", val: "2³⁰ o ≈ 1,07 Go",     ecart: "+7,4 %", ecart_pct: 7.4,  note: "Clé USB 8 Go (fabricant) = 7,45 Gio dans l'OS." } },
+  { name: "téraoctet", sym: "To", icon: "💾", log10: 12,              val: "10¹² octets", desc: "Disques durs et SSD grand public. Des bibliothèques vidéo entières.",         ex: ["SSD 1 To ≈ 250 000 photos", "HDD 4 To ≈ 1 000 films HD", "Wikipedia intégral (texte) ≈ 22 Go"], iec: { sym: "Tio", val: "2⁴⁰ o ≈ 1,10 To",    ecart: "+10,0 %", ecart_pct: 10.0, note: "Disque 1 To (fabricant) = 931 Gio dans Windows/macOS." } },
+  { name: "pétaoctet", sym: "Po", icon: "🏢", log10: 15,              val: "10¹⁵ octets", desc: "Échelle des data centers et grandes plateformes mondiales.",                  ex: ["Facebook photos > 100 Po", "CERN LHC ≈ 15 Po/an", "Toute la musique jamais enregistrée ≈ 3 Po"], iec: { sym: "Pio", val: "2⁵⁰ o ≈ 1,13 Po",    ecart: "+12,6 %", ecart_pct: 12.6, note: "1 Po (SI) ≈ 888 Tio selon la définition IEC." } },
 ]
 
 INF_OBJECTS = [
-  { name: "SMS",      bytes: 160,    y: 0.55 },
-  { name: "E-mail",   bytes: 25e3,   y: 0.80 },
-  { name: "Page web", bytes: 500e3,  y: 0.55 },
-  { name: "Photo",    bytes: 3e6,    y: 0.80 },
-  { name: "MP3",      bytes: 4e6,    y: 1.05 },
-  { name: "Génome",   bytes: 3e9,    y: 0.80 },
-  { name: "Film HD",  bytes: 4e9,    y: 0.55 },
-  { name: "SSD 1To",  bytes: 1e12,   y: 0.55 },
+  { name: "SMS",      bytes: 160,    y: 0.55, icon: "💬", color: "--sol-blue" },
+  { name: "E-mail",   bytes: 25e3,   y: 0.80, icon: "✉️", color: "--sol-cyan" },
+  { name: "Page web", bytes: 500e3,  y: 0.55, icon: "🌐", color: "--sol-green" },
+  { name: "Photo",    bytes: 3e6,    y: 0.80, icon: "🖼️", color: "--sol-blue" },
+  { name: "MP3",      bytes: 4e6,    y: 1.05, icon: "🎵", color: "--sol-yellow" },
+  { name: "Génome",   bytes: 3e9,    y: 0.80, icon: "🧬", color: "--sol-violet" },
+  { name: "Film HD",  bytes: 4e9,    y: 0.55, icon: "🎬", color: "--sol-orange" },
+  { name: "SSD 1To",  bytes: 1e12,   y: 0.55, icon: "💾", color: "--sol-red" },
 ]
+
+unit_example_icon = (text) => {
+  const key = String(text);
+  if (key.includes("Photo")) return "🖼️";
+  if (key.includes("Page web")) return "🌐";
+  if (key.includes("MP3") || key.includes("musique")) return "🎵";
+  if (key.includes("SMS")) return "💬";
+  if (key.includes("texte")) return "📝";
+  if (key.includes("Code")) return "⌨️";
+  if (key.includes("Film")) return "🎬";
+  if (key.includes("Génome")) return "🧬";
+  if (key.includes("SSD") || key.includes("HDD")) return "💾";
+  if (key.includes("Wikipedia")) return "📚";
+  if (key.includes("CERN")) return "🔬";
+  if (key.includes("Facebook")) return "🏢";
+  return "📦";
+}
 
 inf_unit_focus        = INF_UNITS[inf_unit_zoom]
 inf_unit_name         = inf_unit_focus.name
+inf_unit_icon         = inf_unit_focus.icon
 inf_unit_sym          = inf_unit_focus.sym
 inf_unit_val          = inf_unit_focus.val
 inf_unit_desc         = inf_unit_focus.desc
 inf_unit_ex1          = inf_unit_focus.ex[0]
 inf_unit_ex2          = inf_unit_focus.ex[1]
 inf_unit_ex3          = inf_unit_focus.ex[2]
+inf_unit_ex1_icon     = unit_example_icon(inf_unit_ex1)
+inf_unit_ex2_icon     = unit_example_icon(inf_unit_ex2)
+inf_unit_ex3_icon     = unit_example_icon(inf_unit_ex3)
 inf_unit_iec_sym      = inf_unit_focus.iec.sym
 inf_unit_iec_val      = inf_unit_focus.iec.val
 inf_unit_iec_ecart    = inf_unit_focus.iec.ecart
@@ -428,10 +475,21 @@ renderUnitsChart = {
     y: INF_OBJECTS.map(o => o.y),
     mode: "markers+text",
     type: "scatter",
-    marker: { size: 9, color: getThemeColor("--sol-orange", "#cb4b16"), symbol: "circle" },
-    text: INF_OBJECTS.map(o => o.name),
-    textposition: "top center",
-    textfont: { size: 9 },
+    marker: {
+      size: 24,
+      color: INF_OBJECTS.map(o => aptitek.utils.rgba(getThemeColor(o.color), 0.16)),
+      line: {
+        color: INF_OBJECTS.map(o => getThemeColor(o.color)),
+        width: 2
+      },
+      symbol: "circle"
+    },
+    text: INF_OBJECTS.map(o => o.icon),
+    textposition: "middle center",
+    textfont: {
+      size: 15,
+      color: INF_OBJECTS.map(o => getThemeColor(o.color))
+    },
     hovertemplate: INF_OBJECTS.map(o => `${o.name}<extra></extra>`),
     name: ""
   };
@@ -482,15 +540,42 @@ renderUnitsChart = {
 :::
 ::::
 
-${inf-unit-desc}
+:::: {.unit-examples}
+::: {.unit-example-hero}
+[inf-unit-icon]{.val .unit-example-icon}
 
-- ${inf-unit-ex1}
-- ${inf-unit-ex2}
-- ${inf-unit-ex3}
+::: {.unit-example-copy}
+[Type de contenu]{.unit-example-label}
+
+[inf-unit-desc]{.val .unit-example-desc}
+:::
+:::
+
+:::: {.unit-example-cards}
+::: {.unit-example-card}
+[Exemple]{.unit-example-label}
+
+[inf-unit-ex1-icon]{.val .unit-example-card-icon}
+[inf-unit-ex1]{.val}
+:::
+
+::: {.unit-example-card}
+[Exemple]{.unit-example-label}
+
+[inf-unit-ex2-icon]{.val .unit-example-card-icon}
+[inf-unit-ex2]{.val}
+:::
+
+::: {.unit-example-card}
+[Exemple]{.unit-example-label}
+
+[inf-unit-ex3-icon]{.val .unit-example-card-icon}
+[inf-unit-ex3]{.val}
+:::
+::::
+::::
 
 Les préfixes **SI** (décimaux) et **IEC** (binaires) diffèrent légèrement — d'où les capacités qui semblent « perdues ».
-
-${inf-unit-iec-note}
 
 :::
 

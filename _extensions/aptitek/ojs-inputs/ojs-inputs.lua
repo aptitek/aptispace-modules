@@ -245,7 +245,13 @@ local function transform_span(el)
     if string.match(expr, "^[a-zA-Z_][a-zA-Z0-9_%-]*$") then
       local ojs_expr = expr:gsub("%-", "_")
       val_exprs[ojs_expr] = true
-      local html = string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', ojs_expr)
+      local span_classes = { "val", "ojs-inline-value" }
+      for _, cls in ipairs(el.classes) do
+        if cls ~= "val" and cls ~= "ojs-inline-value" then
+          table.insert(span_classes, cls)
+        end
+      end
+      local html = string.format('<span class="%s" data-expr="%s"></span>', table.concat(span_classes, " "), ojs_expr)
       return pandoc.RawInline('html', html)
     end
   end
