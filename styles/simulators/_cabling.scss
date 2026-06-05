@@ -13,7 +13,9 @@
     box-shadow:
         0 15px 40px rgba(var(--sol-base03-rgb), 0.4),
         inset 0 1px 2px rgba(var(--sol-base3-rgb), 0.03);
-    overflow: visible !important;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .panel-screw {
@@ -72,19 +74,21 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 40px;
+    gap: 16px;
     width: 100%;
-    max-width: 1100px;
+    max-width: 100%;
     margin: 0 auto;
-    overflow: visible !important;
+    min-width: 0;
+    overflow: visible;
 
-    #cabling-canvas {
+    .cabling-canvas {
         flex: 1 1 auto;
         margin: 0;
         padding: 16px 0;
         box-sizing: border-box;
         overflow: visible !important;
         position: relative;
+        min-width: 0;
     }
 
     .lever-wrapper {
@@ -93,30 +97,38 @@
     }
 }
 
-#cabling-canvas {
+.cabling-canvas {
     display: flex;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
     position: relative;
 }
 
 .cabling-gap {
-    flex: 1 1 auto;
-    min-width: 80px;
+    flex: 1 1 56px;
+    min-width: 28px;
 }
 
 .cabling-col {
     display: flex;
-    flex: 0 0 auto;
+    flex: 0 1 max-content;
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
+    max-width: 42%;
+    min-width: 0;
 
-    &--left { width: 210px; }
-    &--right { width: 120px; }
+    &--left { width: max-content; }
+    &--right { width: max-content; }
 }
 
 .cabling-pill {
-    width: 100%;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: 100%;
     padding: 12px 18px;
     border: 1px solid rgba(var(--sol-base1-rgb), 0.12);
     border-radius: 10px;
@@ -127,16 +139,17 @@
     font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 600;
-    overflow: hidden;
+    line-height: 1.25;
+    min-height: 48px;
+    overflow-wrap: anywhere;
     position: relative;
-    text-overflow: ellipsis;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    white-space: nowrap;
+    white-space: normal;
 
     .cabling-col--left & {
         border-left: 3px solid var(--sol-base01);
-        text-align: right;
+        text-align: left;
     }
 
     .cabling-col--right & {
@@ -144,7 +157,7 @@
         color: var(--sol-base1);
         font-family: var(--font-code);
         font-size: 0.82rem;
-        text-align: left;
+        text-align: right;
     }
 
     &:hover {
@@ -166,7 +179,7 @@
     }
 }
 
-#cabling-canvas .jtk-endpoint circle {
+.cabling-canvas .jtk-endpoint circle {
     transition: stroke 0.2s ease, stroke-width 0.2s ease;
 }
 
@@ -198,19 +211,19 @@
     }
 }
 
-#cabling-canvas .jtk-connector path {
+.cabling-canvas .jtk-connector path {
     filter: drop-shadow(0 3px 5px rgba(var(--sol-base03-rgb), 0.35));
     stroke-linecap: round;
     transition: stroke 0.3s ease, filter 0.3s ease;
 }
 
-#cabling-canvas .jtk-dragging path {
+.cabling-canvas .jtk-dragging path {
     animation: cable-flow 0.4s;
     opacity: 0.65;
     stroke-dasharray: 7 5;
 }
 
-#cabling-canvas .conn-correct path:not(.jtk-connector-outline) {
+.cabling-canvas .conn-correct path:not(.jtk-connector-outline) {
     animation: cable-flow-correct 0.8s linear infinite;
     filter: drop-shadow(0 0 8px rgba(var(--sol-green-rgb), 0.8));
     stroke: var(--sol-green) !important;
@@ -218,7 +231,7 @@
     stroke-width: 4 !important;
 }
 
-#cabling-canvas .conn-incorrect path:not(.jtk-connector-outline) {
+.cabling-canvas .conn-incorrect path:not(.jtk-connector-outline) {
     animation: cable-spark 0.14s linear infinite;
     filter: drop-shadow(0 0 8px rgba(var(--sol-red-rgb), 0.7));
     stroke: var(--sol-red) !important;

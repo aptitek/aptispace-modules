@@ -1032,9 +1032,11 @@ export function renderStateMachineGraph(container, graphData, customOptions = {}
  * @param {string} storageMode - 'ligne' or 'colonne'.
  * @param {string} queryCol - Target column being read (e.g. 'Salaire').
  * @param {Array} tableData - Dynamically parsed markdown table array of objects.
+ * @param {Object} options - Playback options.
+ * @param {boolean} [options.autoStart=true] - Starts animation immediately.
  * @returns {Object} ForceGraph instance.
  */
-export function createRamStorageGraph(containerSelector, storageMode, queryCol, tableData = []) {
+export function createRamStorageGraph(containerSelector, storageMode, queryCol, tableData = [], options = {}) {
   const container = typeof containerSelector === 'string'
     ? document.querySelector(containerSelector.startsWith('#') ? containerSelector : '#' + containerSelector)
     : containerSelector;
@@ -1314,7 +1316,7 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   });
   resizeObserver.observe(container);
 
-  // 8. Initialize State Engine and loop playback
+  // 8. Initialize State Engine and expose playback controls
   const animationEngine = new StateMachine({
     states: statesSequence,
     interval: 1100,
@@ -1336,17 +1338,18 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   });
 
   container.__stateMachine = animationEngine;
-  animationEngine.start();
+  const autoStart = options.autoStart !== false;
 
-  // Inject start button callback
-  const startBtn = document.getElementById("btn-ram-start");
-  if (startBtn) {
-    startBtn.onclick = (e) => {
-      e.preventDefault();
-      animationEngine.reset();
-      animationEngine.start();
-    };
-  }
+  graph.start = () => animationEngine.start();
+  graph.pause = () => animationEngine.stop();
+  graph.reset = () => animationEngine.reset();
+  graph.restart = () => {
+    animationEngine.reset();
+    animationEngine.start();
+  };
+  graph.isPlaying = () => animationEngine.isPlaying;
+
+  if (autoStart) graph.start();
 
   // Hook destroy method for clean module teardown
   graph.destroy = () => {

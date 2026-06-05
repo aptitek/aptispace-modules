@@ -64,6 +64,13 @@ export { createDynamicSvg, bindSvgToTabset } from "./custom/dynamic-svg.js";
 export { createLever } from "./custom/lever.js";
 export { initMoboSvg, renderMobo } from "./custom/mobo.js";
 export { getRamData, renderRam } from "./custom/ram.js";
+export { createSimulationControl } from "./custom/simulation-control.js";
+export {
+  renderMeanGraph,
+  renderQuartileMedianGraph,
+  renderVarianceGraph,
+  renderStandardDeviationGraph
+} from "./custom/statistics.js";
 export { createLabeledText } from "./custom/text.js";
 
 
