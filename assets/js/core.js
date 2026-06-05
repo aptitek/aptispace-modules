@@ -478,6 +478,76 @@ export function initTabActions() {
 // =====================================================================
 
 /**
+ * Labeled step slider — displays named tick marks below the range track and a
+ * badge reflecting the current label. Returns a DOM element usable with OJS
+ * `viewof`; the element dispatches a standard "input" event and exposes `.value`
+ * as the current numeric index.
+ *
+ * Migrated from legacy deeplearning/assets/js/core/core.js → createSlider().
+ *
+ * @param {Object}   opts
+ * @param {string}   opts.label      Heading shown above the track
+ * @param {string[]} [opts.labels]   Named ticks; omit to display raw numbers
+ * @param {number}   [opts.value=0]  Initial index
+ * @param {number}   [opts.min=0]    Minimum index
+ * @param {number}   [opts.max=3]    Maximum index
+ * @param {number}   [opts.step=1]   Step increment
+ */
+export function createSlider({ label, labels, value = 0, min = 0, max = 3, step = 1 } = {}) {
+  const container = document.createElement("div");
+  container.className = "sim-slider";
+
+  const header = document.createElement("div");
+  header.className = "slider-header";
+
+  const labelEl = document.createElement("label");
+  labelEl.textContent = label;
+
+  const badge = document.createElement("span");
+  badge.className = "badge font-monospace slider-v-badge";
+  badge.textContent = labels ? labels[value] : value;
+
+  header.append(labelEl, badge);
+
+  const input = document.createElement("input");
+  input.type = "range";
+  Object.assign(input, { min, max, step, value, className: "slider-input form-range" });
+
+  const arrow = document.createElement("span");
+  arrow.className = "slider-v-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "▶";
+
+  const trackRow = document.createElement("div");
+  trackRow.className = "slider-track-row";
+  trackRow.append(input, arrow);
+
+  container.append(header, trackRow);
+
+  if (labels) {
+    const ticks = document.createElement("div");
+    ticks.className = "slider-ticks";
+    labels.forEach(l => {
+      const span = document.createElement("span");
+      span.textContent = l;
+      ticks.appendChild(span);
+    });
+    container.appendChild(ticks);
+  }
+
+  input.addEventListener("input", () => {
+    badge.textContent = labels ? labels[input.value] : input.value;
+    container.value = step % 1 === 0 ? parseInt(input.value) : parseFloat(input.value);
+    container.dispatchEvent(new CustomEvent("input"));
+  });
+
+  container.value = parseInt(value);
+  return container;
+}
+
+// =====================================================================
+
+/**
  * A highly reusable, lightweight state machine engine for driving step-by-step
  * animations, diagnostics, and structured reactive sequences in simulators.
  */

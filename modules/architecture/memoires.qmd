@@ -1,0 +1,270 @@
+---
+title: "La Hiérarchie Mémoire"
+---
+
+Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si la donnée est **à portée de main**. La mémoire d'un ordinateur est organisée en une pyramide : plus on monte, plus c'est rapide — mais plus c'est petit et coûteux.
+
+## La Pyramide des Vitesses
+
+::: {.card-window .mb-4}
+#### 🔬 Radiographie d'un ordinateur {.bi-cpu}
+
+:::: {.tabs .mem-mobo-tabset}
+##### SSD {.bi-hdd-network}
+
+::::: {.row}
+:::::: {.col}
+::::::: {.card .h-100}
+Au repos, toutes vos données (fichiers, scripts, bases de données) dorment sur le **disque**. C'est le stockage le plus lent, mais sa capacité est immense et non volatile — les données survivent à l'extinction.
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Vitesse {.bi-speedometer2}
+
+[]{.progress-bar .bg-danger data-progress=1}
+
+*Très lente* · [~15 000 ns]{.text-muted}
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Capacité {.bi-database}
+
+[]{.progress-bar .bg-primary data-progress=100}
+
+*Immense* · [1 TB]{.text-muted}
+:::::::
+::::::
+:::::
+
+##### RAM {.bi-memory}
+
+::::: {.row}
+:::::: {.col}
+::::::: {.card .h-100}
+Quand un programme s'exécute, les données passent du disque à la **RAM** — bien plus rapide, mais volatile (vidée à l'extinction) et de capacité limitée.
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Vitesse {.bi-speedometer2}
+
+[]{.progress-bar .bg-warning data-progress=35}
+
+*Moyenne* · [~60 ns]{.text-muted}
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Capacité {.bi-database}
+
+[]{.progress-bar .bg-primary data-progress=65}
+
+*Modérée* · [16 GB]{.text-muted}
+:::::::
+::::::
+:::::
+
+##### Cache L3 {.bi-layers-half}
+
+::::: {.row}
+:::::: {.col}
+::::::: {.card .h-100}
+Pour anticiper les besoins du CPU, les données sont pré-chargées en **Cache L3** — un cache partagé entre tous les cœurs du processeur. Très rapide, mais mesuré en mégaoctets.
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Vitesse {.bi-speedometer2}
+
+[]{.progress-bar .bg-success data-progress=70}
+
+*Très rapide* · [~10 ns]{.text-muted}
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Capacité {.bi-database}
+
+[]{.progress-bar .bg-primary data-progress=8}
+
+*Très faible* · [16 MB]{.text-muted}
+:::::::
+::::::
+:::::
+
+##### Caches L2 & L1 {.bi-lightning-charge}
+
+::::: {.row}
+:::::: {.col}
+::::::: {.card .h-100}
+Chaque cœur possède ses propres caches **L2** (moyen) et **L1** (ultra-rapide). C'est ici que se joue le **cache hit ou miss** : la donnée est-elle déjà là ?
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Vitesse {.bi-speedometer2}
+
+[]{.progress-bar .bg-success data-progress=95}
+
+*Instantané* · [1 – 3 ns]{.text-muted}
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Capacité {.bi-database}
+
+[]{.progress-bar .bg-primary data-progress=3}
+
+*Minuscule* · [576 KB]{.text-muted}
+:::::::
+::::::
+:::::
+
+##### Registres {.bi-cpu}
+
+::::: {.row}
+:::::: {.col}
+::::::: {.card .h-100}
+Tout en haut : les **registres** du cœur. Ce sont quelques centaines d'octets directement câblés aux unités de calcul. Vitesse maximale, mais on ne peut y stocker que l'opération en cours.
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Vitesse {.bi-speedometer2}
+
+[]{.progress-bar .bg-success data-progress=100}
+
+*Vitesse lumière* · [< 0,3 ns]{.text-muted}
+:::::::
+::::::
+
+:::::: {.col}
+::::::: {.card .h-100}
+##### Capacité {.bi-database}
+
+[]{.progress-bar .bg-primary data-progress=1}
+
+*Quelques octets* · [512 B]{.text-muted}
+:::::::
+::::::
+:::::
+::::
+
+:::: {#mem-motherboard-view .motherboard-view .w-100}
+![](/assets/ui/motherboard.svg){.background}
+::::
+
+```{ojs}
+mutable memHardwareState = "ssd"
+
+_memMoboTabWatcher = {
+  const w = aptitek.createTabsetWatcher(
+    ".mem-mobo-tabset",
+    { "SSD": "ssd", "RAM": "ram", "Cache L3": "l3", "Caches L2 & L1": "l2_l1", "Registres": "cpu_reg" },
+    (val) => { mutable memHardwareState = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+```
+
+```{ojs}
+memMoboComponent = aptitek.initInteractiveSvg("#mem-motherboard-view", {
+  tabsetSelector: ".mem-mobo-tabset",
+  tabElementMap: {
+    "part-ssd": "SSD", "part-ram": "RAM", "cpu-l3": "Cache L3",
+    "cpu-core-0": "Caches L2 & L1", "cpu-core-1": "Caches L2 & L1",
+    "cpu-core-2": "Caches L2 & L1", "cpu-core-3": "Caches L2 & L1",
+    "register": "Registres"
+  },
+  states: ["ssd", "ram", "l3", "l2_l1", "cpu_reg"],
+  elementClasses: {
+    "part-ssd": ["highlight-blue"], "part-ram": ["highlight-green"],
+    "cpu-l3": ["highlight-red"],
+    "cpu-core-0": ["highlight-cyan"], "cpu-core-1": ["highlight-cyan"],
+    "cpu-core-2": ["highlight-cyan"], "cpu-core-3": ["highlight-cyan"],
+    "register": ["highlight-violet"]
+  },
+  activeElementMap: {
+    ssd: ["part-ssd"], ram: ["part-ssd", "part-ram"],
+    l3: ["part-ram", "cpu-l3"],
+    l2_l1: ["cpu-l3", "cpu-core-0", "cpu-core-1", "cpu-core-2", "cpu-core-3"],
+    cpu_reg: ["cpu-core-0", "cpu-core-1", "cpu-core-2", "cpu-core-3", "register"]
+  },
+  flowMap: {
+    ram: ["bus-ssd-chipset", "bus-chipset-ram"],
+    l3: ["bus-ram-chipset", "bus-chipset-ram", "bus-chipset-cpu", "bus-ram-cpu"],
+    l2_l1: ["bus-cpu-internal", "bus-cpu-internal-6"],
+    cpu_reg: ["bus-cpu-internal-6-5"]
+  }
+})
+```
+
+```{ojs}
+_memMoboUpdate = { memMoboComponent.update(memHardwareState); }
+```
+:::
+
+## Cache Hit & Cache Miss
+
+Quand le CPU a besoin d'une donnée, il la cherche dans l'ordre : **L1 → L2 → L3 → RAM**. S'il la trouve au premier essai, c'est un **hit**. Sinon, c'est un **miss** — et chaque niveau supplémentaire coûte un temps précieux.
+
+::: {.card-window .mb-4}
+#### ⚡ Le coût d'un miss {.bi-stopwatch}
+
+Un **Cache Hit** (barre bleue) coûte 3 ns. Un **Cache Miss** oblige le CPU à descendre niveau par niveau — jusqu'à 60 ns en RAM, soit **20× plus lent**.
+
+:::: {#mem-cache-graph .chart-container-md}
+::::
+
+```{ojs}
+renderMemCacheGraph = {
+  createBar("mem-cache-graph", { x: ["L1", "L2", "L3", "RAM"], y: [3, 10, 30, 60] }, "Latence d'accès par niveau (ns)", {
+    marker: { color: [getThemeColor("--sol-blue", "#268bd2"), getThemeColor("--sol-green", "#859900"), getThemeColor("--sol-orange", "#cb4b16"), getThemeColor("--sol-red", "#dc322f")] },
+    layout: {
+      margin: { t: 45, b: 50, l: 60, r: 20 },
+      paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+      yaxis: { title: "Temps (ns)", gridcolor: "rgba(128,128,128,0.15)" },
+      annotations: [{ x: 0, y: 3, text: "✓ Hit : 3 ns", showarrow: false, yanchor: "bottom", font: { color: getThemeColor("--sol-blue", "#268bd2"), size: 12 } }]
+    }
+  });
+}
+```
+:::
+
+::: {.card-window}
+#### 🎯 Le taux de hit — la métrique clé {.bi-speedometer2}
+
+:::: {#mem-hit-rate-graph .chart-container-sm}
+::::
+
+```{ojs}
+renderMemHitRate = {
+  const rates = [50, 75, 90, 95, 99];
+  const avgTimes = rates.map(r => Math.round((r / 100) * 3 + (1 - r / 100) * 60));
+  const colors = [getThemeColor("--sol-red", "#dc322f"), getThemeColor("--sol-orange", "#cb4b16"), getThemeColor("--sol-yellow", "#b58900"), getThemeColor("--sol-green", "#859900"), getThemeColor("--sol-blue", "#268bd2")];
+  createGradientLine("mem-hit-rate-graph", { x: rates.map(r => r + "%"), y: avgTimes }, "Temps moyen d'accès selon le taux de cache hit", {
+    gradientColors: colors,
+    layout: {
+      margin: { t: 45, b: 50, l: 60, r: 20 },
+      paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+      xaxis: { title: "Taux de hit (%)", gridcolor: "rgba(128,128,128,0.15)" },
+      yaxis: { title: "Latence moyenne (ns)", gridcolor: "rgba(128,128,128,0.15)" }
+    }
+  });
+}
+```
+
+Un taux de hit de **99%** réduit la latence moyenne à ~3 ns. À **50%**, elle grimpe à ~31 ns. Les algorithmes qui accèdent à la mémoire de façon **séquentielle** (localité spatiale) maximisent naturellement ce taux — c'est pourquoi les tableaux continus en mémoire (ex. Numpy, Polars) battent les structures chainées.
+:::

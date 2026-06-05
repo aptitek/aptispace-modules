@@ -77,6 +77,39 @@
     line-height: 1 !important;
 }
 
+// Carte générique — même tokens que .card-window, sans pastilles macOS
+.card:not(.card-window) {
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        border-color: var(--card-border-hover);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    > .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 38px;
+        padding: 0 16px;
+        background-color: var(--card-header-bg);
+        border-bottom: 1px solid var(--card-header-border);
+        font-family: var(--font-code);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+
+        &::before {
+            content: none;
+        }
+    }
+}
+
 .terminal {
     border: 1px solid rgba(var(--sol-cyan-rgb), 0.28) !important;
     border-radius: 8px !important;

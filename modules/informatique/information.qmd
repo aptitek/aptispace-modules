@@ -1,0 +1,512 @@
+---
+title: "L'Information"
+---
+
+En 1948, Claude Shannon publie *A Mathematical Theory of Communication* et pose les bases de la **théorie de l'information** : l'information devient une grandeur physique mesurable, au même titre que l'énergie ou la température. Cette théorie est le fondement invisible de tout le numérique — de la compression ZIP aux intelligences artificielles.
+
+## L'information comme grandeur physique
+
+::: {.row}
+:::: {.col}
+::::: {.card}
+#### Définition intuitive {.bi-lightbulb}
+
+L'information est la **réduction d'incertitude** apportée par un événement. Plus un événement est *improbable*, plus il est *surprenant* — et plus il transporte d'information.
+
+**Exemples :**
+
+- Apprendre qu'il neige en juillet → beaucoup d'information
+- Apprendre que le soleil s'est levé → presque aucune information
+
+> L'information n'est pas dans le message lui-même, mais dans *l'inattendu* qu'il contient.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Les trois axiomes de Shannon {.bi-person-badge}
+
+Shannon exige de toute mesure d'information qu'elle vérifie :
+
+1. **Continuité** — une variation légère de probabilité implique une variation légère d'information.
+2. **Maximalité** — l'incertitude est maximale quand tous les événements possibles sont équiprobables.
+3. **Additivité** — l'information de deux événements indépendants est la somme de leurs informations.
+
+La **seule** fonction vérifiant ces trois axiomes est :
+
+$$I(p) = -\log_2 p$$
+:::::
+::::
+:::
+
+## Le bit — mesurer la surprise
+
+Le **bit** (binary digit) est l'unité fondamentale de l'information. Il correspond à la surprise apportée par l'un des deux résultats d'une pièce équilibrée ($p = \tfrac{1}{2}$).
+
+$$\boxed{I(p) = -\log_2 p \quad \text{(bits)}}$$
+
+Plus $p$ est petit (événement rare), plus $I(p)$ est grand (surprise élevée).
+
+::: {.card-window}
+#### Simulateur — Contenu informationnel I(p) {.bi-graph-up}
+
+Ajustez la probabilité d'un événement et observez sa valeur informationnelle sur la courbe.
+
+- [Probabilité de l'événement (%)]{.slider #inf-p value=50 min=1 max=99 step=1}
+
+::: {.metrics}
+| Probabilité p | Information I(p) |
+| :------------ | :--------------- |
+| [inf-p]{.val} % | [inf-ip]{.val} bits |
+:::
+
+::: {#inf-ip-canvas .chart-container}
+:::
+
+```{ojs}
+inf_ip = (-Math.log2(inf_p / 100)).toFixed(3)
+
+renderIPChart = {
+  inf_p;
+  const xs = Array.from({length: 198}, (_, i) => (i + 1) / 200 * 100);
+  const ys = xs.map(x => -Math.log2(x / 100));
+  const p0 = inf_p, I0 = -Math.log2(p0 / 100);
+  window.Plotly.newPlot("inf-ip-canvas", [
+    {
+      x: xs, y: ys, mode: "lines", name: "I(p)",
+      line: { color: getThemeColor("--sol-blue", "#268bd2"), width: 2.5 },
+      fill: "tozeroy", fillcolor: "rgba(38,139,210,0.07)",
+      hovertemplate: "p = %{x:.0f}%<br>I = %{y:.3f} bits<extra></extra>"
+    },
+    {
+      x: [p0], y: [I0], mode: "markers",
+      marker: { size: 13, color: getThemeColor("--sol-red", "#dc322f"), symbol: "circle-open", line: { width: 3, color: getThemeColor("--sol-red", "#dc322f") } },
+      hovertemplate: "p = %{x}%<br>I = %{y:.3f} bits<extra></extra>"
+    }
+  ], {
+    xaxis: { title: "Probabilité p (%)", range: [0, 100] },
+    yaxis: { title: "I(p)  (bits)", range: [0, 7] },
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+    margin: { t: 20, b: 50, l: 65, r: 20 },
+    template: getPlotlyTheme(), showlegend: false
+  }, { responsive: true, displayModeBar: false });
+}
+```
+
+:::
+
+**Exemples remarquables :**
+
+| Événement | Probabilité | Information |
+| :-------- | :---------: | ----------: |
+| Pile ou face (équilibré) | $\tfrac{1}{2}$ | $1$ bit |
+| Face d'un dé à 6 faces | $\tfrac{1}{6}$ | $\approx 2{,}58$ bits |
+| Carte tirée parmi 52 | $\tfrac{1}{52}$ | $\approx 5{,}70$ bits |
+| Octet précis parmi 256 | $\tfrac{1}{256}$ | $8$ bits exactement |
+
+## L'entropie de Shannon
+
+L'entropie $H(X)$ mesure l'**incertitude moyenne** d'une source : c'est la quantité d'information qu'on *espère* recevoir à chaque symbole émis. C'est l'espérance de $I(p)$ :
+
+$$\boxed{H(X) = -\sum_{i=1}^{N} p_i \log_2 p_i \quad \text{(bits par symbole)}}$$
+
+::: {.card-window}
+#### Entropie d'une source binaire {.bi-activity}
+
+Une source émet «0» avec probabilité $p$ et «1» avec probabilité $1 - p$.
+
+- [Probabilité de «0» (p)]{.slider #inf-ep value=50 min=1 max=99 step=1}
+
+::: {.metrics}
+| p («0») | 1 − p («1») | Entropie H |
+| :------ | :---------- | :--------- |
+| [inf-ep]{.val} % | [inf-ep1]{.val} % | [inf-hval]{.val} bits/symb. |
+:::
+
+::: {#inf-entropy-canvas .chart-container}
+:::
+
+```{ojs}
+inf_ep1 = 100 - inf_ep
+inf_hval = {
+  const p = inf_ep / 100, q = 1 - p;
+  const t1 = p > 0 ? -p * Math.log2(p) : 0;
+  const t2 = q > 0 ? -q * Math.log2(q) : 0;
+  return (t1 + t2).toFixed(4);
+}
+
+renderEntropyChart = {
+  inf_ep;
+  const xs = Array.from({length: 198}, (_, i) => (i + 1) / 200 * 100);
+  const ys = xs.map(x => { const p = x/100, q = 1-p; return -p*Math.log2(p) - q*Math.log2(q); });
+  const p0 = inf_ep, H0 = parseFloat(inf_hval);
+  window.Plotly.newPlot("inf-entropy-canvas", [
+    {
+      x: xs, y: ys, mode: "lines",
+      line: { color: getThemeColor("--sol-green", "#859900"), width: 2.5 },
+      fill: "tozeroy", fillcolor: "rgba(133,153,0,0.08)",
+      hovertemplate: "p = %{x:.0f}%<br>H = %{y:.4f} bits<extra></extra>"
+    },
+    {
+      x: [p0], y: [H0], mode: "markers",
+      marker: { size: 13, color: getThemeColor("--sol-orange", "#cb4b16"), symbol: "circle-open", line: { width: 3, color: getThemeColor("--sol-orange", "#cb4b16") } },
+      hovertemplate: "p = %{x}%<br>H = %{y:.4f} bits<extra></extra>"
+    }
+  ], {
+    xaxis: { title: "p (%)", range: [0, 100] },
+    yaxis: { title: "H(p)  (bits/symbole)", range: [0, 1.15] },
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+    margin: { t: 30, b: 50, l: 65, r: 20 },
+    template: getPlotlyTheme(), showlegend: false,
+    annotations: [{
+      x: 50, y: 1.0, text: "Maximum : H = 1 bit  (p = 50 %)",
+      showarrow: true, arrowhead: 2, arrowcolor: "#586e75",
+      ax: 0, ay: -28, font: { size: 11 }
+    }]
+  }, { responsive: true, displayModeBar: false });
+}
+```
+
+:::
+
+> **Interprétation clé :** H est maximale ($H = 1$ bit) à $p = 0{,}5$ — la source est totalement imprévisible. Elle vaut 0 aux extrêmes ($p = 0$ ou $p = 1$) — quand l'issue est certaine, il n'y a rien à apprendre.
+
+## Entropie de différentes sources
+
+La distribution de probabilités d'une source détermine son entropie, mais la *séquence* qu'elle produit révèle quelque chose de plus : à haute entropie, les tirages sont dispersés sans motif apparent ; à faible entropie, ils se groupent ; une source déterministe produit un patron parfaitement régulier.
+
+::: {.card-window}
+#### Comparer des sources {.bi-distribute-horizontal}
+
+:::: {.tabs .inf-src-tabs}
+##### Pièce équilibrée {.bi-circle-half}
+
+##### Pièce biaisée {.bi-record-circle-fill}
+
+##### Dé équilibré {.bi-dice-3}
+
+##### Dé biaisé {.bi-dice-6-fill}
+
+##### 8 symboles {.bi-grid-3x3-gap}
+
+##### Cyclique {.bi-arrow-repeat}
+
+##### []{.btn .bi-arrow-clockwise #inf-regen} {.tab-right .no-pane}
+::::
+
+::: {.metrics}
+| N symboles | Entropie H | H max ($\log_2 N$) |
+| :--------- | :--------- | :----------------- |
+| [inf-src-n]{.val} | [inf-src-h]{.val} bits | [inf-src-hmax]{.val} bits |
+:::
+
+::: {.row}
+:::: {.col}
+::: {#inf-src-canvas .chart-container}
+:::
+::::
+:::: {.col}
+::: {#inf-scatter-canvas .chart-container}
+:::
+::::
+:::
+
+```{ojs}
+mutable inf_src_key = "Pièce équilibrée"
+
+_srcTabWatcher = {
+  const w = createTabsetWatcher(
+    ".inf-src-tabs",
+    {
+      "Pièce équilibrée": "Pièce équilibrée",
+      "Pièce biaisée":    "Pièce biaisée",
+      "Dé équilibré":     "Dé équilibré",
+      "Dé biaisé":        "Dé biaisé",
+      "8 symboles":       "8 symboles équiprobables",
+      "Cyclique":         "Séquence cyclique"
+    },
+    (val) => { mutable inf_src_key = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+inf_src_data = {
+  const db = {
+    "Pièce équilibrée":         { labels: ["Pile","Face"],                    probs: [0.5, 0.5],                               mode: "random" },
+    "Pièce biaisée":            { labels: ["Pile","Face"],                    probs: [0.9, 0.1],                               mode: "random" },
+    "Dé équilibré":             { labels: ["1","2","3","4","5","6"],          probs: [1/6,1/6,1/6,1/6,1/6,1/6],               mode: "random" },
+    "Dé biaisé":                { labels: ["1","2","3","4","5","6"],          probs: [0.5,0.1,0.1,0.1,0.1,0.1],               mode: "random" },
+    "8 symboles équiprobables": { labels: ["A","B","C","D","E","F","G","H"],  probs: [.125,.125,.125,.125,.125,.125,.125,.125], mode: "random" },
+    "Séquence cyclique":        { labels: ["A","B","C","D","E","F"],          probs: [1/6,1/6,1/6,1/6,1/6,1/6],               mode: "cyclic" }
+  };
+  return db[inf_src_key] || db["Pièce équilibrée"];
+}
+
+inf_src_n    = inf_src_data.labels.length
+inf_src_h    = inf_src_data.probs.reduce((a, p) => a + (p > 0 ? -p * Math.log2(p) : 0), 0).toFixed(4)
+inf_src_hmax = Math.log2(inf_src_n).toFixed(4)
+
+renderSrcChart = {
+  inf_src_data;
+  const { labels, probs } = inf_src_data;
+  createBar("inf-src-canvas",
+    { x: labels, y: probs.map(p => +(p * 100).toFixed(2)) },
+    "Distribution",
+    {
+      marker: { color: getThemeColor("--sol-blue", "#268bd2") },
+      layout: {
+        yaxis: { title: "Probabilité (%)", range: [0, 110] },
+        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+        margin: { t: 40, b: 40, l: 60, r: 20 }
+      }
+    }
+  );
+}
+
+scatter_samples = {
+  inf_src_data;
+  inf_regen;
+  const { probs, mode, labels } = inf_src_data;
+  const N = 200;
+  if (mode === "cyclic") return Array.from({length: N}, (_, i) => i % labels.length);
+  const cumul = probs.reduce((acc, p) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + p); return acc; }, []);
+  return Array.from({length: N}, () => { const r = Math.random(); const i = cumul.findIndex(c => r < c); return i === -1 ? probs.length - 1 : i; });
+}
+
+renderScatterChart = {
+  scatter_samples;
+  const { labels } = inf_src_data;
+  const N = scatter_samples.length;
+  const palette = [
+    getThemeColor("--sol-blue",    "#268bd2"),
+    getThemeColor("--sol-green",   "#859900"),
+    getThemeColor("--sol-orange",  "#cb4b16"),
+    getThemeColor("--sol-red",     "#dc322f"),
+    getThemeColor("--sol-violet",  "#6c71c4"),
+    getThemeColor("--sol-cyan",    "#2aa198"),
+    getThemeColor("--sol-magenta", "#d33682"),
+    getThemeColor("--sol-yellow",  "#b58900"),
+  ];
+  const traces = labels.map((lbl, i) => {
+    const xs = scatter_samples.reduce((a, s, idx) => { if (s === i) a.push(idx); return a; }, []);
+    return { x: xs, y: Array(xs.length).fill(lbl), mode: "markers", name: lbl,
+      marker: { size: 5, color: palette[i % palette.length], opacity: 0.75 },
+      hovertemplate: `#%{x} → ${lbl}<extra></extra>` };
+  });
+  window.Plotly.newPlot("inf-scatter-canvas", traces, {
+    title: { text: "Séquence — 200 tirages", font: { size: 13 } },
+    xaxis: { title: "Index", range: [-2, N + 2] },
+    yaxis: { title: "Symbole", autorange: "reversed" },
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+    margin: { t: 40, b: 50, l: 80, r: 20 },
+    template: getPlotlyTheme(), showlegend: false
+  }, { responsive: true, displayModeBar: false });
+}
+```
+
+:::
+
+> **À retenir :** la *séquence cyclique* a la même entropie marginale qu'un dé équilibré ($H = \log_2 6$), mais sa séquence est parfaitement prévisible. Shannon mesure l'incertitude *par symbole isolé*, pas les corrélations temporelles.
+
+## Unités et ordres de grandeur
+
+L'unité de base est le **bit** (b). En pratique, on stocke et transfère l'information en **octets** (o) : 1 octet = 8 bits. Les unités suivantes s'enchaînent en puissances de mille (SI) ou de deux (IEC).
+
+::: {.card-window}
+#### Règle logarithmique des unités {.bi-rulers}
+
+Déplacez le curseur pour explorer l'échelle de gauche (bit) à droite (pétaoctet). Les objets du quotidien sont positionnés à leur taille réelle sur la règle logarithmique.
+
+```{ojs}
+viewof inf_unit_zoom = aptitek.createSlider({
+  label: "Unité explorée",
+  labels: ["bit", "octet", "Ko", "Mo", "Go", "To", "Po"],
+  value: 2, min: 0, max: 6, step: 1
+})
+```
+
+::: {#inf-units-canvas .chart-container-lg}
+:::
+
+::: {.metrics}
+| Unité SI | Valeur SI | Équivalent IEC | Valeur IEC | Écart |
+| :------- | :-------- | :------------- | :--------- | :---- |
+| [inf-unit-sym]{.val} | [inf-unit-val]{.val} | [inf-unit-iec-sym]{.val} | [inf-unit-iec-val]{.val} | [inf-unit-iec-ecart-pct]{.progressbar color='warning' max='13'} [inf-unit-iec-ecart]{.val} |
+:::
+
+${inf-unit-desc}
+
+- ${inf-unit-ex1}
+- ${inf-unit-ex2}
+- ${inf-unit-ex3}
+
+Les préfixes **SI** (décimaux) et **IEC** (binaires) diffèrent légèrement — d'où les capacités qui semblent « perdues ».
+
+${inf-unit-iec-note}
+
+```{ojs}
+INF_UNITS = [
+  { name: "bit",       sym: "b",  log10: Math.log10(1/8), val: "1/8 octet",  desc: "L'unité atomique. Représente deux états : 0 ou 1.",                          ex: ["Résultat d'un lancer de pièce", "Pixel binaire (noir/blanc)", "État d'une porte logique"],   iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "Le bit est universel — aucune distinction SI/IEC." } },
+  { name: "octet",     sym: "o",  log10: 0,               val: "8 bits",     desc: "L'unité de stockage de base. Encode un caractère ASCII ou une valeur 0–255.", ex: ["1 caractère texte (ASCII)", "1 pixel en niveaux de gris", "1 couleur RGB = 3 octets"],       iec: { sym: "—", val: "—", ecart: "—",     ecart_pct: 0,    note: "L'octet est universel — aucune distinction SI/IEC." } },
+  { name: "kilooctet", sym: "Ko", log10: 3,               val: "10³ octets", desc: "La plus petite unité de fichier pratique du quotidien.",                     ex: ["SMS (160 c.) ≈ 0,16 Ko", "Fichier texte court ≈ 2 Ko", "Code source d'une fonction"],         iec: { sym: "Kio", val: "2¹⁰ o = 1 024 o",     ecart: "+2,4 %", ecart_pct: 2.4,  note: "100 Ko (fabricant) = 97,7 Kio dans l'OS." } },
+  { name: "mégaoctet", sym: "Mo", log10: 6,               val: "10⁶ octets", desc: "Photo numérique, page web complète ou fichier audio court.",                  ex: ["Photo JPEG ≈ 3 Mo", "Page web complète ≈ 2 Mo", "1 min de musique MP3 ≈ 1 Mo"],            iec: { sym: "Mio", val: "2²⁰ o ≈ 1,05 Mo",     ecart: "+4,9 %", ecart_pct: 4.9,  note: "500 Mio affichés par l'OS = 524 Mo selon le fabricant." } },
+  { name: "gigaoctet", sym: "Go", log10: 9,               val: "10⁹ octets", desc: "Capacité d'un film HD, d'une barrette RAM ou du génome humain brut.",         ex: ["Film HD ≈ 4 Go", "Génome humain brut ≈ 3 Go", "Application mobile ≈ 0,1–1 Go"],           iec: { sym: "Gio", val: "2³⁰ o ≈ 1,07 Go",     ecart: "+7,4 %", ecart_pct: 7.4,  note: "Clé USB 8 Go (fabricant) = 7,45 Gio dans l'OS." } },
+  { name: "téraoctet", sym: "To", log10: 12,              val: "10¹² octets", desc: "Disques durs et SSD grand public. Des bibliothèques vidéo entières.",         ex: ["SSD 1 To ≈ 250 000 photos", "HDD 4 To ≈ 1 000 films HD", "Wikipedia intégral (texte) ≈ 22 Go"], iec: { sym: "Tio", val: "2⁴⁰ o ≈ 1,10 To",    ecart: "+10,0 %", ecart_pct: 10.0, note: "Disque 1 To (fabricant) = 931 Gio dans Windows/macOS." } },
+  { name: "pétaoctet", sym: "Po", log10: 15,              val: "10¹⁵ octets", desc: "Échelle des data centers et grandes plateformes mondiales.",                  ex: ["Facebook photos > 100 Po", "CERN LHC ≈ 15 Po/an", "Toute la musique jamais enregistrée ≈ 3 Po"], iec: { sym: "Pio", val: "2⁵⁰ o ≈ 1,13 Po",    ecart: "+12,6 %", ecart_pct: 12.6, note: "1 Po (SI) ≈ 888 Tio selon la définition IEC." } },
+]
+
+INF_OBJECTS = [
+  { name: "SMS",      bytes: 160,    y: 0.55 },
+  { name: "E-mail",   bytes: 25e3,   y: 0.80 },
+  { name: "Page web", bytes: 500e3,  y: 0.55 },
+  { name: "Photo",    bytes: 3e6,    y: 0.80 },
+  { name: "MP3",      bytes: 4e6,    y: 1.05 },
+  { name: "Génome",   bytes: 3e9,    y: 0.80 },
+  { name: "Film HD",  bytes: 4e9,    y: 0.55 },
+  { name: "SSD 1To",  bytes: 1e12,   y: 0.55 },
+]
+
+inf_unit_focus        = INF_UNITS[inf_unit_zoom]
+inf_unit_name         = inf_unit_focus.name
+inf_unit_sym          = inf_unit_focus.sym
+inf_unit_val          = inf_unit_focus.val
+inf_unit_desc         = inf_unit_focus.desc
+inf_unit_ex1          = inf_unit_focus.ex[0]
+inf_unit_ex2          = inf_unit_focus.ex[1]
+inf_unit_ex3          = inf_unit_focus.ex[2]
+inf_unit_iec_sym      = inf_unit_focus.iec.sym
+inf_unit_iec_val      = inf_unit_focus.iec.val
+inf_unit_iec_ecart    = inf_unit_focus.iec.ecart
+inf_unit_iec_ecart_pct = inf_unit_focus.iec.ecart_pct
+inf_unit_iec_note     = inf_unit_focus.iec.note
+
+renderUnitsChart = {
+  inf_unit_zoom;
+  const focusLog = INF_UNITS[inf_unit_zoom].log10;
+
+  const unitTicks = {
+    x: INF_UNITS.map(u => u.log10),
+    y: Array(7).fill(0),
+    mode: "markers",
+    type: "scatter",
+    marker: {
+      size:   INF_UNITS.map((_, i) => i === inf_unit_zoom ? 18 : 12),
+      color:  INF_UNITS.map((_, i) => i === inf_unit_zoom ? getThemeColor("--sol-red",  "#dc322f") : getThemeColor("--sol-blue", "#268bd2")),
+      symbol: INF_UNITS.map((_, i) => i === inf_unit_zoom ? "diamond" : "triangle-up"),
+      line:   { width: 0 }
+    },
+    hovertemplate: INF_UNITS.map(u => `${u.name} (${u.sym})<extra></extra>`),
+    name: ""
+  };
+
+  const objDots = {
+    x: INF_OBJECTS.map(o => Math.log10(o.bytes)),
+    y: INF_OBJECTS.map(o => o.y),
+    mode: "markers+text",
+    type: "scatter",
+    marker: { size: 9, color: getThemeColor("--sol-orange", "#cb4b16"), symbol: "circle" },
+    text: INF_OBJECTS.map(o => o.name),
+    textposition: "top center",
+    textfont: { size: 9 },
+    hovertemplate: INF_OBJECTS.map(o => `${o.name}<extra></extra>`),
+    name: ""
+  };
+
+  const shapes = [
+    { type: "line", x0: -1.5, x1: 16, y0: 0, y1: 0,
+      line: { color: getThemeColor("--sol-base1", "#93a1a1"), width: 3 } },
+    ...INF_OBJECTS.map(o => ({
+      type: "line",
+      x0: Math.log10(o.bytes), x1: Math.log10(o.bytes), y0: 0, y1: o.y,
+      line: { color: getThemeColor("--sol-base1", "#93a1a1"), width: 1, dash: "dot" }
+    })),
+    { type: "line", x0: focusLog, x1: focusLog, y0: -0.4, y1: 0,
+      line: { color: getThemeColor("--sol-red", "#dc322f"), width: 2 } }
+  ];
+
+  window.Plotly.newPlot("inf-units-canvas", [unitTicks, objDots], {
+    xaxis: {
+      range: [-1.5, 16],
+      tickvals: [-0.9, 0, 3, 6, 9, 12, 15],
+      ticktext: ["bit", "octet", "Ko", "Mo", "Go", "To", "Po"],
+      title: "← Plus petit  ·  Taille (log₁₀ octets)  ·  Plus grand →",
+      showgrid: true, gridcolor: "rgba(147,161,161,0.15)"
+    },
+    yaxis: { range: [-0.55, 1.35], showticklabels: false, showgrid: false, zeroline: false },
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+    margin: { t: 15, b: 70, l: 20, r: 20 },
+    template: getPlotlyTheme(), showlegend: false, shapes
+  }, { responsive: true, displayModeBar: false });
+}
+```
+
+:::
+
+::: {.card}
+#### À grande échelle {.bi-server}
+
+Au-delà du pétaoctet, l'information devient une infrastructure industrielle :
+
+| Ordre | Unité | Exemple |
+| :---- | :---- | :------ |
+| $10^{18}$ o | Exaoctet (Eo) | Internet mondial génère ~5 Eo/jour |
+| $10^{21}$ o | Zettaoctet (Zo) | Données mondiales créées en 2023 : ~120 Zo |
+| $10^{24}$ o | Yottaoctet (Yo) | Limite pratique actuelle des systèmes de stockage |
+
+Le CERN génère ~15 Po/an pour le LHC. Facebook stocke > 100 Po de photos. L'ensemble du génome humain brut tient dans ~200 Go.
+:::
+
+::: {.callout-warning}
+## Mb ≠ MB — un facteur 8 qui trompe tout le monde
+
+Les opérateurs télécom et FAI expriment les débits en **mégabits par seconde (Mb/s ou Mbps)**, tandis que les fichiers et le stockage sont mesurés en **mégaoctets (Mo ou MB)**.
+
+| Notation | Nom | Valeur |
+| :------- | :-- | :----- |
+| **Mb** | mégabit | $10^6$ bits |
+| **MB** / **Mo** | mégaoctet | $10^6$ octets = $8 \times 10^6$ bits |
+| **Gb** | gigabit | $10^9$ bits |
+| **GB** / **Go** | gigaoctet | $10^9$ octets = $8 \times 10^9$ bits |
+
+**Exemple concret :** une connexion annoncée à **100 Mb/s** transfère au maximum $100 \div 8 = \mathbf{12{,}5\ \text{Mo/s}}$ de données. Un fichier de 1 Go prend donc au minimum $1000 \div 12{,}5 = 80$ secondes à télécharger — pas 10 secondes.
+:::
+
+## Propriétés fondamentales
+
+::: {.row}
+:::: {.col}
+::::: {.card}
+#### Non-négativité {.bi-check-circle}
+
+$$I(p) \geq 0 \quad \forall p \in \,]0, 1]$$
+
+L'information ne peut pas être négative. Elle est nulle uniquement pour un événement certain ($p = 1$) : ce qui est sûr n'apporte rien de nouveau.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Additivité {.bi-plus-circle}
+
+$$I(p_1 \cdot p_2) = I(p_1) + I(p_2)$$
+
+Pour deux événements **indépendants**, l'information totale est la somme. C'est la propriété qui justifie le choix du logarithme : $-\log_2(p_1 p_2) = -\log_2 p_1 - \log_2 p_2$.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Maximalité uniforme {.bi-stars}
+
+$$H(X) \leq \log_2 N$$
+
+L'entropie d'une source à $N$ symboles est maximale quand la distribution est **uniforme**. Pour un dé équilibré : $H = \log_2 6 \approx 2{,}58$ bits/face.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Décroissance monotone {.bi-graph-down-arrow}
+
+$$p_1 > p_2 \implies I(p_1) < I(p_2)$$
+
+$I$ est strictement décroissante : plus un événement est probable, moins il est informatif. La surprise grandit avec la rareté.
+:::::
+:::

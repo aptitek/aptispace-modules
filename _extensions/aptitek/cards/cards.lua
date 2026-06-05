@@ -83,6 +83,7 @@ local function is_card_candidate(el)
     or has_class(el.classes, "card-auto")
     or has_class(el.classes, "apt-card")
     or has_class(el.classes, "terminal")
+    or has_class(el.classes, "card")
 end
 
 local function header_div_from(block)

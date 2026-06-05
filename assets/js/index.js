@@ -20,7 +20,8 @@ export {
   initTabIcons,
   createTabsetWatcher,
   initTabActions,
-  StateMachine
+  StateMachine,
+  createSlider
 } from "./core.js";
 
 export {
@@ -53,6 +54,7 @@ export {
 export {
   createBar,
   createLine,
+  createGradientLine,
   createFunnel,
   createPiramid
 } from "./plots.js";

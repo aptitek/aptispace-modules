@@ -182,3 +182,46 @@ export function createPyramid(divId, data, options = {}) {
 
 // Alias for spelling compatibility
 export const createPiramid = createPyramid;
+
+/**
+ * 🌈 Gradient Line Chart — segments colorés individuellement
+ * options.gradientColors : tableau de couleurs (une par point)
+ */
+export function createGradientLine(divId, data, title = "Graphique", options = {}) {
+  const { x, y } = data;
+  const colors = options.gradientColors || [];
+  const lineWidth = options.lineWidth ?? 3;
+  const lineShape = options.line?.shape ?? "spline";
+
+  const traces = x.slice(0, -1).map((_, i) => ({
+    x: [x[i], x[i + 1]],
+    y: [y[i], y[i + 1]],
+    type: "scatter",
+    mode: "lines",
+    line: { color: colors[i] ?? colors.at(-1), width: lineWidth, shape: lineShape },
+    showlegend: false,
+    hoverinfo: "skip"
+  }));
+
+  traces.push({
+    x, y,
+    type: "scatter",
+    mode: "markers",
+    marker: { color: colors, size: options.markerSize ?? 8, ...options.marker },
+    showlegend: false,
+    hovertemplate: options.hovertemplate ?? "%{x} — %{y}<extra></extra>"
+  });
+
+  const layout = {
+    title: { text: title, font: { size: 16 } },
+    template: getPlotlyTheme(),
+    margin: { t: 50, b: 50, l: 50, r: 50 },
+    ...options.layout
+  };
+
+  Plotly.newPlot(divId, traces, layout, {
+    responsive: true,
+    displayModeBar: false,
+    ...options.config
+  });
+}

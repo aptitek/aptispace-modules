@@ -25,27 +25,48 @@ title: "Référence des extensions Aptitek"
 
 ## Cartes — `aptitek/cards`
 
-Le filtre `cards` transforme tout bloc `:::` portant la classe `.card-window`
-(ou `.terminal`, `.apt-card`) en carte Bootstrap. Le **premier Header** du bloc
-(H4 recommandé) devient le `.card-header` ; le reste devient le `.card-body`.
-Les classes `bi-*` sur ce Header sont converties en icône par `bi-icons`.
+Le filtre `cards` transforme tout bloc `:::` portant la classe `.card-window`,
+`.card` (ou `.terminal`, `.apt-card`) en carte Bootstrap. Le **premier Header**
+du bloc (H4 recommandé) devient le `.card-header` ; le reste devient le
+`.card-body`. Les classes `bi-*` sur ce Header sont converties en icône par
+`bi-icons`.
+
+| Classe | Variante visuelle |
+| :----- | :---------------- |
+| `.card-window` | Carte fenêtre macOS avec pastilles rouge · jaune · vert |
+| `.card` | Carte Bootstrap classique avec en-tête simple (sans contrôles) |
+| `.terminal` | Carte sombre avec animation typewriter sur le premier paragraphe |
 
 ### Syntaxe
 
 ```markdown
 ::: {.card-window}
-#### Titre de la carte {.bi-icon-optionnel}
-Corps de la carte. Tout Markdown valide est accepté ici.
+#### Titre fenêtre {.bi-icon-optionnel}
+Corps. Tout Markdown valide est accepté ici.
+:::
+
+::: {.card}
+#### Titre simple {.bi-icon-optionnel}
+Corps sans contrôles macOS.
 :::
 ```
 
-### Carte simple
+### Carte fenêtre `.card-window`
 
 ::: {.card-window}
 #### Atelier interactif {.bi-stars}
-Ceci est le corps de la carte. Le titre est promu en `.card-header` avec la
-barre macOS (pastilles rouge · jaune · vert) générée automatiquement en CSS.
-L'icône `.bi-stars` est injectée dans le titre par le filtre `bi-icons`.
+Le titre est promu en `.card-header` avec la barre macOS (pastilles rouge ·
+jaune · vert) générée automatiquement en CSS. L'icône `.bi-stars` est injectée
+par le filtre `bi-icons`.
+:::
+
+### Carte classique `.card`
+
+::: {.card}
+#### Définition {.bi-book}
+Carte Bootstrap sans contrôles. Même logique d'extraction du H4 que
+`.card-window`, mais sans la barre macOS. Idéale pour les blocs de contenu
+informatif (définitions, propriétés, mémos).
 :::
 
 ### Carte avec attribut `layout`

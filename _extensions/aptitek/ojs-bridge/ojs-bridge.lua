@@ -70,6 +70,7 @@ function Pandoc(doc)
         renderStateMachineGraph = aptitek.renderStateMachineGraph
         createBar = aptitek.createBar
         createLine = aptitek.createLine
+        createGradientLine = aptitek.createGradientLine
         createFunnel = aptitek.createFunnel
         createPiramid = aptitek.createPiramid
         registerTabset = aptitek.registerTabset
@@ -82,6 +83,7 @@ function Pandoc(doc)
         renderRam = aptitek.renderRam
         createLabeledText = aptitek.createLabeledText
         initInteractiveSvg = aptitek.initInteractiveSvg
+        createSlider = aptitek.createSlider
       `);
     } else {
       setTimeout(run, 10);

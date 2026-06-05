@@ -21,6 +21,7 @@
 
 local input_items = {}
 local ojs_imports = {}
+local val_exprs   = {}   -- set of unique OJS expressions used in .val / ${} spans
 
 -- Helper to check if a list of classes contains a class
 local function has_class(classes, name)
@@ -240,10 +241,11 @@ local function transform_span(el)
   if has_class(el.classes, 'val') then
     local val_text = pandoc.utils.stringify(el.content)
     local expr = get_attr(el, "for", val_text)
-    
-    -- Ensure it matches a valid JS identifier (alpha-numeric)
-    if string.match(expr, "^[a-zA-Z_][a-zA-Z0-9_]*$") then
-      local html = string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', expr)
+    -- Accept kebab-case IDs (e.g. inf-p) and normalise to underscores for OJS
+    if string.match(expr, "^[a-zA-Z_][a-zA-Z0-9_%-]*$") then
+      local ojs_expr = expr:gsub("%-", "_")
+      val_exprs[ojs_expr] = true
+      local html = string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', ojs_expr)
       return pandoc.RawInline('html', html)
     end
   end
@@ -380,8 +382,9 @@ local function transform_str(el)
       if start_pos > last_pos then
         table.insert(inlines, pandoc.Str(string.sub(text, last_pos, start_pos - 1)))
       end
-      
-      local html = string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', var_name)
+      local ojs_expr = var_name:gsub("%-", "_")
+      val_exprs[ojs_expr] = true
+      local html = string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', ojs_expr)
       table.insert(inlines, pandoc.RawInline('html', html))
       
       last_pos = end_pos
@@ -399,24 +402,37 @@ end
 function Pandoc(doc)
   input_items = {}
   ojs_imports = {}
+  val_exprs   = {}
 
   -- 1. Walk the document to find and transform spans, links, and strings
   doc = doc:walk {
     Span = transform_span,
     Link = transform_link,
-    Str = transform_str
+    Str = transform_str,
+    -- Code nodes (backtick spans) containing ${var} are not Str — handle them too
+    Code = function(el)
+      local text = el.text
+      if not string.match(text, "^%${[%a%d%-_]+}$") then return el end
+      local var_name = string.match(text, "^%${([%a%d%-_]+)}$")
+      if not var_name then return el end
+      local ojs_expr = var_name:gsub("%-", "_")
+      val_exprs[ojs_expr] = true
+      return pandoc.RawInline('html',
+        string.format('<span class="val ojs-inline-value" data-expr="%s"></span>', ojs_expr))
+    end
   }
   
-  -- 2. If inputs, imports or string variables were generated, append an OJS code block
-  if #input_items > 0 or #ojs_imports > 0 then
+  -- 2. If inputs, imports or .val expressions were generated, append an OJS code block
+  local has_val_exprs = next(val_exprs) ~= nil
+  if #input_items > 0 or #ojs_imports > 0 or has_val_exprs then
     local ojs_lines = { "//| echo: false" }
-    
+
     -- A. Process imports
     for _, imp in ipairs(ojs_imports) do
       local var_name = imp.id:gsub("%-", "_")
       table.insert(ojs_lines, string.format('%s = import("%s")', var_name, imp.path))
     end
-    
+
     -- B. Process inputs
     for _, item in ipairs(input_items) do
       local id = item.id
@@ -466,7 +482,23 @@ function Pandoc(doc)
         table.insert(ojs_lines, string.format("%s = Generators.input(document.getElementById('%s'))", var_name, id))
       end
     end
-    
+
+    -- C. Generate a reactive DOM-update cell for every .val / ${} expression.
+    --    Each cell depends on the named OJS variable and writes to all matching
+    --    [data-expr="expr"] spans whenever the variable changes.
+    for ojs_expr, _ in pairs(val_exprs) do
+      local cell = string.format(
+        "__val_%s = {\n" ..
+        "  const _v = %s;\n" ..
+        "  document.querySelectorAll('[data-expr=\"%s\"]').forEach(s => {\n" ..
+        "    s.textContent = (_v !== null && _v !== undefined) ? String(_v) : \"\";\n" ..
+        "  });\n" ..
+        "}",
+        ojs_expr, ojs_expr, ojs_expr
+      )
+      table.insert(ojs_lines, cell)
+    end
+
     local ojs_code = table.concat(ojs_lines, "\n\n")
     local escaped_ojs = ojs_code:gsub("\\", "\\\\"):gsub("`", "\\`")
     local js_script = string.format(
