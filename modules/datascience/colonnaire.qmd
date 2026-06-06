@@ -1,8 +1,8 @@
 ---
-title: "Stockage colonnaire"
+title: "🧱 Stockage Colonnaire"
 ---
 
-Quand un jeu de données grandit, la question n'est plus seulement : **quelles valeurs contient-il ?**  
+Quand un jeu de données grandit, la question n'est plus seulement : **quelles valeurs contient-il ?**
 Elle devient aussi : **dans quel ordre ces valeurs sont-elles rangées en mémoire ?**
 
 Deux organisations dominent :
@@ -12,7 +12,7 @@ Deux organisations dominent :
 
 ## Pourquoi l'ordre en mémoire compte
 
-Un tableau de données ressemble à une grille : des lignes, des colonnes, des valeurs.  
+Un tableau de données ressemble à une grille : des lignes, des colonnes, des valeurs.
 Mais la mémoire d'un ordinateur, elle, est une longue suite d'adresses.
 
 Pour ranger cette grille, il faut donc choisir un ordre.
@@ -20,16 +20,16 @@ Pour ranger cette grille, il faut donc choisir un ordre.
 ::: {.row}
 :::: {.col}
 ::::: {.card-window .h-100}
-#### 🧾 Par lignes {.bi-table}
+#### Par lignes {.bi-table}
 
 Les valeurs d'un même individu sont rangées côte à côte.
 
-| Adresse | Valeur |
-| :------ | :----- |
-| `0x00` | âge ligne 1 |
-| `0x08` | salaire ligne 1 |
-| `0x10` | âge ligne 2 |
-| `0x18` | salaire ligne 2 |
+| Adresse | Valeur          |
+| :------ | :-------------- |
+| `0x00`  | âge ligne 1     |
+| `0x08`  | salaire ligne 1 |
+| `0x10`  | âge ligne 2     |
+| `0x18`  | salaire ligne 2 |
 
 Cette forme est naturelle quand on ajoute, modifie ou lit une fiche complète.
 :::::
@@ -37,16 +37,16 @@ Cette forme est naturelle quand on ajoute, modifie ou lit une fiche complète.
 
 :::: {.col}
 ::::: {.card-window .h-100}
-#### 🧱 Par colonnes {.bi-layout-three-columns}
+#### Par colonnes {.bi-layout-three-columns}
 
 Les valeurs d'une même variable sont rangées côte à côte.
 
-| Adresse | Valeur |
-| :------ | :----- |
-| `0x00` | âge ligne 1 |
-| `0x08` | âge ligne 2 |
-| `0x10` | salaire ligne 1 |
-| `0x18` | salaire ligne 2 |
+| Adresse | Valeur          |
+| :------ | :-------------- |
+| `0x00`  | âge ligne 1     |
+| `0x08`  | âge ligne 2     |
+| `0x10`  | salaire ligne 1 |
+| `0x18`  | salaire ligne 2 |
 
 Cette forme est redoutable quand on calcule sur une seule colonne.
 :::::
@@ -67,10 +67,10 @@ Dans ces cas, le stockage colonnaire évite de traverser des valeurs inutiles.
 ::: {.callout-note collapse="true"}
 ### Le lien avec le cache processeur
 
-Le processeur ne lit pas la mémoire valeur par valeur de façon isolée.  
+Le processeur ne lit pas la mémoire valeur par valeur de façon isolée.
 Il charge des petits blocs de mémoire dans ses caches.
 
-Si les valeurs utiles sont proches les unes des autres, le processeur peut enchaîner les lectures rapidement.  
+Si les valeurs utiles sont proches les unes des autres, le processeur peut enchaîner les lectures rapidement.
 Si elles sont séparées par d'autres colonnes, il doit charger davantage de blocs inutiles.
 
 C'est l'idée derrière les **cache hits** et **cache misses** montrés dans le simulateur.
@@ -78,12 +78,12 @@ C'est l'idée derrière les **cache hits** et **cache misses** montrés dans le 
 
 ## Simulateur RAM
 
-:::: {.card-window .mb-4}
-#### 🧠 Ligne ou colonne ? {.bi-layout-three-columns}
+::: {.card-window .mb-4}
+#### Ligne ou colonne ? {.bi-layout-three-columns}
 
 Choisissez un mode de stockage, puis observez le trajet du processeur pour lire toute la colonne `Salaire`.
 
-::::: {.tabs .ram-storage-tabset}
+:::: {.tabs .ram-storage-tabset}
 ##### Stockage en ligne {.bi-hdd-fill}
 
 Chaque ligne est rangée d'un bloc : `Age`, puis `Salaire`, puis la ligne suivante.
@@ -97,58 +97,69 @@ Toutes les valeurs de `Age` sont regroupées, puis toutes les valeurs de `Salair
 Ce format accélère les calculs analytiques : la colonne demandée forme une zone mémoire continue.
 
 ##### [Contrôles]{#ram-col-controls .simulation-control .control} {.tab-right .no-pane}
-:::::
+::::
 
-::::: {#ram-col-data-source .d-none}
+:::: {#ram-col-data-source .d-none}
 | Age | Salaire |
 | :-- | :------ |
 | 25  | 50k     |
 | 30  | 60k     |
 | 28  | 55k     |
-:::::
+::::
 
-::::: {#ram-col-graph-container .ram-simulator-wrapper}
-:::::
+:::: {#ram-col-graph-container .ram-simulator-wrapper}
+::::
 
 ```{ojs}
 mutable storageMode = "ligne"
 
 _ramStorageTabWatcher = {
-  const watcher = aptitek.createTabsetWatcher(
+  let currentStorageMode = "ligne";
+  const watcher = createTabsetWatcher(
     ".ram-storage-tabset",
     { "Stockage en ligne": "ligne", "Stockage en colonne": "colonne" },
-    (value) => { mutable storageMode = value; }
+    (value) => {
+      if (currentStorageMode === value) return;
+      currentStorageMode = value;
+      mutable storageMode = value;
+    }
   );
   invalidation.then(() => watcher.destroy());
   return null;
 }
 
-ramTableData = aptitek.parseTableData("#ram-col-data-source table")
+ramTableData = parseTableData("#ram-col-data-source table")
 
 renderRamGraph = {
-  const graph = aptitek.createRamStorageGraph("ram-col-graph-container", storageMode, "Salaire", ramTableData, { autoStart: false });
+  const graph = createRamStorageGraph("ram-col-graph-container", storageMode, "Salaire", ramTableData, { autoStart: false });
   invalidation.then(() => graph?.destroy?.());
-  return graph;
+  return {
+    start: () => graph?.start?.(),
+    pause: () => graph?.pause?.(),
+    reset: () => graph?.reset?.(),
+    restart: () => graph?.restart?.()
+  };
 }
 
-ramPlaybackControl = aptitek.createSimulationControl("#ram-col-controls", {
-  onStart: () => renderRamGraph.start(),
-  onPause: () => renderRamGraph.pause(),
+ramPlaybackControl = createSimulationControl("#ram-col-controls", {
+  onStart:   () => renderRamGraph.start(),
+  onPause:   () => renderRamGraph.pause(),
+  onStop:    () => renderRamGraph.reset(),
   onRestart: () => renderRamGraph.restart()
 }, invalidation)
 ```
-::::
+:::
 
 ## À retenir
 
-Le stockage colonnaire ne change pas les données.  
+Le stockage colonnaire ne change pas les données.
 Il change leur **organisation physique** pour rendre certains traitements beaucoup plus rapides.
 
-| Besoin principal | Format souvent adapté |
-| :--------------- | :-------------------- |
-| Lire ou écrire une fiche complète | Stockage en lignes |
-| Calculer sur une variable complète | Stockage en colonnes |
-| Explorer de grands tableaux analytiques | Stockage en colonnes |
+| Besoin principal                        | Format souvent adapté |
+| :-------------------------------------- | :-------------------- |
+| Lire ou écrire une fiche complète       | Stockage en lignes    |
+| Calculer sur une variable complète      | Stockage en colonnes  |
+| Explorer de grands tableaux analytiques | Stockage en colonnes  |
 
 ::: {.callout-tip}
 En pratique, des formats comme **Parquet** ou **Apache Arrow** exploitent cette idée : ils rangent les colonnes de manière à accélérer les lectures analytiques.

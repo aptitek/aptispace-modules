@@ -1,0 +1,45 @@
+/*-- scss:rules --*/
+
+// =============================================================================
+// DYNAMIC TERMINAL COMPONENT
+// =============================================================================
+
+.terminal {
+  font-style: normal !important;
+}
+
+.terminal-line {
+  font-family: var(--font-code, monospace);
+  font-style: normal !important;
+  font-variation-settings: "MONO" 1, "CASL" 0, "slnt" 0, "wght" 520 !important;
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: flex;
+  align-items: flex-start;
+}
+
+.terminal-prompt {
+  color: var(--sol-cyan);
+  font-weight: 700;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.terminal-line-content {
+  flex-grow: 1;
+}
+
+.terminal-cursor::after {
+  content: "█";
+  color: var(--sol-cyan);
+  animation: terminal-blink 1s step-start infinite;
+  margin-left: 2px;
+  display: inline-block;
+}
+
+@keyframes terminal-blink {
+  50% {
+    opacity: 0;
+  }
+}

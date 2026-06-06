@@ -1,5 +1,5 @@
 ---
-title: "La Hiérarchie Mémoire"
+title: "🧠 Hiérarchie Mémoire"
 ---
 
 Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si la donnée est **à portée de main**. La mémoire d'un ordinateur est organisée en une pyramide : plus on monte, plus c'est rapide — mais plus c'est petit et coûteux.
@@ -7,7 +7,7 @@ Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si l
 ## La Pyramide des Vitesses
 
 ::: {.card-window .mb-4}
-#### 🔬 Radiographie d'un ordinateur {.bi-cpu}
+#### Radiographie d'un ordinateur {.bi-cpu}
 
 :::: {.tabs .mem-mobo-tabset}
 ##### SSD {.bi-hdd-network}
@@ -221,7 +221,7 @@ _memMoboUpdate = { memMoboComponent.update(memHardwareState); }
 Quand le CPU a besoin d'une donnée, il la cherche dans l'ordre : **L1 → L2 → L3 → RAM**. S'il la trouve au premier essai, c'est un **hit**. Sinon, c'est un **miss** — et chaque niveau supplémentaire coûte un temps précieux.
 
 ::: {.card-window .mb-4}
-#### ⚡ Le coût d'un miss {.bi-stopwatch}
+#### Le coût d'un miss {.bi-stopwatch}
 
 Un **Cache Hit** (barre bleue) coûte 3 ns. Un **Cache Miss** oblige le CPU à descendre niveau par niveau — jusqu'à 60 ns en RAM, soit **20× plus lent**.
 
@@ -244,7 +244,7 @@ renderMemCacheGraph = {
 :::
 
 ::: {.card-window}
-#### 🎯 Le taux de hit — la métrique clé {.bi-speedometer2}
+#### Le taux de hit — la métrique clé {.bi-speedometer2}
 
 :::: {#mem-hit-rate-graph .chart-container-sm}
 ::::

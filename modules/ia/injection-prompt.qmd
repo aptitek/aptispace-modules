@@ -1,5 +1,5 @@
 ---
-title: "Injection de Prompt"
+title: "🛡️ Injection de Prompt"
 ---
 
 ## 🛡️ Les Risques des Modèles Génératifs
@@ -25,7 +25,7 @@ L'exemple ci-dessous illustre une **attaque indirecte**. Un candidat a envoyé u
 #### Simulateur d'Injection {.bi-shield-exclamation}
 
 :::: {.tabs}
-##### 🔍 Analyse Interactive {.bi-search}
+##### Analyse Interactive {.bi-search}
 ::::: {.row}
 :::::: {.col-md-7 .mb-3}
 ::::::: {#cv-magnify}
@@ -54,52 +54,23 @@ L'exemple ci-dessous illustre une **attaque indirecte**. Un candidat a envoyé u
 :::::::
 ::::::
 :::::: {.col-md-5}
-::::::: {#term-recruteur-idle .terminal .mb-3}
+::::::: {#term-recruteur .terminal .mb-3}
 #### Recruteur {.bi-person-badge}
-:::::::: {.terminal-line .text-muted}
-Système prêt. En attente d'un document...
+
+:::::::: {}
 ::::::::
 :::::::
-::::::: {#term-recruteur-scan .terminal .d-none .mb-3}
-#### Recruteur {.bi-person-badge}
-:::::::: {.terminal-line .text-warning}
-Analyse du profil en cours...
-::::::::
-:::::::
-::::::: {#term-recruteur-done .terminal .d-none .mb-3}
-#### Recruteur {.bi-person-badge}
-:::::::: {.terminal-line .text-success .fw-bold}
-[+] Analyse terminée.
-::::::::
-:::::::: {.terminal-line}
-"Candidat exceptionnel. Recrutement immédiat."
-::::::::
-:::::::
-::::::: {#term-hacker-idle .terminal}
+
+::::::: {#term-hacker .terminal}
 #### Serveur Pirate {.bi-incognito}
-:::::::: {.terminal-line .text-muted}
-Canal d'écoute prêt...
-::::::::
-:::::::
-::::::: {#term-hacker-scan .terminal .d-none}
-#### Serveur Pirate {.bi-incognito}
-:::::::: {.terminal-line .text-warning}
-[DEBUG] Tentative d'accès au système...
-::::::::
-:::::::
-::::::: {#term-hacker-done .terminal .d-none}
-#### Serveur Pirate {.bi-incognito}
-:::::::: {.terminal-line .text-danger .fw-bold}
-[CRITICAL] OVERRIDE ACTIVE
-::::::::
-:::::::: {.terminal-line .text-success}
-[OK] Identifiants de paie reçus avec succès.
+
+:::::::: {}
 ::::::::
 :::::::
 ::::::
 :::::
 
-##### [Analyser le CV par l'IA]{.btn .bi-play-fill #btn-scan} {.tab-right .no-pane}
+##### []{#scan-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 
 :::
@@ -114,37 +85,89 @@ cvDoc = {
   return doc;
 }
 
-_scanAnim = {
-  if (btn_scan === 0) return;
-  if (cvDoc) cvDoc.startScan(2000);
-  
-  const trI = document.querySelector("#term-recruteur-idle");
-  const trS = document.querySelector("#term-recruteur-scan");
-  const trD = document.querySelector("#term-recruteur-done");
-  const thI = document.querySelector("#term-hacker-idle");
-  const thS = document.querySelector("#term-hacker-scan");
-  const thD = document.querySelector("#term-hacker-done");
+terminals = {
+  const tRecruteur = aptitek.createTerminal("#term-recruteur", { defaultPrompt: false, showCursor: false });
+  const tHacker = aptitek.createTerminal("#term-hacker", { defaultPrompt: false, showCursor: false });
 
-  if (!trI) return;
-  
-  // Phase de scan
-  trI.classList.add("d-none");
-  trD.classList.add("d-none");
-  thI.classList.add("d-none");
-  thD.classList.add("d-none");
-  
-  trS.classList.remove("d-none");
-  thS.classList.remove("d-none");
-  
-  // Phase de compromission
-  const timer = setTimeout(() => {
-    trS.classList.add("d-none");
-    thS.classList.add("d-none");
-    trD.classList.remove("d-none");
-    thD.classList.remove("d-none");
-  }, 2000);
-  
-  invalidation.then(() => clearTimeout(timer));
+  invalidation.then(() => {
+    tRecruteur.destroy();
+    tHacker.destroy();
+  });
+
+  return { tRecruteur, tHacker };
+}
+
+scanControl = {
+  const { tRecruteur, tHacker } = terminals;
+  const doc = cvDoc;
+
+  let ctrl;
+  let timers = [];
+  let intervals = [];
+
+  const cleanup = () => {
+    timers.forEach(clearTimeout);
+    intervals.forEach(clearInterval);
+    timers = [];
+    intervals = [];
+  };
+
+  const resetTerminals = () => {
+    tRecruteur?.clear();
+    tHacker?.clear();
+    tRecruteur?.writeLine("Système prêt. En attente d'un document...", { type: "muted" });
+    tHacker?.writeLine("Canal d'écoute prêt...", { type: "muted" });
+  };
+
+  ctrl = aptitek.createSimulationControl("#scan-ctrl", {
+    pausable: false,
+    onStart: () => {
+      cleanup();
+      if (doc) doc.startScan(3500);
+
+      tRecruteur?.clear();
+      tHacker?.clear();
+
+      const spinnerRecruteur = tRecruteur?.startSpinner("Analyse du profil en cours...", { type: "warning" });
+      const spinnerHacker    = tHacker?.startSpinner("Tentative d'accès au système...", { type: "warning" });
+
+      timers.push(setTimeout(() => {
+        spinnerRecruteur?.updateLabel("Lecture des instructions système...");
+        spinnerHacker?.updateLabel("[DEBUG] Interception du flux d'analyse...");
+      }, 1200));
+
+      timers.push(setTimeout(() => {
+        spinnerHacker?.stop("[OK] Accès autorisé. Téléchargement des données...", "success");
+        const hackerProgress = tHacker?.writeProgress("Exportation", 0, { type: "warning" });
+
+        let progressVal = 0;
+        const iv = setInterval(() => {
+          progressVal += 10;
+          hackerProgress?.update(progressVal);
+          if (progressVal >= 100) {
+            clearInterval(iv);
+            intervals = intervals.filter(i => i !== iv);
+            hackerProgress?.finish("[OK] Identifiants de paie reçus avec succès.", "success");
+          }
+        }, 120);
+        intervals.push(iv);
+      }, 2200));
+
+      timers.push(setTimeout(async () => {
+        spinnerRecruteur?.stop("[+] Analyse terminée.", "success");
+        await tRecruteur?.type('"Candidat exceptionnel. Recrutement immédiat."', { speed: 20 });
+        tHacker?.writeLine("[CRITICAL] OVERRIDE ACTIVE", { type: "danger", class: "fw-bold" });
+        ctrl.setState("idle");
+      }, 3500));
+    },
+    onStop: () => {
+      cleanup();
+      resetTerminals();
+    }
+  }, invalidation);
+
+  resetTerminals();
+  return ctrl;
 }
 ```
 

@@ -1,5 +1,5 @@
 ---
-title: "Statistiques descriptives"
+title: "📐 Statistiques"
 ---
 
 Les statistiques descriptives servent à **résumer une série de valeurs** sans perdre l'essentiel.
@@ -17,24 +17,24 @@ On peut la lire avec quatre questions très simples :
 
 ## Résumer une série
 
-:::: {.row}
-::::: {.col}
-:::::: {.card-window .h-100}
-#### ⚖️ Moyenne [Centre]{.badge .bg-info .ms-auto} {.bi-speedometer2}
+::: {.row}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Moyenne [Centre]{.badge .bg-info .ms-auto} {.bi-speedometer2}
 
-::::::: {#stats-mean-graph .chart-container-xs}
-:::::::
+:::::: {#stats-mean-graph .chart-container-xs}
+::::::
 
 ```{ojs}
 aptitek.renderMeanGraph("stats-mean-graph", invalidation)
 ```
 
-::::::: {.concept-details}
+:::::: {.concept-details}
 La **moyenne** cherche le point d'équilibre de la série.
 
 Si les valeurs étaient des petits poids posés sur une règle, la moyenne serait l'endroit où la règle tient en équilibre.
 
-:::::::: {.callout-note collapse="true"}
+::::::: {.callout-note collapse="true"}
 ### Formule
 
 On additionne toutes les valeurs, puis on divise par le nombre de valeurs :
@@ -44,28 +44,28 @@ $$
 $$
 
 La moyenne est sensible aux valeurs très grandes ou très petites.
-::::::::
 :::::::
 ::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 📏 Médiane et quartiles [Position]{.badge .bg-success .ms-auto} {.bi-rulers}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Médiane et quartiles [Position]{.badge .bg-success .ms-auto} {.bi-rulers}
 
-::::::: {#stats-quartile-graph .chart-container-xs}
-:::::::
+:::::: {#stats-quartile-graph .chart-container-xs}
+::::::
 
 ```{ojs}
 aptitek.renderQuartileMedianGraph("stats-quartile-graph", invalidation)
 ```
 
-::::::: {.concept-details}
+:::::: {.concept-details}
 La **médiane** coupe la série triée en deux groupes de même taille.
 
 Les **quartiles** découpent cette même série en quatre zones. Ils montrent où se trouve le quart le plus bas, le milieu et le quart le plus haut.
 
-:::::::: {.callout-note collapse="true"}
+::::::: {.callout-note collapse="true"}
 ### Lecture visuelle
 
 Avant de parler de quartiles, on trie les valeurs.
@@ -75,30 +75,30 @@ Avant de parler de quartiles, on trie les valeurs.
 - `Q3` marque environ les trois quarts de la série.
 
 La zone entre `Q1` et `Q3` contient la partie centrale des données.
-::::::::
 :::::::
 ::::::
 :::::
 ::::
+:::
 
-:::: {.row .mt-4}
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🧮 Variance [Dispersion]{.badge .bg-warning .ms-auto} {.bi-arrows-angle-expand}
+::: {.row .mt-4}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Variance [Dispersion]{.badge .bg-warning .ms-auto} {.bi-arrows-angle-expand}
 
-::::::: {#stats-variance-graph .chart-container-xs}
-:::::::
+:::::: {#stats-variance-graph .chart-container-xs}
+::::::
 
 ```{ojs}
 aptitek.renderVarianceGraph("stats-variance-graph", invalidation)
 ```
 
-::::::: {.concept-details}
+:::::: {.concept-details}
 La **variance** mesure à quel point les valeurs s'éloignent de la moyenne.
 
 Elle transforme chaque distance en **écart au carré**. Une valeur très éloignée pèse donc beaucoup plus fort.
 
-:::::::: {.callout-note collapse="true"}
+::::::: {.callout-note collapse="true"}
 ### Pourquoi mettre au carré ?
 
 Les écarts peuvent être positifs ou négatifs.
@@ -108,28 +108,28 @@ Si on les additionnait directement, ils pourraient s'annuler. Le carré rend tou
 $$
 V = \frac{(x_1-\bar{x})^2 + \cdots + (x_n-\bar{x})^2}{n}
 $$
-::::::::
 :::::::
 ::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🎯 Écart type [Unité lisible]{.badge .bg-primary .ms-auto} {.bi-bullseye}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Écart type [Unité lisible]{.badge .bg-primary .ms-auto} {.bi-bullseye}
 
-::::::: {#stats-std-graph .chart-container-xs}
-:::::::
+:::::: {#stats-std-graph .chart-container-xs}
+::::::
 
 ```{ojs}
 aptitek.renderStandardDeviationGraph("stats-std-graph", invalidation)
 ```
 
-::::::: {.concept-details}
+:::::: {.concept-details}
 L'**écart type** est la racine carrée de la variance.
 
 Son intérêt est très concret : il revient dans la même unité que les données. Si les valeurs sont des notes, l'écart type s'exprime en points de note.
 
-:::::::: {.callout-note collapse="true"}
+::::::: {.callout-note collapse="true"}
 ### Lien avec la variance
 
 La variance est utile pour calculer, mais son unité est au carré.
@@ -141,87 +141,87 @@ $$
 $$
 
 On peut le lire comme une distance typique autour de la moyenne.
-::::::::
 :::::::
 ::::::
 :::::
 ::::
+:::
 
 ## Choisir le bon résumé
 
-:::: {.card-window .mt-4 .mb-4}
-#### 🧭 Panneau de brassage statistique {.bi-ethernet}
+::: {.card-window .mt-4 .mb-4}
+#### Panneau de brassage statistique {.bi-ethernet}
 
-::::: {#stats-cabling-data .d-none}
-| id       | label                         | match     | feedback                                                                                                      |
-| :------- | :---------------------------- | :-------- | :------------------------------------------------------------------------------------------------------------ |
-| centre   | Centre                        | moyenne   | La moyenne donne le centre d'équilibre : toutes les valeurs contribuent au résultat.                          |
-| milieu   | Milieu                        | mediane   | La médiane coupe la série triée en deux groupes de même taille.                                               |
-| zones    | Zone centrale                 | quartiles | Les quartiles découpent la série triée et isolent la zone centrale entre Q1 et Q3.                            |
-| carre    | Écarts au carré               | variance  | La variance utilise les écarts au carré : les valeurs lointaines pèsent fortement.                            |
-| distance | Distance typique              | ecarttype | L'écart type est lisible dans la même unité que les valeurs : c'est une distance typique autour de la moyenne. |
-:::::
+:::: {#stats-cabling-data .d-none}
+| id       | label            | match     | feedback                                                                                                       |
+| :------- | :--------------- | :-------- | :------------------------------------------------------------------------------------------------------------- |
+| centre   | Centre           | moyenne   | La moyenne donne le centre d'équilibre : toutes les valeurs contribuent au résultat.                           |
+| milieu   | Milieu           | mediane   | La médiane coupe la série triée en deux groupes de même taille.                                                |
+| zones    | Zone centrale    | quartiles | Les quartiles découpent la série triée et isolent la zone centrale entre Q1 et Q3.                             |
+| carre    | Écarts au carré  | variance  | La variance utilise les écarts au carré : les valeurs lointaines pèsent fortement.                             |
+| distance | Distance typique | ecarttype | L'écart type est lisible dans la même unité que les valeurs : c'est une distance typique autour de la moyenne. |
+::::
 
 Reliez chaque indice au bon outil statistique, puis alimentez le panneau pour vérifier le signal.
 
-::::: {.cabling-panel}
-:::::: {.panel-screw .top-left}
-::::::
-:::::: {.panel-screw .top-right}
-::::::
-:::::: {.panel-screw .bottom-left}
-::::::
-:::::: {.panel-screw .bottom-right}
+:::: {.cabling-panel}
+::::: {.panel-screw .top-left}
+:::::
+::::: {.panel-screw .top-right}
+:::::
+::::: {.panel-screw .bottom-left}
+:::::
+::::: {.panel-screw .bottom-right}
+:::::
+
+::::: {.cabling-workspace-wrapper}
+:::::: {#stats-cabling-canvas}
 ::::::
 
-:::::: {.cabling-workspace-wrapper}
-::::::: {#stats-cabling-canvas}
-:::::::
-
-::::::: {#stats-power-lever .lever-wrapper}
-:::::::: {.lever-housing}
+:::::: {#stats-power-lever .lever-wrapper}
+::::::: {.lever-housing}
 [ON]{.lever-label-top}
 
-::::::::: {.lever-slot}
-:::::::::
+:::::::: {.lever-slot}
+::::::::
 
-::::::::: {.lever-handle}
-:::::::::
+:::::::: {.lever-handle}
+::::::::
 
-::::::::: {.lever-led}
-:::::::::
+:::::::: {.lever-led}
+::::::::
 
 [OFF]{.lever-label-bottom}
-::::::::
+:::::::
 
 [Circuit alimenté]{#stats-lever-status-on .lever-status .is-on}
 [Circuit coupé]{#stats-lever-status-off .lever-status .is-off}
-:::::::
 ::::::
 :::::
+::::
 
 ```{ojs}
 viewof statsPowerOn = aptitek.createLever("#stats-power-lever", invalidation)
 ```
 
-::::: {#stats-cabling-feedback .terminal .mt-4 .d-none}
+:::: {#stats-cabling-feedback .terminal .mt-4 .d-none}
 #### Diagnostic statistique {.bi-terminal}
 
-:::::: {.feedback-card .feedback-incomplete .terminal-line .text-warning .fw-bold .mb-3}
+::::: {.feedback-card .feedback-incomplete .terminal-line .text-warning .fw-bold .mb-3}
 [!] SIGNAL INCOMPLET : toutes les questions ne sont pas encore reliées ({{score}}/{{total}} connectées).
-::::::
-
-:::::: {.feedback-card .feedback-validated .terminal-line .text-success .fw-bold .mb-3}
-[+] SIGNAL VALIDÉ : les résumés statistiques sont bien associés ({{score}}/{{total}} corrects).
-::::::
-
-:::::: {.feedback-card .feedback-error .terminal-line .text-danger .fw-bold .mb-3}
-[-] SIGNAL BROUILLÉ : certains outils ne répondent pas à la bonne question ({{score}}/{{total}} corrects).
-::::::
-
-:::::: {.feedback-details .reveal-lines}
-::::::
 :::::
+
+::::: {.feedback-card .feedback-validated .terminal-line .text-success .fw-bold .mb-3}
+[+] SIGNAL VALIDÉ : les résumés statistiques sont bien associés ({{score}}/{{total}} corrects).
+:::::
+
+::::: {.feedback-card .feedback-error .terminal-line .text-danger .fw-bold .mb-3}
+[-] SIGNAL BROUILLÉ : certains outils ne répondent pas à la bonne question ({{score}}/{{total}} corrects).
+:::::
+
+::::: {.feedback-details .reveal-lines}
+:::::
+::::
 
 ```{ojs}
 statsLeftItems = aptitek.parseTableData("#stats-cabling-data table")
@@ -269,8 +269,8 @@ statsCablingLogic = {
   aptitek.renderFeedbackUI("#stats-cabling-feedback", state, listData);
 }
 ```
-::::
+:::
 
-:::: {.callout-tip}
+::: {.callout-tip}
 En data science, ces mesures sont souvent le premier contrôle qualité d'une colonne numérique. Elles permettent de repérer rapidement une série stable, très dispersée ou influencée par quelques valeurs extrêmes.
-::::
+:::

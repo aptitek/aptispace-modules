@@ -1,27 +1,25 @@
 .simulation-control {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-
-    &[data-state="running"] .simulation-control-toggle {
-        color: var(--accent-warning);
-    }
+    gap: 0.2rem;
 }
 
 .simulation-control-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.7rem;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
     border: 1px solid var(--accent-primary);
-    border-radius: 999px;
+    border-radius: 50%;
     background: transparent;
     color: var(--accent-primary);
     cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 650;
-    line-height: 1.2;
-    transition: background 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+    font-size: 0.75rem;
+    line-height: 1;
+    transition: background 0.15s ease-in-out, color 0.15s ease-in-out,
+                border-color 0.15s ease-in-out, transform 0.1s ease-in-out;
 
     &:hover,
     &:focus {
@@ -31,11 +29,22 @@
     }
 
     &:active {
-        transform: translateY(1px);
+        transform: scale(0.9);
     }
 }
 
-.simulation-control-restart {
+.sc-stop {
+    border-color: var(--accent-danger);
+    color: var(--accent-danger);
+
+    &:hover,
+    &:focus {
+        background: rgba(var(--sol-red-rgb), 0.12);
+        color: var(--accent-danger);
+    }
+}
+
+.sc-restart {
     border-color: var(--accent-warning);
     color: var(--accent-warning);
 

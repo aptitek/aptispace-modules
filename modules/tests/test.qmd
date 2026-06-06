@@ -374,7 +374,7 @@ Le stockage **Orienté Ligne** est le standard transactionnel (SQL classique, fi
 ##### Stockage en Colonne {.bi-layout-three-columns}
 Le stockage **Orienté Colonne** est le standard de la Data Science moderne (DataFrames Polars/Pandas, fichiers Parquet, Apache Arrow). Les valeurs d'une même colonne sont regroupées de manière continue en RAM. Idéal pour calculer des moyennes ou filtrer sur un attribut précis à la vitesse de la lumière !
 
-##### [Lancer Simulation]{#btn-ram-start .bi-play-fill .btn} {.tab-right .no-pane}
+##### []{#ram-test-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 
 :::: {#ram-data-source .d-none}
@@ -404,10 +404,21 @@ _ramStorageTabWatcher = {
 ramTableData = parseTableData("#ram-data-source table")
 
 renderRamGraph = {
-  const graph = createRamStorageGraph("ram-graph-container", storageMode, 'Salaire', ramTableData);
+  const graph = createRamStorageGraph("ram-graph-container", storageMode, 'Salaire', ramTableData, { autoStart: false });
   invalidation.then(() => { if (graph && graph.destroy) graph.destroy(); });
-  return null;
+  return {
+    start:   () => graph?.start?.(),
+    pause:   () => graph?.pause?.(),
+    restart: () => graph?.restart?.()
+  };
 }
+
+ramTestControl = aptitek.createSimulationControl("#ram-test-ctrl", {
+  onStart:   () => renderRamGraph.start(),
+  onPause:   () => renderRamGraph.pause(),
+  onStop:    () => renderRamGraph.pause(),
+  onRestart: () => renderRamGraph.restart()
+}, invalidation)
 ```
 :::
 
@@ -599,7 +610,7 @@ updateMotherboardUI = {
 ::::: {#test-sm-graph .state-machine-wrapper}
 :::::
 
-##### [Lancer SM]{#btn-sm-start .bi-play-fill .btn} {.tab-right .no-pane}
+##### []{#sm-test-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 :::
 
@@ -673,26 +684,14 @@ testSmGraph = {
     graph.graphData({ nodes, links });
   };
 
-  const updateBtn = (isPlaying) => {
-    const btn = document.getElementById("btn-sm-start");
-    if (!btn) return;
-    if (isPlaying) {
-      btn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
-      btn.classList.add("btn-danger");
-      btn.classList.remove("btn-success");
-    } else {
-      btn.innerHTML = '<i class="bi bi-play-fill"></i> Lancer SM';
-      btn.classList.add("btn-success");
-      btn.classList.remove("btn-danger");
-    }
-  };
-
   const steps = [
     { activeNode: "A", activeLink: null, pastNodes: [], pastLinks: [] },
     { activeNode: "B", activeLink: "A-B", pastNodes: ["A"], pastLinks: [] },
     { activeNode: "C", activeLink: "A-C", pastNodes: ["A", "B"], pastLinks: ["A-B"] },
     { activeNode: "D", activeLink: "B-D", pastNodes: ["A", "B", "C"], pastLinks: ["A-B", "A-C"] }
   ];
+
+  let ctrl;
 
   const sm = new StateMachine({
     states: steps,
@@ -721,35 +720,27 @@ testSmGraph = {
           sm.stop();
           sm.currentIndex = 0;
           resetGraph();
-          updateBtn(false);
+          ctrl?.setState("idle");
         }, 1200);
       }
     }
   });
 
   resetGraph();
-  updateBtn(false);
 
   invalidation.then(() => {
     sm.stop();
     if (graph && graph.destroy) graph.destroy();
   });
 
-  return { graph, sm, resetGraph, updateBtn };
-}
+  ctrl = aptitek.createSimulationControl("#sm-test-ctrl", {
+    onStart:   () => { if (ctrl.state === "idle") { sm.currentIndex = 0; resetGraph(); } sm.start(); },
+    onPause:   () => sm.stop(),
+    onStop:    () => { sm.stop(); sm.currentIndex = 0; resetGraph(); },
+    onRestart: () => { sm.currentIndex = 0; resetGraph(); sm.start(); }
+  }, invalidation);
 
-_smToggle = {
-  if (btn_sm_start === 0) return;
-  const { sm, resetGraph, updateBtn } = testSmGraph;
-  if (sm.isPlaying) {
-    sm.stop();
-    sm.currentIndex = 0;
-    resetGraph();
-    updateBtn(false);
-  } else {
-    sm.start();
-    updateBtn(true);
-  }
+  return { graph, sm, ctrl };
 }
 ```
 

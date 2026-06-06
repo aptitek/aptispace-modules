@@ -1,5 +1,5 @@
 ---
-title: "DataFrame"
+title: "📊 DataFrame"
 ---
 
 Un **DataFrame** est une table organisée pour enquêter sur des données.
@@ -12,20 +12,20 @@ Il se lit avec trois repères :
 
 ## Trois repères
 
-| Index | Nom | Âge | Score |
-| :---- | :-- | --: | ----: |
-| `d01` | Alice | 28 | 0.92 |
-| `d02` | Bob | 35 |  |
-| `d03` | Charlie | 42 | 0.78 |
-| `d04` | David | 19 | 0.85 |
+| Index | Nom     | Âge | Score |
+| :---- | :------ | --: | ----: |
+| `d01` | Alice   |  28 |  0.92 |
+| `d02` | Bob     |  35 |       |
+| `d03` | Charlie |  42 |  0.78 |
+| `d04` | David   |  19 |  0.85 |
 
 Cette table contient quatre individus.
 Chacun possède un identifiant, puis plusieurs informations observées.
 
-:::: {.row}
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🪪 Index {.bi-fingerprint}
+::: {.row}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Index {.bi-fingerprint}
 
 L'index est l'**identifiant** de l'individu.
 
@@ -33,59 +33,59 @@ Comme un numéro de sécurité sociale, il sert à désigner une personne sans a
 
 | Index | Individu |
 | :---- | :------- |
-| `d01` | Alice |
-| `d02` | Bob |
-| `d03` | Charlie |
-| `d04` | David |
+| `d01` | Alice    |
+| `d02` | Bob      |
+| `d03` | Charlie  |
+| `d04` | David    |
 
 **Manipuler :** retrouver directement `d03`.
-::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 📊 Série statistique {.bi-bar-chart}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Série statistique {.bi-bar-chart}
 
 Une colonne est une **série statistique** : la même information mesurée pour plusieurs individus.
 
 | Index | Âge |
 | :---- | --: |
-| `d01` | 28 |
-| `d02` | 35 |
-| `d03` | 42 |
-| `d04` | 19 |
+| `d01` |  28 |
+| `d02` |  35 |
+| `d03` |  42 |
+| `d04` |  19 |
 
 **Évaluer :** repérer une valeur étonnante, comparer, résumer.
-::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🧍 Individu {.bi-person-lines-fill}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Individu {.bi-person-lines-fill}
 
 Une ligne est un **individu** : tout ce que l'on sait sur une observation.
 
-| Variable | Valeur |
-| :------- | :----- |
-| Index | `d03` |
-| Nom | Charlie |
-| Âge | 42 |
-| Score | 0.78 |
+| Variable | Valeur  |
+| :------- | :------ |
+| Index    | `d03`   |
+| Nom      | Charlie |
+| Âge      | 42      |
+| Score    | 0.78    |
 
 **Comprendre :** lire le profil complet de Charlie.
-::::::
 :::::
 ::::
+:::
 
 ## Ne pas confondre les gestes
 
 Ces trois repères ne servent pas au même moment.
 
-| Question | Repère à utiliser | Geste courant |
-| :------- | :---------------- | :------------ |
-| Qui est-ce ? | Index | sélectionner avec `loc` |
-| Que sait-on de cet individu ? | Ligne | inspecter une observation |
-| Comment varie cette information ? | Colonne | analyser une série |
+| Question                          | Repère à utiliser | Geste courant             |
+| :-------------------------------- | :---------------- | :------------------------ |
+| Qui est-ce ?                      | Index             | sélectionner avec `loc`   |
+| Que sait-on de cet individu ?     | Ligne             | inspecter une observation |
+| Comment varie cette information ? | Colonne           | analyser une série        |
 
 ::: {.callout-note collapse="true"}
 ### Trois exemples Pandas
@@ -105,32 +105,32 @@ On ne fait pas encore de statistiques ici.
 On apprend d'abord à pointer la bonne partie du tableau.
 :::
 
-:::: {.card-window .mb-4}
-#### 📈 Lire une série {.bi-graph-up}
+::: {.card-window .mb-4}
+#### Lire une série {.bi-graph-up}
 
-::: {#df-age-series-graph .chart-container-sm}
-:::
+:::: {#df-age-series-graph .chart-container-sm}
+::::
 
 ```{ojs}
 dfAgeColors = ["--sol-base1", "--sol-base1", "--sol-cyan", "--sol-base1"].map((name) => aptitek.getThemeColor(name))
 aptitek.createBar("df-age-series-graph", { x: ["d01", "d02", "d03", "d04"], y: [28, 35, 42, 19] }, "Série statistique : Âge", { marker: { color: dfAgeColors }, layout: { yaxis: { title: "Âge" }, margin: { t: 45, b: 40, l: 45, r: 20 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent" } })
 ```
-::::
+:::
 
 Le graphique représente une seule colonne.
 Chaque barre reste attachée à son index : `d03` correspond toujours à Charlie.
 
-:::: {.card-window .mb-4}
-#### 🔎 Retrouver un individu {.bi-search}
+::: {.card-window .mb-4}
+#### Retrouver un individu {.bi-search}
 
-::: {#df-index-cost-graph .chart-container-sm}
-:::
+:::: {#df-index-cost-graph .chart-container-sm}
+::::
 
 ```{ojs}
 dfIndexColors = [aptitek.getThemeColor("--sol-green"), aptitek.getThemeColor("--sol-orange")]
 aptitek.createBar("df-index-cost-graph", { x: ["Avec index", "Sans identifiant"], y: [1, 4] }, "Effort pour retrouver Charlie", { marker: { color: dfIndexColors }, layout: { yaxis: { title: "Comparaisons" }, margin: { t: 45, b: 45, l: 70, r: 20 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent" } })
 ```
-::::
+:::
 
 Un index utile évite de deviner.
 Il donne un chemin direct vers l'individu demandé.
@@ -139,10 +139,10 @@ Il donne un chemin direct vers l'individu demandé.
 
 Pour comprendre un DataFrame, on alterne entre trois niveaux de lecture.
 
-:::: {.row}
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🎯 Sélectionner {.bi-crosshair}
+::: {.row}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Sélectionner {.bi-crosshair}
 
 On part d'un identifiant ou d'une condition.
 
@@ -152,12 +152,12 @@ df[df["Âge"] >= 30]
 ```
 
 La question est : **quels individus garder ?**
-::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🧪 Évaluer {.bi-clipboard-data}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Évaluer {.bi-clipboard-data}
 
 On vérifie si une série semble cohérente avant d'aller plus loin.
 
@@ -167,12 +167,12 @@ df["Âge"].max()
 ```
 
 La question est : **cette colonne raconte-t-elle quelque chose de plausible ?**
-::::::
 :::::
+::::
 
-::::: {.col}
-:::::: {.card-window .h-100}
-#### 🧩 Comprendre {.bi-puzzle}
+:::: {.col}
+::::: {.card-window .h-100}
+#### Comprendre {.bi-puzzle}
 
 On revient à quelques individus pour donner du sens aux chiffres.
 
@@ -181,19 +181,19 @@ df.loc[["d01", "d03"]]
 ```
 
 La question est : **quels cas concrets expliquent le résultat ?**
-::::::
 :::::
 ::::
+:::
 
 ## À retenir
 
 Le DataFrame est une carte d'enquête.
 On ne le lit pas toujours dans le même sens.
 
-| Repère | Image mentale | Sert à |
-| :----- | :------------ | :----- |
-| Index | numéro de sécurité sociale | identifier sans ambiguïté |
-| Individu | ligne du tableau | comprendre un cas concret |
-| Série statistique | colonne du tableau | comparer une information |
+| Repère            | Image mentale              | Sert à                    |
+| :---------------- | :------------------------- | :------------------------ |
+| Index             | numéro de sécurité sociale | identifier sans ambiguïté |
+| Individu          | ligne du tableau           | comprendre un cas concret |
+| Série statistique | colonne du tableau         | comparer une information  |
 
 Une fois ces trois repères maîtrisés, on peut passer à la question suivante : comment ces lignes et colonnes sont rangées en mémoire.

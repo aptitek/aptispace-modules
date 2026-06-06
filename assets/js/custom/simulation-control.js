@@ -2,9 +2,17 @@
 // simulation-control.js — Generic simulation playback controls
 // ==========================================
 
-const DEFAULT_LABELS = {
-  start: "Démarrer",
-  pause: "Pause",
+const ICONS = {
+  play:    "bi-play-fill",
+  pause:   "bi-pause-fill",
+  stop:    "bi-stop-fill",
+  restart: "bi-arrow-clockwise"
+};
+
+const TITLES = {
+  play:    "Démarrer",
+  pause:   "Pause",
+  stop:    "Arrêter",
   restart: "Rejouer"
 };
 
@@ -19,70 +27,87 @@ function createIcon(className) {
   return icon;
 }
 
-function createButton({ className, iconClass, label }) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = className;
-  button.append(createIcon(iconClass), document.createTextNode(label));
-  return button;
+function createButton(iconClass, title, extraClass) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = `simulation-control-btn ${extraClass}`;
+  btn.title = title;
+  btn.setAttribute("aria-label", title);
+  btn.appendChild(createIcon(iconClass));
+  return btn;
 }
 
 /**
- * Creates a reusable Start/Pause/Restart control for simulations.
+ * Creates icon-only Start / Pause / Stop / Restart controls for simulations.
+ * Designed to sit in a `.tabs` bar via `.simulation-control .control {.tab-right .no-pane}`.
  *
- * @param {HTMLElement|string} target - Host element or selector.
- * @param {Object} options - Hooks called when the user controls playback.
- * @param {Function} [options.onStart] - Called when playback starts/resumes.
- * @param {Function} [options.onPause] - Called when playback pauses.
- * @param {Function} [options.onRestart] - Called when playback restarts.
+ * State machine:
+ *   idle  ──[▶]──▶  running  ──[⏸]──▶  paused
+ *                   running  ──[⏹]──▶  idle
+ *                   paused   ──[▶]──▶  running  (resume)
+ *                   paused   ──[⏹]──▶  idle
+ *                   paused   ──[↺]──▶  running  (restart from beginning)
+ *
+ * Button visibility by state:
+ *   idle    → [▶]
+ *   running → [⏸]* [⏹]           (* if pausable !== false)
+ *   paused  → [▶] [⏹] [↺]
+ *
+ * @param {HTMLElement|string} target  - Host element or CSS selector.
+ * @param {Object} options
+ * @param {Function} [options.onStart]       - idle/paused → running (start or resume).
+ * @param {Function} [options.onPause]       - running → paused.
+ * @param {Function} [options.onStop]        - * → idle (reset).
+ * @param {Function} [options.onRestart]     - paused → running from beginning.
  * @param {Function} [options.onStateChange] - Receives { state, hasStarted }.
- * @param {Object} [options.labels] - Optional button labels.
- * @param {Promise} [invalidation] - OJS invalidation promise.
- * @returns {Object} Controller with start, pause, restart, setState and destroy.
+ * @param {boolean}  [options.pausable=true] - Whether to show the pause button.
+ * @param {Promise}  [invalidation]          - OJS invalidation promise.
+ * @returns Controller: { start, pause, stop, restart, setState, destroy, state, hasStarted }
  */
 export function createSimulationControl(target, options = {}, invalidation) {
   const host = resolveTarget(target);
   if (!host) throw new Error(`createSimulationControl: element not found — "${target}"`);
 
-  const labels = { ...DEFAULT_LABELS, ...(options.labels || {}) };
-  const state = {
-    current: "idle",
-    hasStarted: false
-  };
+  const pausable = options.pausable !== false;
+  const state = { current: "idle", hasStarted: false };
 
   host.textContent = "";
   host.classList.add("simulation-control");
-  host.setAttribute("data-state", state.current);
+  host.setAttribute("data-state", "idle");
 
-  const playPauseButton = createButton({
-    className: "simulation-control-btn simulation-control-toggle",
-    iconClass: "bi-play-fill",
-    label: labels.start
-  });
+  const playBtn    = createButton(ICONS.play,    TITLES.play,    "sc-play");
+  const pauseBtn   = createButton(ICONS.pause,   TITLES.pause,   "sc-pause");
+  const stopBtn    = createButton(ICONS.stop,    TITLES.stop,    "sc-stop");
+  const restartBtn = createButton(ICONS.restart, TITLES.restart, "sc-restart");
 
-  const restartButton = createButton({
-    className: "simulation-control-btn simulation-control-restart d-none",
-    iconClass: "bi-arrow-clockwise",
-    label: labels.restart
-  });
+  host.append(playBtn, pauseBtn, stopBtn, restartBtn);
 
-  host.append(playPauseButton, restartButton);
+  const setVisible = (btn, visible) => {
+    btn.style.display = visible ? "" : "none";
+  };
 
   const render = () => {
-    const isRunning = state.current === "running";
-    const label = isRunning ? labels.pause : labels.start;
+    const s       = state.current;
+    const running = s === "running";
+    const paused  = s === "paused";
+    const idle    = s === "idle";
 
-    playPauseButton.setAttribute("aria-pressed", isRunning ? "true" : "false");
-    playPauseButton.replaceChildren(createIcon(isRunning ? "bi-pause-fill" : "bi-play-fill"), document.createTextNode(label));
-    restartButton.classList.toggle("d-none", !state.hasStarted);
-    host.setAttribute("data-state", state.current);
+    setVisible(playBtn,    !running);
+    setVisible(pauseBtn,   running && pausable);
+    setVisible(stopBtn,    !idle);
+    setVisible(restartBtn, paused);
 
-    options.onStateChange?.({ state: state.current, hasStarted: state.hasStarted });
+    host.setAttribute("data-state", s);
+    options.onStateChange?.({ state: s, hasStarted: state.hasStarted });
   };
 
   const setState = (nextState) => {
     state.current = nextState;
-    if (nextState === "running" || nextState === "paused") state.hasStarted = true;
+    if (nextState === "running" || nextState === "paused") {
+      state.hasStarted = true;
+    } else if (nextState === "idle") {
+      state.hasStarted = false;
+    }
     render();
   };
 
@@ -96,23 +121,32 @@ export function createSimulationControl(target, options = {}, invalidation) {
     setState("paused");
   };
 
+  const stop = () => {
+    options.onStop?.();
+    setState("idle");
+  };
+
   const restart = () => {
     options.onRestart?.();
     setState("running");
   };
 
-  const toggle = () => {
-    if (state.current === "running") pause();
-    else start();
+  const onPlayClick = () => {
+    start();
   };
 
-  playPauseButton.addEventListener("click", toggle);
-  restartButton.addEventListener("click", restart);
+  playBtn.addEventListener("click",    onPlayClick);
+  pauseBtn.addEventListener("click",   pause);
+  stopBtn.addEventListener("click",    stop);
+  restartBtn.addEventListener("click", restart);
+
   render();
 
   const destroy = () => {
-    playPauseButton.removeEventListener("click", toggle);
-    restartButton.removeEventListener("click", restart);
+    playBtn.removeEventListener("click",    onPlayClick);
+    pauseBtn.removeEventListener("click",   pause);
+    stopBtn.removeEventListener("click",    stop);
+    restartBtn.removeEventListener("click", restart);
   };
 
   invalidation?.then(destroy);
@@ -120,14 +154,11 @@ export function createSimulationControl(target, options = {}, invalidation) {
   return {
     start,
     pause,
+    stop,
     restart,
     setState,
     destroy,
-    get state() {
-      return state.current;
-    },
-    get hasStarted() {
-      return state.hasStarted;
-    }
+    get state()      { return state.current; },
+    get hasStarted() { return state.hasStarted; }
   };
 }

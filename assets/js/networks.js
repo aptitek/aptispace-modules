@@ -1270,7 +1270,7 @@ export function createRamStorageGraph(containerSelector, storageMode, queryCol, 
   graph.linkCanvasObjectMode(() => "after");
   graph.linkCanvasObject((link, ctx, globalScale) => {
     const label = link.cacheLabel || "";
-    if (!label) return;
+    if (!label || (!link.isCurrent && !link.isPast)) return;
 
     const { source, target } = link;
     if (typeof source !== "object" || typeof target !== "object") return;

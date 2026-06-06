@@ -128,4 +128,3 @@ Your primary directive is to act as a strict guardian of the project's architect
 4. **Formatting Normalization:**
     * **Headings:** No manual numbering (Quarto handles this). Keep them simple, concise, and precise. Avoid redundant structures like "Titre : explication du titre".
     * **Cards, Graphs, and Simulator Titles:** Make them engaging and short. Always start with a relevant emoji (unless already using an icon via .bi-xxxx), but keep the length appropriate for window/card titles.
-

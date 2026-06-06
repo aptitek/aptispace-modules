@@ -1,6 +1,7 @@
 # Guide de Migration de Contenu : Aptispace
 
 Ce guide documente deux axes de migration :
+
 1. **Migration de contenu** — des anciens formats (`.md`, `.ipynb`, `.html`) vers les modules QMD courts d'Aptispace (sections 1.x).
 2. **Migration des composants et simulations** — du système `atom/mol/org` legacy vers les composants natifs Quarto/OJS d'Aptispace (sections 2.x).
 
@@ -147,29 +148,26 @@ website:
               - modules/systeme-reseau/docker/resources.qmd
 ```
 
----
-
 # 2. Migration des Composants et Simulations
 
 ## 2.1. Philosophie Générale
 
 Le système legacy repose sur une hiérarchie de classes JS (`atom.js` → `mol.js` → `org.js`) qui construisent le DOM par concaténation de chaînes HTML. Le système moderne délègue cette responsabilité à :
 
-| Rôle legacy | Équivalent moderne |
-| :---------- | :----------------- |
-| Construire le DOM depuis JS | Syntaxe QMD native + filtres Lua |
-| Gérer les inputs OJS | Filtre `ojs-inputs` (Span → `<input>` + binding OJS automatique) |
-| Créer des cartes et onglets | Filtres `cards` + `tabs` |
-| Visualiser des données | `aptitek.createBar/Line/Funnel/Piramid/WordCloud` |
-| Simuler des états/réseaux | `aptitek.renderStateMachineGraph`, `aptitek.createCabling`, `aptitek.createRamStorageGraph` |
+| Rôle legacy                 | Équivalent moderne                                                                          |
+| :-------------------------- | :------------------------------------------------------------------------------------------ |
+| Construire le DOM depuis JS | Syntaxe QMD native + filtres Lua                                                            |
+| Gérer les inputs OJS        | Filtre `ojs-inputs` (Span → `<input>` + binding OJS automatique)                            |
+| Créer des cartes et onglets | Filtres `cards` + `tabs`                                                                    |
+| Visualiser des données      | `aptitek.createBar/Line/Funnel/Piramid/WordCloud`                                           |
+| Simuler des états/réseaux   | `aptitek.renderStateMachineGraph`, `aptitek.createCabling`, `aptitek.createRamStorageGraph` |
 
 **Règles absolues à respecter :**
+
 - **Zéro HTML dans les QMD.** Toute construction DOM est dans un module JS (`assets/js/`).
 - **Zéro `ui.*`.** L'objet `ui` est déprécié. Utiliser `aptitek.*` exclusivement.
 - **Cellules OJS fines.** Maximum 3 lignes par cellule : accès via `aptitek.*`, passage des inputs réactifs, retour du résultat.
 - **Zéro style inline dans QMD.** Classes Bootstrap ou `data-state` uniquement.
-
----
 
 ## 2.2. Structure de Simulation Standard (Shell)
 
@@ -225,11 +223,10 @@ Contenu de l'onglet B.
 ```
 
 **Règles de nommage dans ce shell :**
+
 - `#simulation-id` : `kebab-case`, unique dans la page, sans `#` dans les appels `createBar/createWordCloud`, **avec** `#` dans `renderStateMachineGraph/createCabling/createGraph`.
 - `.nom-tabset` : classe utilisée par `createTabsetWatcher` pour lier l'onglet actif à une variable OJS `mutable`.
 - Bouton d'action `.no-pane` : ne crée pas de panneau, n'existe que comme contrôle dans la barre.
-
----
 
 ## 2.3. Tableau de Migration des Atomes (`atom.*`)
 
@@ -237,34 +234,35 @@ Les atomes sont les briques indivisibles. Dans le système moderne, ils sont rem
 
 ### Texte et typographie
 
-| Legacy (`atom.*`) | Moderne (QMD) |
-| :---------------- | :------------ |
-| `atom.text({ type: "title" })` | Titre Markdown `####` dans `.card-window` |
+| Legacy (`atom.*`)              | Moderne (QMD)                                  |
+| :----------------------------- | :--------------------------------------------- |
+| `atom.text({ type: "title" })` | Titre Markdown `####` dans `.card-window`      |
 | `atom.text({ type: "label" })` | `.text-muted .small` (classe Bootstrap inline) |
-| `atom.text({ type: "value" })` | `[id]{.val}` (filtre `ojs-inputs`) |
-| `atom.label(text)` | Texte Markdown brut ou `.fw-bold` |
+| `atom.text({ type: "value" })` | `[id]{.val}` (filtre `ojs-inputs`)             |
+| `atom.label(text)`             | Texte Markdown brut ou `.fw-bold`              |
 
 ### Badges et états
 
-| Legacy | Moderne |
-| :----- | :------ |
-| `atom.badge({ colorClass: "is-info" })` | `[Texte]{.badge .bg-info}` |
-| `atom.badge({ colorClass: "is-success" })` | `[Texte]{.badge .bg-success}` |
-| `atom.badge({ colorClass: "is-warning" })` | `[Texte]{.badge .bg-warning}` |
-| `atom.badge({ colorClass: "is-danger" })` | `[Texte]{.badge .bg-danger}` |
-| `atom.badge({ colorClass: "" })` | `[Texte]{.badge .bg-secondary}` |
+| Legacy                                     | Moderne                         |
+| :----------------------------------------- | :------------------------------ |
+| `atom.badge({ colorClass: "is-info" })`    | `[Texte]{.badge .bg-info}`      |
+| `atom.badge({ colorClass: "is-success" })` | `[Texte]{.badge .bg-success}`   |
+| `atom.badge({ colorClass: "is-warning" })` | `[Texte]{.badge .bg-warning}`   |
+| `atom.badge({ colorClass: "is-danger" })`  | `[Texte]{.badge .bg-danger}`    |
+| `atom.badge({ colorClass: "" })`           | `[Texte]{.badge .bg-secondary}` |
 
 ### Inputs de contrôle
 
-| Legacy (`atom.*`) | Moderne (filtre `ojs-inputs`) |
-| :---------------- | :---------------------------- |
-| `atom.slider({ label, min, max, value, id })` | `[Label]{.slider #id value=50 min=0 max=100}` |
-| `atom.numberInput({ label, min, max, value, id })` | `[Label]{.number #id value=10 min=1 max=200}` |
-| `atom.select({ label, options, value, id })` | `[Label]{.select #id options="A,B,C" value="A"}` |
-| `atom.button({ label })` | `[Label]{.btn .bi-play-fill #btn-id}` dans un onglet `.no-pane` |
-| `atom.multitab({ options })` | `::: {.tabs}` avec `#####` headers |
+| Legacy (`atom.*`)                                  | Moderne (filtre `ojs-inputs`)                                   |
+| :------------------------------------------------- | :-------------------------------------------------------------- |
+| `atom.slider({ label, min, max, value, id })`      | `[Label]{.slider #id value=50 min=0 max=100}`                   |
+| `atom.numberInput({ label, min, max, value, id })` | `[Label]{.number #id value=10 min=1 max=200}`                   |
+| `atom.select({ label, options, value, id })`       | `[Label]{.select #id options="A,B,C" value="A"}`                |
+| `atom.button({ label })`                           | `[Label]{.btn .bi-play-fill #btn-id}` dans un onglet `.no-pane` |
+| `atom.multitab({ options })`                       | `::: {.tabs}` avec `#####` headers                              |
 
 Le filtre génère automatiquement le binding OJS :
+
 - Pour les inputs : `id_var = Generators.input(document.getElementById('id'))`
 - Pour les boutons `.no-pane` : `btn_id = Generators.observe(...)` (clics comptés)
 
@@ -273,65 +271,63 @@ Le filtre génère automatiquement le binding OJS :
 
 ### Progression
 
-| Legacy | Moderne (filtre `ojs-inputs`) |
-| :----- | :---------------------------- |
-| `atom.progressBar({ value: 42, max: 100 })` | `[42%]{.progressbar}` |
-| `atom.progressBar({ value: 0.42, max: 1 })` | `[0.42]{.progressbar}` |
-| `atom.progressBar({ colorClass: "is-success" })` | `[80%]{.progressbar color='success'}` |
-| `atom.progressBar({ colorClass: "is-danger" })` | `[30%]{.progressbar color='danger'}` |
-| Barre réactive liée à un input OJS | `[inp-id]{.progressbar color='info' animated='true'}` |
-| Dans un tableau structuré (mobo) | `[]{.progress-bar .bg-success data-progress=70}` |
+| Legacy                                           | Moderne (filtre `ojs-inputs`)                         |
+| :----------------------------------------------- | :---------------------------------------------------- |
+| `atom.progressBar({ value: 42, max: 100 })`      | `[42%]{.progressbar}`                                 |
+| `atom.progressBar({ value: 0.42, max: 1 })`      | `[0.42]{.progressbar}`                                |
+| `atom.progressBar({ colorClass: "is-success" })` | `[80%]{.progressbar color='success'}`                 |
+| `atom.progressBar({ colorClass: "is-danger" })`  | `[30%]{.progressbar color='danger'}`                  |
+| Barre réactive liée à un input OJS               | `[inp-id]{.progressbar color='info' animated='true'}` |
+| Dans un tableau structuré (mobo)                 | `[]{.progress-bar .bg-success data-progress=70}`      |
 
 ### Terminal
 
-| Legacy | Moderne |
-| :----- | :------ |
+| Legacy                                     | Moderne                                         |
+| :----------------------------------------- | :---------------------------------------------- |
 | `atom.terminalWindow({ header, content })` | `::: {.terminal}` + `#### Titre {.bi-terminal}` |
-| `atom.logLine({ message, type: "info" })` | Texte Markdown dans le `.terminal` |
-| `atom.logLine({ type: "success" })` | `.terminal-line .text-success` |
-| `atom.logLine({ type: "danger" })` | `.terminal-line .text-danger` |
-| `atom.logLine({ type: "warning" })` | `.terminal-line .text-warning` |
-
----
+| `atom.logLine({ message, type: "info" })`  | Texte Markdown dans le `.terminal`              |
+| `atom.logLine({ type: "success" })`        | `.terminal-line .text-success`                  |
+| `atom.logLine({ type: "danger" })`         | `.terminal-line .text-danger`                   |
+| `atom.logLine({ type: "warning" })`        | `.terminal-line .text-warning`                  |
 
 ## 2.4. Tableau de Migration des Molécules (`mol.*`)
 
 ### Cartes et mises en page
 
-| Legacy (`mol.*`) | Moderne (filtre `cards` + grille) |
-| :--------------- | :-------------------------------- |
-| `mol.card({ header, content })` | `::: {.card-window}` + `#### Titre {.bi-icon}` |
-| `mol.card({ colorClass: "is-info" })` | Badge inline dans le header : `[Qualitative]{.badge .bg-info .float-end}` |
-| `mol.comparisonLayout({ left, right })` | `::: {.row}` + `:::: {.col}` + `:::: {.col}` |
-| `mol.vectorSpace({ height, label })` | `::: {#id .chart-container-*}` |
+| Legacy (`mol.*`)                        | Moderne (filtre `cards` + grille)                                         |
+| :-------------------------------------- | :------------------------------------------------------------------------ |
+| `mol.card({ header, content })`         | `::: {.card-window}` + `#### Titre {.bi-icon}`                            |
+| `mol.card({ colorClass: "is-info" })`   | Badge inline dans le header : `[Qualitative]{.badge .bg-info .float-end}` |
+| `mol.comparisonLayout({ left, right })` | `::: {.row}` + `:::: {.col}` + `:::: {.col}`                              |
+| `mol.vectorSpace({ height, label })`    | `::: {#id .chart-container-*}`                                            |
 
 Tailles de conteneur disponibles :
 
-| Classe | Hauteur approximative |
-| :----- | :-------------------- |
-| `.chart-container-xs` | ~150 px |
-| `.chart-container-sm` | ~200 px |
-| `.chart-container` | ~300 px |
-| `.chart-container-md` | ~350 px |
-| `.chart-container-lg` | ~450 px |
-| `.chart-container-xl` | ~550 px |
+| Classe                | Hauteur approximative |
+| :-------------------- | :-------------------- |
+| `.chart-container-xs` | ~150 px               |
+| `.chart-container-sm` | ~200 px               |
+| `.chart-container`    | ~300 px               |
+| `.chart-container-md` | ~350 px               |
+| `.chart-container-lg` | ~450 px               |
+| `.chart-container-xl` | ~550 px               |
 
 ### Métriques réactives
 
-| Legacy | Moderne |
-| :----- | :------ |
-| `mol.metricCard({ title, value, trend: "positive" })` | `::: {.metrics}` avec `[id]{.val}` |
-| `mol.metricCard()` côte à côte | Colonnes du tableau `.metrics` — couleur auto par position |
+| Legacy                                                | Moderne                                                    |
+| :---------------------------------------------------- | :--------------------------------------------------------- |
+| `mol.metricCard({ title, value, trend: "positive" })` | `::: {.metrics}` avec `[id]{.val}`                         |
+| `mol.metricCard()` côte à côte                        | Colonnes du tableau `.metrics` — couleur auto par position |
 
 Le composant `.metrics` colore automatiquement : col 1 → `--accent-primary`, col 2 → `--accent-success`, col 3 → `--accent-warning`, col 4 → `--accent-danger`.
 
 ### Toggle et onglets
 
-| Legacy | Moderne (filtre `tabs`) |
-| :----- | :---------------------- |
-| `mol.toggle({ options, value })` | `::: {.tabs}` + headers `#####` |
-| Toggle lié à OJS (`viewof`) | `.tabs` + `createTabsetWatcher()` dans une cellule OJS |
-| Options alignées à droite | Dernier onglet `.tab-right` |
+| Legacy                           | Moderne (filtre `tabs`)                                |
+| :------------------------------- | :----------------------------------------------------- |
+| `mol.toggle({ options, value })` | `::: {.tabs}` + headers `#####`                        |
+| Toggle lié à OJS (`viewof`)      | `.tabs` + `createTabsetWatcher()` dans une cellule OJS |
+| Options alignées à droite        | Dernier onglet `.tab-right`                            |
 
 Pattern OJS pour lier un tabset à une variable réactive :
 
@@ -375,19 +371,17 @@ _tabWatcher = {
 renderFeedbackUI("#feedback-panel", { status: "validated", score: 3, total: 4 }, listData)
 ```
 
----
-
 ## 2.5. Tableau de Migration des Organismes (`org.*`)
 
 ### Visualisations Plotly
 
-| Legacy (`org.*` / `mol.*`) | Moderne (`aptitek.*`) |
-| :------------------------- | :-------------------- |
-| `org.plotlyWrapper({ data, layout })` | Appel direct `createBar/createLine/…` |
-| `mol.interactiveContinuousGraph()` | `createLine("id", { x, y }, "Titre", options)` |
-| `mol.interactiveHistogram()` | `createBar("id", { x, y }, "Titre", options)` |
-| `mol.interactivePyramid()` | `createPiramid("id", { text, values }, options)` |
-| `mol.wordCloud3D()` | `createWordCloud("id", words, options)` |
+| Legacy (`org.*` / `mol.*`)            | Moderne (`aptitek.*`)                            |
+| :------------------------------------ | :----------------------------------------------- |
+| `org.plotlyWrapper({ data, layout })` | Appel direct `createBar/createLine/…`            |
+| `mol.interactiveContinuousGraph()`    | `createLine("id", { x, y }, "Titre", options)`   |
+| `mol.interactiveHistogram()`          | `createBar("id", { x, y }, "Titre", options)`    |
+| `mol.interactivePyramid()`            | `createPiramid("id", { text, values }, options)` |
+| `mol.wordCloud3D()`                   | `createWordCloud("id", words, options)`          |
 
 **Important :** Les fonctions Plotly prennent l'ID **sans `#`**. `createWordCloud` aussi. `renderStateMachineGraph` et `createGraph` prennent l'ID **avec `#`**.
 
@@ -410,10 +404,10 @@ createBar("mon-graphe", { x: labels, y: values }, "Titre", {
 
 ```markdown
 :::: {#data-source .d-none}
-| Nom    | Age | Salaire |
-| :----- | :-- | :------ |
-| Alice  | 30  | 50k     |
-| Bob    | 25  | 45k     |
+| Nom   | Age | Salaire |
+| :---- | :-- | :------ |
+| Alice | 30  | 50k     |
+| Bob   | 25  | 45k     |
 ::::
 ```
 
@@ -428,8 +422,8 @@ Le tableau est ensuite utilisable dans les fonctions JS (ex : `createRamStorageG
 `org.confusionMatrix()` → Tableau Markdown stylisé (Bootstrap) :
 
 ```markdown
-| \ | Prédit + | Prédit − |
-| :--- | :---: | :---: |
+| \          |    Prédit +   |    Prédit −   |
+| :--------- | :-----------: | :-----------: |
 | **Réel +** | [tp]{.val} TP | [fn]{.val} FN |
 | **Réel −** | [fp]{.val} FP | [tn]{.val} TN |
 ```
@@ -527,9 +521,9 @@ Animation via `StateMachine` (voir section 2.6).
 #### Titre de l'exercice {.bi-ethernet}
 
 :::: {#data-cabling .d-none}
-| id  | label | match   | feedback             |
-| :-- | :---- | :------ | :------------------- |
-| v1  | Var A | type-x  | Explication correcte |
+| id  | label | match  | feedback             |
+| :-- | :---- | :----- | :------------------- |
+| v1  | Var A | type-x | Explication correcte |
 ::::
 
 Reliez chaque élément à sa catégorie.
@@ -553,7 +547,7 @@ Reliez chaque élément à sa catégorie.
 :::::
 ::::
 
-```{ojs}
+```
 viewof powerOn = createLever("#power-lever", invalidation)
 ```
 
@@ -600,8 +594,6 @@ uiLogic = {
   renderFeedbackUI("#feedback-cabling", state, listData);
 }
 ```
-
----
 
 ## 2.6. Patterns OJS Avancés
 
@@ -676,8 +668,8 @@ Correspondance dans le QMD (le template HTML dans le DOM) :
 
 ```markdown
 :::: {#mon-inspecteur}
-| Prop | Valeur |
-| :--- | :----- |
+| Prop      | Valeur                      |
+| :-------- | :-------------------------- |
 | **Titre** | [**{{titre}}**]{.font-code} |
 | **Index** | [**{{index}}**]{.font-code} |
 | **Label** | [**{{label}}**]{.font-code} |
@@ -716,67 +708,63 @@ _watcher = {
 }
 ```
 
----
-
 ## 2.7. Migration des Classes CSS
 
 ### Préfixes à supprimer
 
-| Classe legacy | Remplacement moderne |
-| :------------ | :------------------- |
-| `atom-text-title` | Titre Markdown `####` dans la carte |
-| `atom-text-label` | `.text-muted .small` (Bootstrap) |
-| `atom-text-value` | `[id]{.val}` |
-| `atom-label` | Texte Markdown brut ou `.fw-bold` |
-| `mol-toggle` | `.tabs` (filtre tabs) |
-| `mol-toggle.is-horizontal` | `.tabs` standard |
-| `ui-card` | `.card-window` (filtre cards) |
-| `ui-card is-info` | `.card-window` + `[Badge]{.badge .bg-info .float-end}` dans le titre |
-| `ui-terminal` | `.terminal` |
-| `ui-terminal-header` | `#### Titre {.bi-terminal}` dans `.terminal` |
-| `ui-terminal-body` | Corps du bloc `.terminal` |
-| `ui-terminal-line is-success` | `.terminal-line .text-success` |
-| `ui-terminal-line is-danger` | `.terminal-line .text-danger` |
-| `ui-terminal-line is-warning` | `.terminal-line .text-warning` |
-| `ui-terminal-line is-muted` | `.terminal-line .text-muted` |
-| `ui-badge is-info` | `[Texte]{.badge .bg-info}` |
-| `ui-badge is-success` | `[Texte]{.badge .bg-success}` |
-| `ui-badge is-warning` | `[Texte]{.badge .bg-warning}` |
-| `ui-badge is-danger` | `[Texte]{.badge .bg-danger}` |
-| `ui-progress` + `ui-progress-bar` | `[val%]{.progressbar}` |
-| `ui-canvas` | `::: {#id .chart-container-*}` |
-| `ui-multitab-container` | `.tabs` (filtre tabs) |
-| `ui-card-header` | En-tête `.card-window` (header H4) |
-| `is-info` (état) | `.text-info` ou `data-state="info"` |
-| `is-success` (état) | `.text-success` ou `data-state="success"` |
-| `is-danger` (état) | `.text-danger` ou `data-state="danger"` |
-| `is-warning` (état) | `.text-warning` ou `data-state="warning"` |
-| `is-debug` / `is-muted` | `.text-muted` |
-| `premium-*` | Supprimer — toutes les fonctionnalités sont natives |
+| Classe legacy                     | Remplacement moderne                                                 |
+| :-------------------------------- | :------------------------------------------------------------------- |
+| `atom-text-title`                 | Titre Markdown `####` dans la carte                                  |
+| `atom-text-label`                 | `.text-muted .small` (Bootstrap)                                     |
+| `atom-text-value`                 | `[id]{.val}`                                                         |
+| `atom-label`                      | Texte Markdown brut ou `.fw-bold`                                    |
+| `mol-toggle`                      | `.tabs` (filtre tabs)                                                |
+| `mol-toggle.is-horizontal`        | `.tabs` standard                                                     |
+| `ui-card`                         | `.card-window` (filtre cards)                                        |
+| `ui-card is-info`                 | `.card-window` + `[Badge]{.badge .bg-info .float-end}` dans le titre |
+| `ui-terminal`                     | `.terminal`                                                          |
+| `ui-terminal-header`              | `#### Titre {.bi-terminal}` dans `.terminal`                         |
+| `ui-terminal-body`                | Corps du bloc `.terminal`                                            |
+| `ui-terminal-line is-success`     | `.terminal-line .text-success`                                       |
+| `ui-terminal-line is-danger`      | `.terminal-line .text-danger`                                        |
+| `ui-terminal-line is-warning`     | `.terminal-line .text-warning`                                       |
+| `ui-terminal-line is-muted`       | `.terminal-line .text-muted`                                         |
+| `ui-badge is-info`                | `[Texte]{.badge .bg-info}`                                           |
+| `ui-badge is-success`             | `[Texte]{.badge .bg-success}`                                        |
+| `ui-badge is-warning`             | `[Texte]{.badge .bg-warning}`                                        |
+| `ui-badge is-danger`              | `[Texte]{.badge .bg-danger}`                                         |
+| `ui-progress` + `ui-progress-bar` | `[val%]{.progressbar}`                                               |
+| `ui-canvas`                       | `::: {#id .chart-container-*}`                                       |
+| `ui-multitab-container`           | `.tabs` (filtre tabs)                                                |
+| `ui-card-header`                  | En-tête `.card-window` (header H4)                                   |
+| `is-info` (état)                  | `.text-info` ou `data-state="info"`                                  |
+| `is-success` (état)               | `.text-success` ou `data-state="success"`                            |
+| `is-danger` (état)                | `.text-danger` ou `data-state="danger"`                              |
+| `is-warning` (état)               | `.text-warning` ou `data-state="warning"`                            |
+| `is-debug` / `is-muted`           | `.text-muted`                                                        |
+| `premium-*`                       | Supprimer — toutes les fonctionnalités sont natives                  |
 
 ### Classes conservées (natif moderne)
 
 Ces classes sont définies dans le SCSS moderne et sont à conserver :
 
-| Classe | Source | Usage |
-| :----- | :----- | :---- |
-| `.card-window` | Filtre `cards` | Carte fenêtre macOS |
-| `.terminal` | Filtre `cards` | Terminal sombre |
-| `.cabling-panel` | `networks.js` | Zone jsPlumb |
-| `.lever-wrapper` | `custom/lever.js` | Levier ON/OFF |
-| `.ram-motherboard` | `custom/ram.js` | Conteneur barrettes RAM |
-| `.ram-stick` | `custom/ram.js` | Barrette RAM individuelle |
-| `.ram-byte-box` | `custom/ram.js` | Case d'octet |
-| `.motherboard-view` | `custom/mobo.js` | SVG carte mère interactif |
-| `.state-machine-wrapper` | `networks.js` | Conteneur machine à états |
-| `.reveal-lines` | SCSS global | Animation séquentielle |
-| `.feedback-card` | `core.js` | Carte de feedback cachée |
-| `.feedback-details` | `core.js` | Détails de feedback |
-| `.metrics` | SCSS global | Tableau métriques grand format |
-| `.concept-details` | SCSS global | Détails conceptuels pliables |
-| `.chart-container-*` | SCSS global | Conteneur de graphique Plotly/Canvas |
-
----
+| Classe                   | Source            | Usage                                |
+| :----------------------- | :---------------- | :----------------------------------- |
+| `.card-window`           | Filtre `cards`    | Carte fenêtre macOS                  |
+| `.terminal`              | Filtre `cards`    | Terminal sombre                      |
+| `.cabling-panel`         | `networks.js`     | Zone jsPlumb                         |
+| `.lever-wrapper`         | `custom/lever.js` | Levier ON/OFF                        |
+| `.ram-motherboard`       | `custom/ram.js`   | Conteneur barrettes RAM              |
+| `.ram-stick`             | `custom/ram.js`   | Barrette RAM individuelle            |
+| `.ram-byte-box`          | `custom/ram.js`   | Case d'octet                         |
+| `.motherboard-view`      | `custom/mobo.js`  | SVG carte mère interactif            |
+| `.state-machine-wrapper` | `networks.js`     | Conteneur machine à états            |
+| `.reveal-lines`          | SCSS global       | Animation séquentielle               |
+| `.feedback-card`         | `core.js`         | Carte de feedback cachée             |
+| `.feedback-details`      | `core.js`         | Détails de feedback                  |
+| `.metrics`               | SCSS global       | Tableau métriques grand format       |
+| `.concept-details`       | SCSS global       | Détails conceptuels pliables         |
+| `.chart-container-*`     | SCSS global       | Conteneur de graphique Plotly/Canvas |
 
 ## 2.8. Checklist de Migration par Simulation
 

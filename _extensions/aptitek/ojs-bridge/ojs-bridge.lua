@@ -84,6 +84,8 @@ function Pandoc(doc)
         createLabeledText = aptitek.createLabeledText
         initInteractiveSvg = aptitek.initInteractiveSvg
         createSlider = aptitek.createSlider
+        createTerminal = aptitek.createTerminal
+        createSimulationControl = aptitek.createSimulationControl
       `);
     } else {
       setTimeout(run, 10);

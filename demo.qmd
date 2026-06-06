@@ -31,11 +31,11 @@ du bloc (H4 recommandé) devient le `.card-header` ; le reste devient le
 `.card-body`. Les classes `bi-*` sur ce Header sont converties en icône par
 `bi-icons`.
 
-| Classe | Variante visuelle |
-| :----- | :---------------- |
-| `.card-window` | Carte fenêtre macOS avec pastilles rouge · jaune · vert |
-| `.card` | Carte Bootstrap classique avec en-tête simple (sans contrôles) |
-| `.terminal` | Carte sombre avec animation typewriter sur le premier paragraphe |
+| Classe         | Variante visuelle                                                |
+| :------------- | :--------------------------------------------------------------- |
+| `.card-window` | Carte fenêtre macOS avec pastilles rouge · jaune · vert          |
+| `.card`        | Carte Bootstrap classique avec en-tête simple (sans contrôles)   |
+| `.terminal`    | Carte sombre avec animation typewriter sur le premier paragraphe |
 
 ### Syntaxe
 
@@ -109,6 +109,141 @@ Epoch 10/10 — loss: **0.043** — accuracy: **0.981**
 ::: {.terminal}
 Terminal sans titre : la barre "aptitek terminal" est générée automatiquement.
 :::
+
+## Contrôles de simulation — `createSimulationControl`
+
+`createSimulationControl(target, options, invalidation)` initialise un ensemble de boutons icône dans le conteneur `target`. Il gère une machine à états interne (`idle` → `running` ↔ `paused`) et n'affiche que les boutons pertinents à chaque état.
+
+### Syntaxe Markdown
+
+Déclarez un conteneur vide dans un onglet `.tab-right .no-pane` :
+
+```markdown
+:::: {.tabs}
+##### Vue {.bi-eye}
+Contenu.
+
+##### []{#mon-ctrl .simulation-control .control} {.tab-right .no-pane}
+::::
+```
+
+Puis initialisez en OJS :
+
+```js
+ctrl = aptitek.createSimulationControl("#mon-ctrl", {
+  onStart:   () => monAnimation.start(),
+  onPause:   () => monAnimation.pause(),
+  onStop:    () => monAnimation.pause(),   // arrêt doux
+  onRestart: () => monAnimation.restart()
+}, invalidation)
+```
+
+### Machine à états et visibilité des boutons
+
+| État      | Boutons affichés                       |
+| :-------- | :------------------------------------- |
+| `idle`    | [▶] play                               |
+| `running` | [⏸] pause\* · [⏹] stop                 |
+| `paused`  | [▶] reprendre · [⏹] stop · [↺] rejouer |
+
+\* masqué si `pausable: false`
+
+### Options
+
+| Option          | Type       | Défaut | Description                                        |
+| :-------------- | :--------- | :----- | :------------------------------------------------- |
+| `onStart`       | `Function` | —      | Appelé au démarrage et à la reprise (play)         |
+| `onPause`       | `Function` | —      | Appelé lors de la mise en pause                    |
+| `onStop`        | `Function` | —      | Appelé à l'arrêt (retour à `idle`)                 |
+| `onRestart`     | `Function` | —      | Appelé au redémarrage depuis `paused`              |
+| `onStateChange` | `Function` | —      | Reçoit `{ state, hasStarted }` à chaque transition |
+| `pausable`      | `boolean`  | `true` | Affiche ou masque le bouton pause                  |
+
+### API du contrôleur retourné
+
+```js
+ctrl.start()               // → running
+ctrl.pause()               // → paused
+ctrl.stop()                // → idle
+ctrl.restart()             // → running depuis le début
+ctrl.setState("running")   // transition forcée (ex: fin d'animation)
+ctrl.state                 // "idle" | "running" | "paused"
+ctrl.hasStarted            // true si la simulation a déjà tourné
+ctrl.destroy()             // retire les listeners
+```
+
+### Démo live
+
+::: {.tabs}
+##### Démo {.bi-play-circle}
+:::: {#sim-demo-output .terminal}
+#### Simulation {.bi-terminal}
+::::
+
+##### []{#sim-demo-ctrl .simulation-control .control} {.tab-right .no-pane}
+:::
+
+```{ojs}
+//| echo: false
+_simDemoTerm = {
+  const t = aptitek.createTerminal("#sim-demo-output", { defaultPrompt: false, showCursor: false });
+  t.writeLine("En attente du démarrage…", { type: "muted" });
+  invalidation.then(() => t.destroy());
+  return t;
+}
+
+simDemoCtrl = {
+  const t = _simDemoTerm;
+  let step = 0;
+  let iv = null;
+  let ctrl;
+
+  ctrl = aptitek.createSimulationControl("#sim-demo-ctrl", {
+    onStart: () => {
+      t.writeLine(`Simulation démarrée (étape ${step + 1})`, { type: "success" });
+      iv = setInterval(() => {
+        step++;
+        t.writeLine(`Étape ${step} — loss: ${(1 / step).toFixed(3)}`, { type: "info" });
+        if (step >= 8) {
+          clearInterval(iv); iv = null;
+          t.writeLine("Simulation terminée.", { type: "success" });
+          ctrl.setState("idle");
+          step = 0;
+        }
+      }, 600);
+    },
+    onPause: () => {
+      if (iv) { clearInterval(iv); iv = null; }
+      t.writeLine("Pause.", { type: "warning" });
+    },
+    onStop: () => {
+      if (iv) { clearInterval(iv); iv = null; }
+      step = 0;
+      t.clear();
+      t.writeLine("Simulation arrêtée.", { type: "muted" });
+    },
+    onRestart: () => {
+      if (iv) { clearInterval(iv); iv = null; }
+      step = 0;
+      t.clear();
+      t.writeLine("Redémarrage…", { type: "warning" });
+      iv = setInterval(() => {
+        step++;
+        t.writeLine(`Étape ${step} — loss: ${(1 / step).toFixed(3)}`, { type: "info" });
+        if (step >= 8) {
+          clearInterval(iv); iv = null;
+          t.writeLine("Simulation terminée.", { type: "success" });
+          ctrl.setState("idle");
+          step = 0;
+        }
+      }, 600);
+    }
+  }, invalidation);
+
+  invalidation.then(() => { if (iv) clearInterval(iv); });
+  return ctrl;
+}
+```
 
 ## Onglets — `aptitek/tabs`
 

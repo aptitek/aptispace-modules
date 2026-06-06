@@ -1,8 +1,8 @@
 ---
-title: "L'Information"
+title: "📡 L'Information"
 ---
 
-:::{.portrait}
+::: {.portrait}
 ![Claude Shannon](/assets/portraits/claude-shannon.jpeg)
 
 > Le problème fondamental de la communication est de reproduire en un point, exactement ou approximativement, un message choisi en un autre point.
@@ -65,14 +65,14 @@ viewof inf_p = aptitek.createSlider({
 })
 ```
 
-::: {.metrics}
-| Probabilité p | Information I(p) |
-| :------------ | :--------------- |
+:::: {.metrics}
+| Probabilité p   | Information I(p)    |
+| :-------------- | :------------------ |
 | [inf-p]{.val} % | [inf-ip]{.val} bits |
-:::
+::::
 
-::: {#inf-ip-canvas .chart-container}
-:::
+:::: {#inf-ip-canvas .chart-container}
+::::
 
 ```{ojs}
 inf_ip = (-Math.log2(inf_p / 100)).toFixed(3)
@@ -108,12 +108,12 @@ renderIPChart = {
 
 **Exemples remarquables :**
 
-| Événement | Probabilité | Information |
-| :-------- | :---------: | ----------: |
-| Pile ou face (équilibré) | $\tfrac{1}{2}$ | $1$ bit |
-| Face d'un dé à 6 faces | $\tfrac{1}{6}$ | $\approx 2{,}58$ bits |
-| Carte tirée parmi 52 | $\tfrac{1}{52}$ | $\approx 5{,}70$ bits |
-| Octet précis parmi 256 | $\tfrac{1}{256}$ | $8$ bits exactement |
+| Événement                |   Probabilité    |           Information |
+| :----------------------- | :--------------: | --------------------: |
+| Pile ou face (équilibré) |  $\tfrac{1}{2}$  |               $1$ bit |
+| Face d'un dé à 6 faces   |  $\tfrac{1}{6}$  | $\approx 2{,}58$ bits |
+| Carte tirée parmi 52     | $\tfrac{1}{52}$  | $\approx 5{,}70$ bits |
+| Octet précis parmi 256   | $\tfrac{1}{256}$ |   $8$ bits exactement |
 
 ## L'entropie de Shannon
 
@@ -133,14 +133,14 @@ viewof inf_ep = aptitek.createSlider({
 })
 ```
 
-::: {.metrics}
-| p («0») | 1 − p («1») | Entropie H |
-| :------ | :---------- | :--------- |
+:::: {.metrics}
+| p («0»)          | 1 − p («1»)       | Entropie H                  |
+| :--------------- | :---------------- | :-------------------------- |
 | [inf-ep]{.val} % | [inf-ep1]{.val} % | [inf-hval]{.val} bits/symb. |
-:::
+::::
 
-::: {#inf-entropy-canvas .chart-container}
-:::
+:::: {#inf-entropy-canvas .chart-container}
+::::
 
 ```{ojs}
 inf_ep1 = 100 - inf_ep
@@ -203,29 +203,29 @@ La distribution de probabilités d'une source détermine son entropie, mais la *
 
 ##### Dé biaisé {.bi-dice-6-fill}
 
-##### 8 symboles {.bi-grid-3x3-gap}
+##### 4.0.1.5 symboles {.bi-grid-3x3-gap}
 
 ##### Cyclique {.bi-arrow-repeat}
 
 ##### []{.btn .bi-arrow-clockwise #inf-regen-btn} {.tab-right .no-pane}
 ::::
 
-::: {.metrics}
-| N symboles | Entropie H | H max ($\log_2 N$) |
-| :--------- | :--------- | :----------------- |
+:::: {.metrics}
+| N symboles        | Entropie H             | H max ($\log_2 N$)        |
+| :---------------- | :--------------------- | :------------------------ |
 | [inf-src-n]{.val} | [inf-src-h]{.val} bits | [inf-src-hmax]{.val} bits |
-:::
+::::
 
-::: {.row}
-:::: {.col}
-::: {#inf-src-canvas .chart-container}
-:::
+:::: {.row}
+::::: {.col}
+:::::: {#inf-src-canvas .chart-container}
+::::::
+:::::
+::::: {.col}
+:::::: {#inf-scatter-canvas .chart-container}
+::::::
+:::::
 ::::
-:::: {.col}
-::: {#inf-scatter-canvas .chart-container}
-:::
-::::
-:::
 
 ```{ojs}
 mutable inf_src_key = "Pièce équilibrée"
@@ -398,8 +398,8 @@ viewof inf_unit_zoom = aptitek.createSlider({
 })
 ```
 
-::: {#inf-units-canvas .chart-container-lg}
-:::
+:::: {#inf-units-canvas .chart-container-lg}
+::::
 
 ```{ojs}
 INF_UNITS = [
@@ -530,73 +530,72 @@ renderUnitsChart = {
 ```
 
 :::: {.metrics-iec}
-::: {.metrics-iec-rows}
-::: {.metrics-iec-row}
+::::: {.metrics-iec-rows}
+:::::: {.metrics-iec-row}
 [SI]{.metrics-iec-base} [Unité SI]{.metrics-iec-label} [inf-unit-sym]{.val} [inf-unit-val]{.val}
-:::
+::::::
 
-::: {.metrics-iec-row}
+:::::: {.metrics-iec-row}
 [IEC]{.metrics-iec-base} [Équivalent IEC]{.metrics-iec-label} [inf-unit-iec-sym]{.val} [inf-unit-iec-val]{.val}
-:::
-:::
+::::::
+:::::
 
-::: {.metrics-iec-ring}
+::::: {.metrics-iec-ring}
 [Écart]{.metrics-iec-label}
 
 [inf-unit-iec-ecart-pct]{.progressring color='warning' max='13' label='inf-unit-iec-ecart'}
-:::
+:::::
 ::::
 
 :::: {.unit-examples}
-::: {.unit-example-hero}
+::::: {.unit-example-hero}
 [inf-unit-icon]{.val .unit-example-icon}
 
-::: {.unit-example-copy}
+:::::: {.unit-example-copy}
 [Type de contenu]{.unit-example-label}
 
 [inf-unit-desc]{.val .unit-example-desc}
-:::
-:::
+::::::
+:::::
 
-:::: {.unit-example-cards}
-::: {.unit-example-card}
+::::: {.unit-example-cards}
+:::::: {.unit-example-card}
 [Exemple]{.unit-example-label}
 
 [inf-unit-ex1-icon]{.val .unit-example-card-icon}
 [inf-unit-ex1]{.val}
-:::
+::::::
 
-::: {.unit-example-card}
+:::::: {.unit-example-card}
 [Exemple]{.unit-example-label}
 
 [inf-unit-ex2-icon]{.val .unit-example-card-icon}
 [inf-unit-ex2]{.val}
-:::
+::::::
 
-::: {.unit-example-card}
+:::::: {.unit-example-card}
 [Exemple]{.unit-example-label}
 
 [inf-unit-ex3-icon]{.val .unit-example-card-icon}
 [inf-unit-ex3]{.val}
-:::
-::::
+::::::
+:::::
 ::::
 
 Les préfixes **SI** (décimaux) et **IEC** (binaires) diffèrent légèrement — d'où les capacités qui semblent « perdues ».
 
 :::
 
-
 ::: {.callout-warning}
 ## Mb ≠ MB — un facteur 8 qui trompe tout le monde
 
 Les opérateurs télécom et FAI expriment les débits en **mégabits par seconde (Mb/s ou Mbps)**, tandis que les fichiers et le stockage sont mesurés en **mégaoctets (Mo ou MB)**.
 
-| Notation | Nom | Valeur |
-| :------- | :-- | :----- |
-| **Mb** | mégabit | $10^6$ bits |
+| Notation        | Nom       | Valeur                               |
+| :-------------- | :-------- | :----------------------------------- |
+| **Mb**          | mégabit   | $10^6$ bits                          |
 | **MB** / **Mo** | mégaoctet | $10^6$ octets = $8 \times 10^6$ bits |
-| **Gb** | gigabit | $10^9$ bits |
+| **Gb**          | gigabit   | $10^9$ bits                          |
 | **GB** / **Go** | gigaoctet | $10^9$ octets = $8 \times 10^9$ bits |
 
 **Exemple concret :** une connexion annoncée à **100 Mb/s** transfère au maximum $100 \div 8 = \mathbf{12{,}5\ \text{Mo/s}}$ de données. Un fichier de 1 Go prend donc au minimum $1000 \div 12{,}5 = 80$ secondes à télécharger — pas 10 secondes.
@@ -640,4 +639,6 @@ $$p_1 > p_2 \implies I(p_1) < I(p_2)$$
 
 $I$ est strictement décroissante : plus un événement est probable, moins il est informatif. La surprise grandit avec la rareté.
 :::::
+::::
+
 :::

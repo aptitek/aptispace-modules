@@ -73,6 +73,7 @@ export {
   renderVarianceGraph,
   renderStandardDeviationGraph
 } from "./custom/statistics.js";
+export { createTerminal } from "./custom/terminal.js";
 export { createLabeledText } from "./custom/text.js";
 
 

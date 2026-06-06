@@ -1,5 +1,5 @@
 ---
-title: "La Donnée"
+title: "🗄️ La Donnée"
 ---
 
 Une donnée est un **fait brut mesurable** — une observation élémentaire de la réalité attachée à une entité. Seule, elle ne dit rien. C'est la combinaison de sa **nature**, son **type**, son **unité** et son **domaine** qui lui confère sa valeur analytique.
@@ -150,11 +150,11 @@ La nature d'une variable **n'est pas figée dans le marbre** : elle dépend de v
 
 Prenons l'**âge** d'un individu :
 
-| Contexte | Nature | Valeur typique |
-| :--- | :--- | :--- |
-| Étude clinique (dosage médicament) | Quantitative Continue | 12,4 ans |
-| Recensement administratif | Quantitative Discrète | 12 ans |
-| Médecine du travail (aptitude) | Qualitative Ordinale | Junior, Adulte, Senior |
+| Contexte                           | Nature                | Valeur typique         |
+| :--------------------------------- | :-------------------- | :--------------------- |
+| Étude clinique (dosage médicament) | Quantitative Continue | 12,4 ans               |
+| Recensement administratif          | Quantitative Discrète | 12 ans                 |
+| Médecine du travail (aptitude)     | Qualitative Ordinale  | Junior, Adulte, Senior |
 
 C'est toujours le **but final de l'enquête** qui dicte la nature de la variable.
 :::
@@ -169,12 +169,12 @@ C'est toujours le **but final de l'enquête** qui dicte la nature de la variable
 #### Panneau de brassage des indices {.bi-ethernet}
 
 :::: {#cabling-data .d-none}
-| id      | label                                          | match    | feedback                                                                                                               |
-| :------ | :--------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------- |
-| postal  | Code postal du suspect (ex: 75001)             | nominale | Le code postal est nominal. Même s'il s'agit de chiffres, leur somme ou moyenne n'a aucun sens mathématique.           |
-| salaire | Salaire annuel en euros (ex: 45200.50)         | continue | Le salaire est quantitatif continu. Il s'exprime sur une échelle infinie de valeurs décimales mesurables.              |
-| mention | Mention au bac (Passable, Bien, Très Bien)     | ordinale | La mention est qualitative ordinale. Ce sont des catégories textuelles dotées d'une hiérarchie stricte indiscutable.   |
-| battements | Battements cardiaques par minute            | discrete | Le nombre de battements est quantitatif discret. On dénombre des unités entières distinctes (pas de demi-battement).    |
+| id         | label                                      | match    | feedback                                                                                                             |
+| :--------- | :----------------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------- |
+| postal     | Code postal du suspect (ex: 75001)         | nominale | Le code postal est nominal. Même s'il s'agit de chiffres, leur somme ou moyenne n'a aucun sens mathématique.         |
+| salaire    | Salaire annuel en euros (ex: 45200.50)     | continue | Le salaire est quantitatif continu. Il s'exprime sur une échelle infinie de valeurs décimales mesurables.            |
+| mention    | Mention au bac (Passable, Bien, Très Bien) | ordinale | La mention est qualitative ordinale. Ce sont des catégories textuelles dotées d'une hiérarchie stricte indiscutable. |
+| battements | Battements cardiaques par minute           | discrete | Le nombre de battements est quantitatif discret. On dénombre des unités entières distinctes (pas de demi-battement). |
 ::::
 
 Reliez chaque pièce à conviction de gauche à sa catégorie de données logique de droite.
