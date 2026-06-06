@@ -17,7 +17,7 @@ Les ordinateurs sont d'excellentes machines à calculer, mais ils sont incapable
 :::
 
 ::: {.row .g-4}
-:::: {.col-md-6}
+:::: {.col}
 ::::: {.card .h-100}
 #### Bag of Words (BoW) — Le Sac de Mots {.bi-boxes}
 
@@ -37,7 +37,7 @@ Le modèle **Bag of Words** ignore complètement l'ordre des mots et la grammair
 :::::
 ::::
 
-:::: {.col-md-6}
+:::: {.col}
 ::::: {.card .h-100}
 #### TF-IDF — L'Empreinte Spécifique {.bi-funnel}
 
@@ -97,23 +97,23 @@ Visualisez l'impact de l'encodage par sac de mots (BoW) sur la mémoire système
 ##### Simulation {.bi-play-circle}
 
 ::::: {.row .align-items-center .g-3 .mb-3}
-:::::: {.col-md-9}
+:::::: {.col}
 ::::::: {#sparsity-tweet}
 :::::::
 ::::::
-:::::: {.col-md-3 .text-center}
-<span class="small text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Densité du Vecteur</span>
+:::::: {.col .text-center}
+[Densité du Vecteur]{.density-label .small .text-muted .text-uppercase}
 [sparsity-comparison]{.progress-ring #sparsity-comparison-ring max=100 label=sparsity-comparison-label color=warning}
 ::::::
 :::::
 
 ::::: {.row .g-3 .mt-1}
-:::::: {.col-md-7}
+:::::: {.col}
 ::::::: {#sparsity-term .terminal}
 #### Vecteur_Sparsité_BoW {.bi-terminal}
 :::::::
 ::::::
-:::::: {.col-md-5 .d-flex .flex-column .gap-3}
+:::::: {.col .d-flex .flex-column .gap-3}
 ::::::: {#sparsity-vu .chart-container-xs}
 :::::::
 ::::::: {#sparsity-history .chart-container-xs}
