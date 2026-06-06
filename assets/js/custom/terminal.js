@@ -59,7 +59,11 @@ export function createTerminal(selectorOrElement, options = {}) {
 
     const contentSpan = document.createElement("span");
     contentSpan.className = "terminal-line-content";
-    contentSpan.textContent = text;
+    if (lineOptions.html) {
+      contentSpan.innerHTML = text;
+    } else {
+      contentSpan.textContent = text;
+    }
     lineEl.appendChild(contentSpan);
 
     // Si le promptCursorLine existe, on insère la nouvelle ligne AVANT le curseur de prompt global
@@ -76,7 +80,11 @@ export function createTerminal(selectorOrElement, options = {}) {
       element: lineEl,
       contentSpan: contentSpan,
       setContent(newText) {
-        contentSpan.textContent = newText;
+        if (lineOptions.html) {
+          contentSpan.innerHTML = newText;
+        } else {
+          contentSpan.textContent = newText;
+        }
         container.scrollTop = container.scrollHeight;
       },
       addCursor() {

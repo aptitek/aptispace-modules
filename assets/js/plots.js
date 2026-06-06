@@ -1,7 +1,7 @@
 // ==========================================
 // plots.js - Composants Graphiques Plotly Standardisés
 // ==========================================
-import { getPlotlyTheme } from "./core.js";
+import { getPlotlyTheme, getThemeColor } from "./core.js";
 
 /**
  * 📈 Scatter Plot (Nuage de points)
@@ -77,7 +77,7 @@ export function createLine(divId, data, title = "Graphique", options = {}) {
     ...options.config
   };
 
-  Plotly.newPlot(divId, [trace], layout, config);
+  Plotly.react(divId, [trace], layout, config);
 }
 
 /**
@@ -113,6 +113,51 @@ export function createBar(divId, data, title = "Graphique", options = {}) {
 
   Plotly.newPlot(divId, [trace], layout, config);
 }
+
+/**
+ * 📊 Stacked Bar Chart (Histogramme empilé)
+ */
+export function createStackedBar(divId, datasets, title = "", options = {}) {
+  const traces = datasets.map(ds => ({
+    x: ds.x,
+    y: ds.y,
+    name: ds.label,
+    type: 'bar',
+    marker: {
+      color: ds.color,
+      opacity: options.opacity || 0.85
+    },
+    ...ds.traceOptions
+  }));
+
+  const layout = {
+    title: {
+      text: title,
+      font: { size: 14 }
+    },
+    barmode: 'stack',
+    template: getPlotlyTheme(),
+    margin: { t: 30, b: 30, l: 45, r: 15 },
+    showlegend: true,
+    legend: {
+      orientation: "h",
+      yanchor: "bottom",
+      y: 1.02,
+      xanchor: "right",
+      x: 1
+    },
+    ...options.layout
+  };
+
+  const config = {
+    responsive: true,
+    displayModeBar: false,
+    ...options.config
+  };
+
+  Plotly.newPlot(divId, traces, layout, config);
+}
+
 
 /**
  * 🌪️ Funnel Area (Pyramide/Entonnoir)
@@ -220,6 +265,75 @@ export function createGradientLine(divId, data, title = "Graphique", options = {
   };
 
   Plotly.newPlot(divId, traces, layout, {
+    responsive: true,
+    displayModeBar: false,
+    ...options.config
+  });
+}
+
+/**
+ * 📊 VU-Meter / Jauge animée
+ * Utilise Plotly.react pour des mises à jour efficaces en animation.
+ * Colorie automatiquement selon le niveau : vert → jaune → orange → rouge.
+ *
+ * @param {string} divId   - ID du conteneur (sans #)
+ * @param {number} value   - Valeur courante
+ * @param {number} max     - Plafond (défaut : 4096 MB)
+ * @param {Object} options - levels, threshold, margin, layout, config
+ */
+export function createVuMeter(divId, value, max = 4096, options = {}) {
+  const pct = Math.min(100, (value / max) * 100);
+  const barColor =
+    pct < 40 ? getThemeColor("--sol-green",  "#859900")
+  : pct < 70 ? getThemeColor("--sol-yellow", "#b58900")
+  : pct < 90 ? getThemeColor("--sol-orange", "#cb4b16")
+  :             getThemeColor("--sol-red",    "#dc322f");
+
+  const lvl = options.levels ?? [0.4, 0.7, 0.9];
+
+  const trace = [{
+    type: "indicator",
+    mode: "gauge+number",
+    value,
+    gauge: {
+      axis: {
+        range: [0, max],
+        ticksuffix: " MB",
+        nticks: 5,
+        tickcolor: getThemeColor("--sol-base1", "#93a1a1"),
+        tickfont: { size: 9 }
+      },
+      bar: { color: barColor, thickness: 0.55 },
+      bgcolor: "transparent",
+      borderwidth: 0,
+      steps: [
+        { range: [0,           lvl[0] * max], color: "rgba(133,153,0,0.12)"  },
+        { range: [lvl[0] * max, lvl[1] * max], color: "rgba(181,137,0,0.12)"  },
+        { range: [lvl[1] * max, lvl[2] * max], color: "rgba(203,75,22,0.12)"  },
+        { range: [lvl[2] * max, max],           color: "rgba(220,50,47,0.18)"  }
+      ],
+      threshold: {
+        line: { color: getThemeColor("--sol-red", "#dc322f"), width: 3 },
+        thickness: 0.75,
+        value: options.threshold ?? lvl[1] * max
+      }
+    },
+    number: {
+      suffix: " MB",
+      valueformat: ".0f",
+      font: { size: 20, color: barColor }
+    },
+    domain: { x: [0, 1], y: [0, 1] }
+  }];
+
+  const layout = {
+    paper_bgcolor: "transparent",
+    font: { family: "Recursive, sans-serif", color: getThemeColor("--sol-base01", "#586e75") },
+    margin: options.margin ?? { t: 25, b: 5, l: 20, r: 20 },
+    ...options.layout
+  };
+
+  Plotly.react(divId, trace, layout, {
     responsive: true,
     displayModeBar: false,
     ...options.config

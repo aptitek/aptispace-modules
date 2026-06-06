@@ -130,6 +130,9 @@
     line-height: 1.55;
     overflow: hidden !important;
     position: relative !important;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
 
     .card-header {
         --card-window-header-bg: color-mix(in srgb, var(--sol-base02) 78%, var(--sol-cyan));
@@ -139,11 +142,14 @@
 
     .card-body {
         background-color: var(--sol-base03);
+        flex-grow: 1;
+        overflow-y: auto;
     }
 }
 
 .terminal:not(:has(> .card-header)) {
     padding: 2.25rem 1rem 1rem;
+    overflow-y: auto !important;
 }
 
 .terminal:not(:has(> .card-header))::before {

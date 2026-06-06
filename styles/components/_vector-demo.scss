@@ -1,0 +1,91 @@
+.vector-demo-wrapper {
+  background-color: var(--sol-base03);
+  border-color: var(--sol-base02);
+  color: var(--sol-base1);
+
+  .form-select {
+    background-color: var(--sol-base02);
+    border-color: var(--sol-base01);
+    color: var(--sol-base1);
+    &:focus {
+      background-color: var(--sol-base02);
+      border-color: var(--sol-blue);
+      color: var(--sol-base1);
+      box-shadow: 0 0 0 0.25rem rgba(38, 139, 210, 0.25);
+    }
+  }
+
+  .tokens-container {
+    background-color: var(--sol-base02);
+    border: 1px solid var(--sol-base01);
+  }
+
+  .token-badge {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    &.bg-secondary-subtle {
+      background-color: var(--sol-base02) !important;
+      border-color: var(--sol-base01) !important;
+      color: var(--sol-base0) !important;
+    }
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  .vector-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .vector-cell {
+    background-color: var(--sol-base02);
+    border-color: var(--sol-base01) !important;
+    color: var(--sol-base00);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .vocab-word {
+      color: var(--sol-base0);
+    }
+
+    .vector-val {
+      color: var(--sol-base1);
+    }
+
+    &.active-bow {
+      background-color: rgba(38, 139, 210, 0.1) !important;
+      border-color: var(--sol-blue) !important;
+      .vector-val {
+        color: var(--sol-blue);
+      }
+    }
+
+    &.active-tfidf {
+      background-color: rgba(203, 75, 22, 0.1) !important;
+      border-color: var(--sol-orange) !important;
+      .vector-val {
+        color: var(--sol-orange);
+      }
+    }
+
+    &.highlighted {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      border-color: var(--sol-yellow) !important;
+      background-color: rgba(181, 137, 0, 0.08) !important;
+    }
+  }
+
+  .details-panel {
+    background-color: var(--sol-base02);
+    border-color: var(--sol-base01) !important;
+    color: var(--sol-base0);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}

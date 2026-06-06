@@ -54,10 +54,12 @@ export {
 
 export {
   createBar,
+  createStackedBar,
   createLine,
   createGradientLine,
   createFunnel,
-  createPiramid
+  createPiramid,
+  createVuMeter
 } from "./plots.js";
 
 export { registerTabset } from "./custom/card.js";
@@ -67,6 +69,8 @@ export { createLever } from "./custom/lever.js";
 export { initMoboSvg, renderMobo } from "./custom/mobo.js";
 export { getRamData, renderRam } from "./custom/ram.js";
 export { createSimulationControl } from "./custom/simulation-control.js";
+export { createSparsitySimulator } from "./custom/sparsity.js";
+export { createVectorDemo } from "./custom/vector-demo.js";
 export {
   renderMeanGraph,
   renderQuartileMedianGraph,
