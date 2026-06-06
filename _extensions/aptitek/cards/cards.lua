@@ -111,6 +111,37 @@ function Div(el)
     return el
   end
 
+  local icon_text = el.attributes["icon"]
+  local image_url = el.attributes["image"]
+
+  if icon_text or image_url then
+    local media_element
+    local icon_classes = { "flex-shrink-0" }
+    
+    if image_url then
+      media_element = pandoc.Plain({ pandoc.Image({}, image_url, "", pandoc.Attr("", {}, { width = "100px" })) })
+    else
+      media_element = pandoc.Plain({ pandoc.Str(icon_text) })
+      table.insert(icon_classes, "display-1")
+    end
+
+    local icon_div = pandoc.Div({ media_element }, pandoc.Attr("", icon_classes))
+    local text_div = pandoc.Div(el.content, pandoc.Attr("", { "flex-grow-1", "text-center", "text-md-start" }))
+    local card_body = pandoc.Div({ icon_div, text_div }, pandoc.Attr("", { "card-body", "d-flex", "flex-column", "flex-md-row", "align-items-center", "gap-4" }))
+    
+    local attrs = {}
+    for key, value in pairs(el.attributes) do
+      if key ~= "icon" and key ~= "image" then
+        if key == "layout" then
+          attrs["data-layout"] = value
+        else
+          attrs[key] = value
+        end
+      end
+    end
+    return pandoc.Div({ card_body }, pandoc.Attr(el.identifier, card_classes(el), attrs))
+  end
+
   local header = nil
   local body = {}
   local consumed_header = false

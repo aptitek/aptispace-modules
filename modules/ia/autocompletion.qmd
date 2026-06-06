@@ -5,72 +5,37 @@ De la simple correction syntaxique à l'agent autonome capable de coder une appl
 ::: {.timeline .vertical}
 
 :::: {.event data-label="1. Ère Statique"}
-::: {.card}
-::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
-::: {.display-1 .flex-shrink-0}
-🛠️
-:::
-::: {.flex-grow-1 .text-center .text-md-start}
+::: {.card icon="🛠️"}
 #### Les Fondations : L'Assistance Déterministe
 **Correction de syntaxe et Linters** : Les IDE (comme les premiers Eclipse ou Visual Studio) signalent les erreurs en temps réel. **L'autocomplétion basique** (IntelliSense) suggère la fin d'une variable ou les méthodes d'une classe. Tout repose sur l'analyse statique du code (l'AST). L'outil n'invente rien, il lit les signatures disponibles dans le projet.
-:::
-:::
 :::
 ::::
 
 :::: {.event data-label="2. Ère des Snippets"}
-::: {.card}
-::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
-::: {.display-1 .flex-shrink-0}
-✂️
-:::
-::: {.flex-grow-1 .text-center .text-md-start}
+::: {.card icon="✂️"}
 #### L'Automatisation Locale : Les Templates de Code
 **Génération de blocs** : Le développeur tape un mot-clé (ex: `fori` ou `!`) et l'IDE déploie un bloc de code complet. C'est un gain de temps énorme, mais l'outil est **aveugle** : il insère un modèle standard sans tenir compte de la logique métier ou du contexte environnant.
-:::
-:::
 :::
 ::::
 
 :::: {.event data-label="3. Ère Prédictive"}
-::: {.card}
-::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
-::: {.display-1 .flex-shrink-0}
-🔮
-:::
-::: {.flex-grow-1 .text-center .text-md-start}
+::: {.card icon="🔮"}
 #### Les Modèles Probabilistes : L'IA comme Pair
 **Autocomplétion intelligente** : Avec TabNine ou GitHub Copilot V1, on passe à un système probabiliste basé sur l'IA (les premiers LLM orientés code). L'outil lit le fichier et prédit la ligne suivante ou une logique de fonction. Le développeur écrit activement, mais l'IA agit comme un binôme très rapide qui anticipe la frappe.
-:::
-:::
 :::
 ::::
 
 :::: {.event data-label="4. Ère Conversationnelle"}
-::: {.card}
-::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
-::: {.display-1 .flex-shrink-0}
-💬
-:::
-::: {.flex-grow-1 .text-center .text-md-start}
+::: {.card icon="💬"}
 #### Les Assistants Intégrés : Le Chat dans l'IDE
 **Compréhension globale** : Avec Copilot Chat ou Cursor, le développeur peut parler à son IDE. L'IA ingère une grande partie de la codebase. On peut lui demander d'expliquer un bloc, de générer des tests ou de refactoriser. Le développeur rédige des mini-prompts pour générer des fonctions entières.
-:::
-:::
 :::
 ::::
 
 :::: {.event data-label="5. Ère Agentique"}
-::: {.card}
-::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
-::: {.display-1 .flex-shrink-0}
-🤖
-:::
-::: {.flex-grow-1 .text-center .text-md-start}
+::: {.card icon="🤖"}
 #### Le Vibe Coding : L'Autonomie Totale
 **Agents dotés d'outils** : L'IA (Cursor Agent, Devin, Antigravity) n'est plus un simple assistant. Grâce aux *skills* et au MCP, elle lit les fichiers, modifie plusieurs documents, lance le terminal et corrige ses propres erreurs. Le développeur transmet son intention (la "vibe") et devient un véritable chef d'orchestre.
-:::
-:::
 :::
 ::::
 
