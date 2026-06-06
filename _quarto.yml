@@ -25,7 +25,28 @@ website:
   sidebar:
     style: "docked"
     search: false
-    contents: auto
+    contents:
+      - section: "🤖 Intelligence Artificielle"
+        contents:
+          - modules/ia/nlp.qmd
+          - modules/ia/autocompletion.qmd
+          - modules/ia/vae.qmd
+          - modules/ia/injection-prompt.qmd
+      - section: "📊 Data Science"
+        contents:
+          - modules/datascience/dataframe.qmd
+          - modules/datascience/colonnaire.qmd
+      - section: "🧮 Mathématiques"
+        contents:
+          - modules/maths/statistiques.qmd
+      - section: "💻 Informatique"
+        contents:
+          - modules/informatique/histoire.qmd
+          - modules/informatique/information.qmd
+          - modules/informatique/données.qmd
+      - section: "🏗️ Architecture"
+        contents:
+          - modules/architecture/memoires.qmd
 
 format:
   html:

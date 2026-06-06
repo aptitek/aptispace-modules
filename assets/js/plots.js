@@ -339,3 +339,33 @@ export function createVuMeter(divId, value, max = 4096, options = {}) {
     ...options.config
   });
 }
+
+/**
+ * 📈 Multi-Line Chart (Tracés multiples personnalisés)
+ */
+export function createMultiLine(divId, traces, options = {}) {
+  const overrides = {
+    showlegend: options.showlegend ?? false,
+    ...options.layout,
+  };
+  if (options.xaxis !== undefined) overrides.xaxis = options.xaxis;
+  if (options.yaxis !== undefined) overrides.yaxis = options.yaxis;
+  if (options.shapes !== undefined) overrides.shapes = options.shapes;
+
+  const layout = {
+    template: getPlotlyTheme(),
+    paper_bgcolor: "transparent",
+    plot_bgcolor: "transparent",
+    margin: { t: 45, b: 40, l: 50, r: 20 },
+    ...overrides
+  };
+  const config = {
+    responsive: true,
+    displayModeBar: false,
+    ...options.config
+  };
+
+  const el = typeof divId === "string" ? document.getElementById(divId) : divId;
+  if (!el) return;
+  Plotly.react(el, traces, layout, config);
+}

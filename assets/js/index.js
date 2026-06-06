@@ -59,7 +59,8 @@ export {
   createGradientLine,
   createFunnel,
   createPiramid,
-  createVuMeter
+  createVuMeter,
+  createMultiLine
 } from "./plots.js";
 
 export { registerTabset } from "./custom/card.js";
@@ -79,6 +80,10 @@ export {
 } from "./custom/statistics.js";
 export { createTerminal } from "./custom/terminal.js";
 export { createLabeledText } from "./custom/text.js";
+export { updateAutoencoderViz } from "./custom/autoencoder.js";
+export { renderLatentInterpolation, renderVqVaeMetrics, renderVqVaeCodebook, generateVqCodebook } from "./custom/vae.js";
+export { updateKLViz } from "./custom/kl-divergence.js";
+export { createReparamViz } from "./custom/reparam.js";
 
 
 //TODO: Delete ui entirely and use the new system with default quarto tags and such in the qmd files
