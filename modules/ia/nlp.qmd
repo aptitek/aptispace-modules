@@ -1,0 +1,274 @@
+---
+title: "Comment l'IA « lit » le texte ?"
+---
+
+Un ordinateur ne comprend que des nombres. Pour analyser une phrase, il faut d'abord la **traduire en vecteurs numériques**. Ce module explore les trois premières grandes stratégies de cette traduction : du simple comptage à la pondération par importance, et jusqu'au problème structurel qu'elles soulèvent.
+
+## Le Vocabulaire — Le Dictionnaire Commun
+
+Avant de traiter le moindre texte, un système NLP commence par construire un **vocabulaire** : la liste exhaustive de tous les mots distincts présents dans l'ensemble des documents analysés (le *corpus*).
+
+Chaque mot de ce vocabulaire reçoit un **indice numérique** unique. Un corpus de 10 000 articles peut générer un vocabulaire de **50 000 à 150 000 mots**. Ce chiffre, en apparence anodin, est au cœur du problème de la sparsité abordé plus bas.
+
+::: {.callout-note collapse="true"}
+#### Prétraitement : ce qui précède la vectorisation
+En pratique, le texte brut est nettoyé avant d'être vectorisé :
+
+- **Tokenisation** : découper le texte en unités (mots, sous-mots ou caractères)
+- **Lemmatisation** : ramener "mangeait", "mangeons" et "manger" à la forme racine commune
+- **Suppression des mots vides** (*stop words*) : éliminer "le", "la", "de", "est"…
+
+Ces étapes réduisent le vocabulaire et améliorent la qualité des représentations.
+:::
+
+## Le Sac de Mots — Une Recette Sans Ordre
+
+L'idée du **Bag of Words** (BoW) est brutalement simple : pour représenter un document, on *oublie l'ordre des mots* et on compte combien de fois chaque mot du vocabulaire y apparaît.
+
+> *"Le chat mange le poisson"* → `{ "chat": 1, "mange": 1, "poisson": 1, "le": 2 }`
+
+Le résultat est un **vecteur de fréquences** — un tableau de nombres, une case par mot du vocabulaire, presque toutes à zéro.
+
+| Avantage | Limite |
+| :------- | :----- |
+| Simple et rapide à calculer | Ignore totalement l'ordre des mots |
+| Fonctionne bien pour la classification thématique | Traite "**extraordinaire** !" et "**médiocre** !" de façon identique |
+| Interprétable directement | Le mot "le" compte autant que le mot "algorithme" |
+
+## TF-IDF — L'Empreinte Documentaire
+
+Le BoW traite tous les mots à égalité : celui qui revient le plus souvent pèse le plus. Le problème ? Le mot "le" apparaît dans **tous** les textes français — il ne dit rien du sujet du document.
+
+**TF-IDF** résout cela en croisant deux idées complémentaires :
+
+| Composante | Intuition |
+| :--------- | :-------- |
+| **TF** (Term Frequency) | Un mot fréquent *dans ce document* est probablement important pour lui. |
+| **IDF** (Inverse Document Frequency) | Un mot présent *partout* est banal. Un mot rare est distinctif. |
+
+**L'analogie de l'empreinte :** imaginez un corpus de 1 000 documents. Le mot "réseau" apparaît dans 400 d'entre eux. Le mot "rétropropagation" n'apparaît que dans 3. Si votre document utilise souvent "rétropropagation", c'est son **empreinte distinctive** — TF-IDF lui attribue un score élevé. "Réseau", trop banal, est pénalisé.
+
+::: {.callout-note collapse="true"}
+#### La formule (pour les curieux)
+$$\text{TF-IDF}(t, d) = \underbrace{\frac{f_{t,d}}{|d|}}_{\text{TF}} \times \underbrace{\log\frac{N+1}{n_t+1}}_{\text{IDF}}$$
+
+Où $f_{t,d}$ est la fréquence du terme $t$ dans $d$, $N$ le nombre total de documents, et $n_t$ le nombre de documents contenant $t$.
+:::
+
+### Comparez par vous-même
+
+Sélectionnez un document pour voir comment BoW et TF-IDF hiérarchisent ses mots différemment. Observez comment TF-IDF réduit le poids des mots partagés entre les trois documents.
+
+::: {.card-window .mb-4}
+#### Empreinte Documentaire {.bi-bar-chart-steps}
+
+:::: {.tabs .doc-tabset}
+##### Document A {.bi-file-earmark-text}
+*Thème : modèles de langage*
+
+Le modèle de langage prédit le prochain mot à partir du contexte. Le modèle apprend les patterns de langage naturel grâce aux données d'entraînement.
+
+##### Document B {.bi-file-earmark-text}
+*Thème : vision par ordinateur*
+
+Le réseau de neurones analyse les images pixel par pixel. Il extrait les caractéristiques visuelles de façon hiérarchique, des contours aux formes complexes.
+
+##### Document C {.bi-file-earmark-text}
+*Thème : apprentissage non supervisé*
+
+L'algorithme de clustering regroupe les données similaires. Il optimise la distance entre les centroïdes de chaque groupe de données pour converger.
+::::
+
+::: {.row .mt-3}
+:::: {.col}
+::::: {#chart-bow .chart-container-md}
+:::::
+::::
+:::: {.col}
+::::: {#chart-tfidf .chart-container-md}
+:::::
+::::
+:::
+
+:::
+
+## La Malédiction des Grands Espaces
+
+Voici le problème : un vecteur BoW ou TF-IDF possède **autant de dimensions que le vocabulaire**, soit 50 000 à 150 000 cases. Or, un document moyen n'utilise que quelques centaines de mots distincts.
+
+Résultat : les vecteurs sont remplis à **99 %+ de zéros**. On appelle cela la **sparsité** (*sparseness*).
+
+> Un tweet de 20 mots contre un vocabulaire de 50 000 → **0,04 %** des dimensions sont non-nulles.
+
+Ce n'est pas qu'un problème esthétique. Stocker et manipuler des millions de ces vecteurs creux consomme une quantité de mémoire qui explose rapidement.
+
+::: {.callout-warning}
+#### Ce que la sparsité casse concrètement
+Les distances entre vecteurs creux deviennent peu informatives : dans un espace à 50 000 dimensions avec 99,9 % de zéros, presque tous les documents sont "également loin" les uns des autres. C'est le **fléau de la dimensionnalité** (*curse of dimensionality*).
+:::
+
+La prochaine génération de techniques — les **embeddings denses** comme Word2Vec ou les encodeurs de transformers — a précisément été inventée pour contourner ce problème, en compressant le sens dans des vecteurs compacts de 100 à 768 dimensions, presque jamais nuls.
+
+### Simulateur de Saturation Mémoire
+
+::: {.card-window .mb-4}
+#### Occupation Mémoire {.bi-memory}
+
+:::: {.tabs .sparse-tabset}
+##### Vecteur {.bi-grid-3x3}
+Visualisez la proportion de cases vides dans le vecteur d'un document unique.
+
+- [Mots uniques du document]{.slider #active-words value=50 min=5 max=500}
+- [Taille du vocabulaire]{.slider #vocab-size value=10000 min=1000 max=100000 step=1000}
+
+##### Mémoire {.bi-bar-chart-fill}
+Mesurez la mémoire nécessaire pour stocker l'ensemble du corpus.
+
+- [Nombre de documents]{.slider #n-docs value=1000 min=100 max=50000 step=500}
+::::
+
+::: {.row .mt-3}
+:::: {.col}
+::::: {#chart-sparse .chart-container-md}
+:::::
+::::
+:::: {.col}
+::::: {#chart-memory .chart-container-md}
+:::::
+::::
+:::
+
+::: {.metrics}
+| Mots actifs              | Cases vides                      | Densité                     |
+| :----------------------- | :------------------------------- | :-------------------------- |
+| [active-words]{.val}     | [zeros-count]{.val}              | [density-pct]{.val} %       |
+:::
+
+:::
+
+```{ojs}
+//| echo: false
+CORPUS = [
+  { label: "Document A", text: "Le modèle de langage prédit le prochain mot à partir du contexte. Le modèle apprend les patterns de langage naturel grâce aux données d'entraînement." },
+  { label: "Document B", text: "Le réseau de neurones analyse les images pixel par pixel. Il extrait les caractéristiques visuelles de façon hiérarchique, des contours aux formes complexes." },
+  { label: "Document C", text: "L'algorithme de clustering regroupe les données similaires. Il optimise la distance entre les centroïdes de chaque groupe de données pour converger." }
+]
+
+STOP_FR = new Set([
+  "le","la","les","de","du","des","un","une","en","et","au","aux","à","par","pour",
+  "sur","dans","est","il","elle","ils","elles","ce","se","sa","son","ses","l","d",
+  "qu","que","qui","ne","pas","plus","lui","y","je","tu","nous","vous","ou","si",
+  "car","même","mais","comme","avec","leur","leurs","tout","chaque","autre","aux",
+  "très","bien","aussi","plus","moins","lors","dont","donc","puis","cela","cette"
+])
+
+function tok(text) {
+  return text.toLowerCase()
+    .replace(/[^a-zàâçéèêëîïôûùüÿæœ\s]/g, " ")
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOP_FR.has(w))
+}
+
+function computeBow(text) {
+  const counts = {}
+  tok(text).forEach(w => counts[w] = (counts[w] || 0) + 1)
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+}
+
+function computeTfidf(docs, idx) {
+  const N = docs.length
+  const words = tok(docs[idx])
+  const tf = {}
+  words.forEach(w => tf[w] = (tf[w] || 0) + 1 / words.length)
+  return Object.entries(tf)
+    .map(([w, v]) => {
+      const df = docs.filter(d => tok(d).includes(w)).length
+      return [w, Number((v * Math.log((N + 1) / (df + 1))).toFixed(4))]
+    })
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+}
+```
+
+```{ojs}
+//| echo: false
+mutable activeDoc = 0
+
+_docWatcher = {
+  const w = createTabsetWatcher(
+    ".doc-tabset",
+    { "Document A": 0, "Document B": 1, "Document C": 2 },
+    v => { mutable activeDoc = v }
+  )
+  invalidation.then(() => w.destroy())
+  return null
+}
+```
+
+```{ojs}
+//| echo: false
+bowData = computeBow(CORPUS[activeDoc].text)
+tfidfData = computeTfidf(CORPUS.map(c => c.text), activeDoc)
+```
+
+```{ojs}
+//| echo: false
+_bow = {
+  bowData
+  createBar("chart-bow", { x: bowData.map(d => d[0]), y: bowData.map(d => d[1]) }, "Fréquences brutes (BoW)", { marker: { color: getThemeColor("--sol-blue", "#268bd2") }, layout: { margin: { t: 45, b: 60, l: 50, r: 20 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent" } })
+}
+```
+
+```{ojs}
+//| echo: false
+_tfidf = {
+  tfidfData
+  createBar("chart-tfidf", { x: tfidfData.map(d => d[0]), y: tfidfData.map(d => d[1]) }, "Score d'importance (TF-IDF)", { marker: { color: getThemeColor("--sol-orange", "#cb4b16") }, layout: { margin: { t: 45, b: 60, l: 50, r: 20 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent" } })
+}
+```
+
+```{ojs}
+//| echo: false
+zeros_count = vocab_size - active_words
+density_pct = ((active_words / vocab_size) * 100).toFixed(3)
+```
+
+```{ojs}
+//| echo: false
+_sparse = {
+  active_words; vocab_size
+  createBar("chart-sparse",
+    { x: ["Actifs", "Zéros"], y: [active_words, vocab_size - active_words] },
+    `Vecteur documentaire (${vocab_size.toLocaleString("fr-FR")} dimensions)`,
+    {
+      marker: { color: [getThemeColor("--sol-blue", "#268bd2"), getThemeColor("--sol-base1", "#93a1a1")] },
+      layout: { margin: { t: 45, b: 40, l: 60, r: 20 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent" }
+    }
+  )
+}
+```
+
+```{ojs}
+//| echo: false
+_memory = {
+  n_docs
+  const vocabs = [1000, 5000, 10000, 20000, 50000, 100000]
+  const memMb = vocabs.map(v => Number(((n_docs * v * 4) / (1024 * 1024)).toFixed(1)))
+  createLine("chart-memory",
+    { x: vocabs, y: memMb },
+    `Mémoire requise — ${n_docs.toLocaleString("fr-FR")} documents`,
+    {
+      line: { color: getThemeColor("--sol-orange", "#cb4b16") },
+      lineWidth: 3,
+      layout: {
+        margin: { t: 45, b: 55, l: 65, r: 20 },
+        paper_bgcolor: "transparent",
+        plot_bgcolor: "transparent",
+        xaxis: { title: { text: "Taille du vocabulaire (mots)" } },
+        yaxis: { title: { text: "Mémoire (MB)" } }
+      }
+    }
+  )
+}
+```
