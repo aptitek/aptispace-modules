@@ -61,6 +61,7 @@ export {
 } from "./plots.js";
 
 export { registerTabset } from "./custom/card.js";
+export { createMagnifyingDocument } from "./custom/document.js";
 export { createDynamicSvg, bindSvgToTabset } from "./custom/dynamic-svg.js";
 export { createLever } from "./custom/lever.js";
 export { initMoboSvg, renderMobo } from "./custom/mobo.js";

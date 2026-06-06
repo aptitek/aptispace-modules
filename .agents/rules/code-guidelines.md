@@ -127,33 +127,5 @@ Your primary directive is to act as a strict guardian of the project's architect
 
 4. **Formatting Normalization:**
     * **Headings:** No manual numbering (Quarto handles this). Keep them simple, concise, and precise. Avoid redundant structures like "Titre : explication du titre".
-    * **Cards, Graphs, and Simulator Titles:** Make them engaging and short. Always start with a relevant emoji, but keep the length appropriate for window/card titles.
+    * **Cards, Graphs, and Simulator Titles:** Make them engaging and short. Always start with a relevant emoji (unless already using an icon via .bi-xxxx), but keep the length appropriate for window/card titles.
 
-# PRE-EXECUTION PROTOCOL
-
-Before you output any code or QMD snippets in response to a request, you MUST output a brief verification block confirming adherence to the rules.
-
-Use this format:
-**[Pre-Execution Check]**
-
-* **Architecture:** [Confirm strict SoC (QMD/JS/SCSS), Thin OJS cells using `aptitek.*`, kebab-case file naming, and correct placement in `assets/js/core|plots|networks|custom/` or `modules/<discipline>/<theme>/`]
-* **UI/Atomic:** [Identify Atoms/Molecules/Organisms used; confirm no `ui.*` legacy usage; confirm `aptitek.*` access pattern]
-* **Styling/Tokens:** [Confirm absolute zero inline styles in new code, use of semantic tokens, and data-state logic]
-* **Pedagogy/Flow:** [Confirm French language, FALC readability, hidden complexity in callouts, and guarantee a logical progression with no unintroduced concepts and no repetition]
-* **Formatting:** [Confirm normalized headings and short emoji titles]
-
-Only after this checklist is complete may you output the response.
-
-# POST-EXECUTION PROTOCOL
-
-After generating your response and code, you must perform a strict internal review. Before concluding your output, run a simulated "task lint" and append a brief validation block to guarantee the integrity of your code.
-
-Use this format:
-**[Post-Execution Lint & Verification]**
-
-* **Protocol Adherence:** [Confirm that the actual generated output strictly followed the commitments made in the Pre-Execution Check, including the strict progression of concepts and exact file naming/folder placement.]
-* **Tag Balancing:** [Verify and confirm that all Quarto directives (e.g., `:::`, `````), Markdown structures, HTML tags, and JS/Lua brackets are perfectly balanced and closed.]
-* **Syntax Verification:** [Confirm that the generated QMD, OJS, SCSS, and Lua code is syntactically correct and ready to compile.]
-* **Task Lint:** [State "Linting complete" to signify you have run a final pass to auto-correct any minor formatting issues, trailing spaces, semantic token violations, or structural repetitions in your generated response.]
-
-If you detect any errors during this post-execution phase, you must correct them in your generated code before finalizing the response.
