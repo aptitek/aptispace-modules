@@ -139,6 +139,7 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
   // 4. Render 2D with premium, custom high-fidelity visuals
   const graph = ForceGraph()(targetEl)
     .graphData(graphData)
+    .backgroundColor(options.backgroundColor || 'transparent')
     .cooldownTicks(options.cooldownTicks)
     .enableZoomInteraction(options.enableZoom)
     .enablePanInteraction(options.enablePan)

@@ -1,0 +1,135 @@
+## ✨ L'Évolution de l'Autocomplétion : Jusqu'au Vibe Coding
+
+De la simple correction syntaxique à l'agent autonome capable de coder une application entière, l'assistance au développement a connu plusieurs révolutions. Voici les cinq grandes ères de cette évolution, du simple outil à l'assistant virtuel proactif.
+
+::: {.timeline .vertical}
+
+:::: {.event data-label="1. Ère Statique"}
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.display-1 .flex-shrink-0}
+🛠️
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Les Fondations : L'Assistance Déterministe
+**Correction de syntaxe et Linters** : Les IDE (comme les premiers Eclipse ou Visual Studio) signalent les erreurs en temps réel. **L'autocomplétion basique** (IntelliSense) suggère la fin d'une variable ou les méthodes d'une classe. Tout repose sur l'analyse statique du code (l'AST). L'outil n'invente rien, il lit les signatures disponibles dans le projet.
+:::
+:::
+:::
+::::
+
+:::: {.event data-label="2. Ère des Snippets"}
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.display-1 .flex-shrink-0}
+✂️
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### L'Automatisation Locale : Les Templates de Code
+**Génération de blocs** : Le développeur tape un mot-clé (ex: `fori` ou `!`) et l'IDE déploie un bloc de code complet. C'est un gain de temps énorme, mais l'outil est **aveugle** : il insère un modèle standard sans tenir compte de la logique métier ou du contexte environnant.
+:::
+:::
+:::
+::::
+
+:::: {.event data-label="3. Ère Prédictive"}
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.display-1 .flex-shrink-0}
+🔮
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Les Modèles Probabilistes : L'IA comme Pair
+**Autocomplétion intelligente** : Avec TabNine ou GitHub Copilot V1, on passe à un système probabiliste basé sur l'IA (les premiers LLM orientés code). L'outil lit le fichier et prédit la ligne suivante ou une logique de fonction. Le développeur écrit activement, mais l'IA agit comme un binôme très rapide qui anticipe la frappe.
+:::
+:::
+:::
+::::
+
+:::: {.event data-label="4. Ère Conversationnelle"}
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.display-1 .flex-shrink-0}
+💬
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Les Assistants Intégrés : Le Chat dans l'IDE
+**Compréhension globale** : Avec Copilot Chat ou Cursor, le développeur peut parler à son IDE. L'IA ingère une grande partie de la codebase. On peut lui demander d'expliquer un bloc, de générer des tests ou de refactoriser. Le développeur rédige des mini-prompts pour générer des fonctions entières.
+:::
+:::
+:::
+::::
+
+:::: {.event data-label="5. Ère Agentique"}
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.display-1 .flex-shrink-0}
+🤖
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Le Vibe Coding : L'Autonomie Totale
+**Agents dotés d'outils** : L'IA (Cursor Agent, Devin, Antigravity) n'est plus un simple assistant. Grâce aux *skills* et au MCP, elle lit les fichiers, modifie plusieurs documents, lance le terminal et corrige ses propres erreurs. Le développeur transmet son intention (la "vibe") et devient un véritable chef d'orchestre.
+:::
+:::
+:::
+::::
+
+:::
+
+### 🧠 Les Concepts Clés
+
+Pour bien comprendre comment nous sommes passés d'un outil déterministe à une IA autonome, voici quelques concepts fondamentaux.
+
+::: {.callout-note}
+#### 🌳 Qu'est-ce que l'AST (Abstract Syntax Tree) ?
+
+:::: {.row .align-items-center}
+
+::::: {.col}
+Dans **l'ère statique**, les outils reposent sur l'**AST** (Arbre Syntaxique Abstrait). C'est une représentation sous forme d'arbre de la structure de votre code. 
+
+* Le compilateur lit votre texte et le transforme en un arbre logique.
+* L'IDE l'utilise pour comprendre que `voiture` est un objet de type `Vehicule`, et vous suggère donc la méthode `rouler()`.
+* C'est un système **déterministe** : s'il n'y a pas de méthode `voler()` définie dans le code, l'IDE ne la proposera jamais.
+:::::
+
+::::: {.col}
+:::::: {#ast-voiture .chart-container}
+::::::
+:::::
+
+::::
+:::
+
+```{ojs}
+renderAST = renderStateMachineGraph("#ast-voiture", {
+  nodes: [
+    { id: "decl", label: "VariableDecl", shape: "rounded rect", status: "entry" },
+    { id: "type", label: "Vehicule", shape: "pill", status: "past" },
+    { id: "id", label: "voiture", shape: "pill", status: "past" },
+    { id: "meth", label: "rouler()", shape: "oval", status: "current" }
+  ],
+  links: [
+    { source: "decl", target: "type", status: "past" },
+    { source: "decl", target: "id", status: "past" },
+    { source: "id", target: "meth", label: "suggère", status: "current" }
+  ]
+}, { 
+  height: 260, 
+  nodeRadius: 18, 
+  enableZoom: false,
+  enablePan: false,
+  zoomToFit: true,
+  zoomToFitPadding: 40
+})
+```
+
+
+::: {.callout-important}
+#### ✨ Qu'est-ce que le "Vibe Coding" ?
+
+Le **Vibe Coding** est le moment où le développeur se détache presque totalement de la frappe syntaxique. 
+Au lieu de taper des lignes de code, vous transmettez votre intention (la "vibe"), vos règles d'architecture et vos contraintes à l'agent IA. L'agent exécute la vision globale. 
+
+Le rôle du développeur évolue drastiquement : de simple **rédacteur de code**, il devient **relecteur, architecte et chef d'orchestre**.
+:::

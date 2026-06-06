@@ -45,6 +45,7 @@ export {
 } from "./svg.js";
 
 export {
+  createGraph,
   createWordCloud,
   createCabling,
   createRamStorageGraph,

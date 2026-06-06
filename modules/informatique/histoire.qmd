@@ -5,51 +5,115 @@ De la roue dentée grecque au modèle de langage, l'informatique est une longue 
 ::: {.timeline .vertical}
 
 :::: {.event data-label="~100 av. J.-C."}
-| Mécanisme d'Anticythère | Le Premier Calculateur |
-| :--- | :--- |
-| ![](/assets/portraits/antikythera.jpg){width=80px} | *Antiquité grecque* : Découvert au fond de la mer Égée, ce calculateur astronomique en bronze prédit éclipses et positions planétaires — la première machine de calcul mécanique connue au monde. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/antikythera.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Mécanisme d'Anticythère : Le Premier Calculateur
+*Antiquité grecque* : Découvert au fond de la mer Égée, ce calculateur astronomique en bronze prédit éclipses et positions planétaires — la première machine de calcul mécanique connue au monde.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1843"}
-| Ada Lovelace | La Première Programmeuse |
-| :--- | :--- |
-| ![](/assets/portraits/ada_lovelace.jpg){width=80px} | *Pionnière* : En annotant les travaux de Babbage sur la machine analytique, elle rédige le premier algorithme destiné à être exécuté par une machine. Elle imagine, un siècle à l'avance, la programmation moderne. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/ada_lovelace.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Ada Lovelace : La Première Programmeuse
+*Pionnière* : En annotant les travaux de Babbage sur la machine analytique, elle rédige le premier algorithme destiné à être exécuté par une machine. Elle imagine, un siècle à l'avance, la programmation moderne.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1936 — 1945"}
-| Alan Turing | La Machine Universelle |
-| :--- | :--- |
-| ![](/assets/portraits/alan_turing.jpg){width=80px} | *Fondation théorique* : La machine de Turing formalise le concept de calcul universel. Pendant la guerre, ses travaux sur Enigma accélèrent la naissance de l'ordinateur électronique. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/alan_turing.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Alan Turing : La Machine Universelle
+*Fondation théorique* : La machine de Turing formalise le concept de calcul universel. Pendant la guerre, ses travaux sur Enigma accélèrent la naissance de l'ordinateur électronique.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1945"}
-| ENIAC | Le Premier Ordinateur Électronique |
-| :--- | :--- |
-| ![](/assets/portraits/eniac.jpg){width=80px} | *Révolution électronique* : 30 tonnes, 18 000 tubes à vide. L'ENIAC est le premier ordinateur électronique programmable à usage général — il marque l'entrée dans l'ère informatique. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/eniac.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### ENIAC : Le Premier Ordinateur Électronique
+*Révolution électronique* : 30 tonnes, 18 000 tubes à vide. L'ENIAC est le premier ordinateur électronique programmable à usage général — il marque l'entrée dans l'ère informatique.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1969"}
-| ARPANET | La Naissance d'Internet |
-| :--- | :--- |
-| ![](/assets/portraits/arpanet.png){width=80px} | *Réseaux* : Le Département de la Défense américain relie quatre universités via le premier réseau à commutation de paquets. Ce protocole rudimentaire deviendra Internet. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/arpanet.png){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### ARPANET : La Naissance d'Internet
+*Réseaux* : Le Département de la Défense américain relie quatre universités via le premier réseau à commutation de paquets. Ce protocole rudimentaire deviendra Internet.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1991"}
-| Tim Berners-Lee — CERN | Le World Wide Web |
-| :--- | :--- |
-| ![](/assets/portraits/tim_berners_lee.jpg){width=80px} | *Web* : L'informaticien britannique invente le Web au CERN (Genève) : URL, HTTP, HTML. Le premier site de l'histoire ouvre l'ère de l'information mondiale accessible à tous. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/tim_berners_lee.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Tim Berners-Lee (CERN) : Le World Wide Web
+*Web* : L'informaticien britannique invente le Web au CERN (Genève) : URL, HTTP, HTML. Le premier site de l'histoire ouvre l'ère de l'information mondiale accessible à tous.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="1989 — 1998"}
-| Yann LeCun | L'Avènement du Deep Learning |
-| :--- | :--- |
-| ![](/assets/portraits/yann_lecun.jpg){width=80px} | *Révolution neuronale* : LeCun invente les réseaux convolutifs (LeNet) et applique la rétropropagation à la reconnaissance d'écriture manuscrite. Il pose les bases du deep learning moderne. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/yann_lecun.jpg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### Yann LeCun : L'Avènement du Deep Learning
+*Révolution neuronale* : LeCun invente les réseaux convolutifs (LeNet) et applique la rétropropagation à la reconnaissance d'écriture manuscrite. Il pose les bases du deep learning moderne.
+:::
+:::
+:::
 ::::
 
 :::: {.event data-label="2022"}
-| OpenAI | L'Ère de l'IA Générative |
-| :--- | :--- |
-| ![](/assets/portraits/openai.svg){width=80px} | *Démocratisation* : Le lancement de ChatGPT rend les grands modèles de langage (LLM) accessibles au grand public. L'IA générative entre dans la vie quotidienne de milliards de personnes. |
+::: {.card}
+::: {.card-body .d-flex .flex-column .flex-md-row .align-items-center .gap-4}
+::: {.flex-shrink-0}
+![](/assets/portraits/openai.svg){width=100px}
+:::
+::: {.flex-grow-1 .text-center .text-md-start}
+#### OpenAI : L'Ère de l'IA Générative
+*Démocratisation* : Le lancement de ChatGPT rend les grands modèles de langage (LLM) accessibles au grand public. L'IA générative entre dans la vie quotidienne de milliards de personnes.
+:::
+:::
+:::
 ::::
 
 :::
