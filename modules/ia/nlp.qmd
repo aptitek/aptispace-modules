@@ -46,9 +46,9 @@ Le comptage brut (BoW) a un défaut majeur : les mots les plus fréquents dans u
 :::::: {#plot-tfidf-stacked .chart-container-sm}
 ::::::
 
-
 :::::: {.concept-details .mt-3}
 **Le calcul croisé :**
+
 - **TF (Fréquence du terme) :** Plus un mot est présent dans ce document, plus il est important.
 - **IDF (Rareté dans le corpus) :** Plus un mot est rare dans les *autres* documents, plus il est caractéristique et discriminant.
 
@@ -60,14 +60,12 @@ Le comptage brut (BoW) a un défaut majeur : les mots les plus fréquents dans u
 ::::
 :::
 
-
 ::: {.card-window .mb-4}
 ### Démonstrateur Interactif : Vecteur BoW vs TF-IDF {.bi-sliders}
 
-::: {#vector-demo-container}
+:::: {#vector-demo-container}
+::::
 :::
-:::
-
 
 ## 🌌 La Malédiction des Grands Espaces
 
@@ -110,7 +108,7 @@ Visualisez l'impact de l'encodage par sac de mots (BoW) sur la mémoire système
 ::::: {.row .g-3 .mt-1}
 :::::: {.col}
 ::::::: {#sparsity-term .terminal}
-#### Vecteur_Sparsité_BoW {.bi-terminal}
+#### VecteurSparsitéBoW {.bi-terminal}
 :::::::
 ::::::
 :::::: {.col .d-flex .flex-column .gap-3}
@@ -163,7 +161,6 @@ renderTfIdfStacked = {
 }
 ```
 
-
 ```{ojs}
 //| echo: false
 mutable sparsity_comparison = 0
@@ -192,4 +189,3 @@ renderVectorDemo = {
   createVectorDemo("#vector-demo-container")
 }
 ```
-
