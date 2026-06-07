@@ -666,6 +666,46 @@ enveloppé dans un `.ratio-embed` pour un ratio 16:9 responsive.
 [Titre de l'iframe](https://example.com){.embed}
 ```
 
+## SVG interactif — `createSvgDistanceHandle`
+
+`createSvgDistanceHandle` crée un petit plan SVG avec deux ancres et une poignée
+déplaçable. La valeur `alpha` indique la position relative de la poignée :
+
+$$\alpha = \frac{d(A)}{d(A) + d(B)}$$
+
+Autrement dit : `alpha` vaut presque `0` près de l'ancre A, presque `1` près de
+l'ancre B, et évolue selon les distances quand la poignée se déplace dans le plan.
+
+::: {.callout-note collapse="true"}
+### Options principales
+
+```js
+aptitek.createSvgDistanceHandle("#conteneur", {
+  anchors: [
+    { id: "a", label: "A", x: 84, y: 140, color: "var(--accent-info)" },
+    { id: "b", label: "B", x: 476, y: 140, color: "var(--accent-danger)" }
+  ],
+  onChange: ({ alpha, position, distances }) => {
+    // alpha, position.x/y et distances sont disponibles pour la simulation.
+  }
+}, invalidation)
+```
+:::
+
+:::: {.card-window}
+### Poignée libre {.bi-crosshair}
+
+Déplacez la poignée jaune : elle reste libre dans tout le SVG, tandis que `alpha`
+est recalculé à partir des distances aux deux ancres.
+
+::::: {#demo-distance-handle .chart-container-sm}
+:::::
+
+```{ojs}
+demoDistanceHandle = aptitek.createSvgDistanceHandle("#demo-distance-handle", {}, invalidation)
+```
+::::
+
 ## Graphiques Plotly — `createBar` · `createLine` · `createFunnel` · `createPiramid`
 
 Les fonctions Plotly sont exposées dans OJS via le bridge `aptitek`. Elles

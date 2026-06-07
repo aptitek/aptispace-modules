@@ -67,10 +67,12 @@ export { registerTabset } from "./custom/card.js";
 export { createMagnifyingDocument } from "./custom/document.js";
 export { createDynamicSvg, bindSvgToTabset } from "./custom/dynamic-svg.js";
 export { createLever } from "./custom/lever.js";
+export { createMetricsCards, updateMetricsCards } from "./custom/metrics.js";
 export { initMoboSvg, renderMobo } from "./custom/mobo.js";
 export { getRamData, renderRam } from "./custom/ram.js";
 export { createSimulationControl } from "./custom/simulation-control.js";
 export { createSparsitySimulator } from "./custom/sparsity.js";
+export { createSvgDistanceHandle } from "./custom/svg-distance-handle.js";
 export { createVectorDemo } from "./custom/vector-demo.js";
 export {
   renderMeanGraph,

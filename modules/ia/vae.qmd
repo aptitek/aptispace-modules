@@ -12,7 +12,7 @@ Un autoencodeur fonctionne comme un **sablier sémantique**. Les grains de sable
 ::: {.card-window}
 ### Architecture d'un Autoencodeur Classique {.bi-cpu}
 
-:::: {.tabs}
+:::: {.tabs .ae-tabset}
 ##### L'Entrée {.bi-box-arrow-in-down}
 
 ##### L'Encodeur {.bi-chevron-down}
@@ -74,7 +74,7 @@ $$\mathcal{L} = \| x - \hat{x} \|^2$$
 :::::
 ::::
 
-:::: {.p-3 .mt-2}
+
 ```{ojs}
 //| echo: false
 
@@ -134,11 +134,10 @@ _aeCardVisibility = {
   return null;
 }
 
-ae_viz = aptitek.updateAutoencoderViz(document.getElementById("ae-viz-container"), { 
-  activeState: aeState 
+ae_viz = aptitek.updateAutoencoderViz(document.getElementById("ae-viz-container"), {
+  activeState: aeState
 })
 ```
-::::
 :::
 
 L'entraînement repose sur la minimisation de l'**erreur de reconstruction** entre l'entrée $x$ et la sortie $\hat{x}$ :
@@ -147,10 +146,10 @@ $$\mathcal{L}_{AE}(\theta, \phi) = \| x - g_\phi(f_\theta(x)) \|^2$$
 
 ::: {.callout-note}
 #### Applications pratiques des Autoencodeurs
+
 1. **Débruitage (Denoising Autoencoders - DAE)** : On ajoute du bruit à l'entrée $x$, mais le réseau doit reconstruire la version propre. Cela l'empêche d'apprendre la simple fonction identité et le force à capturer la structure réelle des données.
 2. **Détection d'anomalies** : Entraîné uniquement sur des données normales (ex: transactions légitimes), l'autoencodeur obtiendra un taux d'erreur de reconstruction très élevé sur des données anormales (fraudes), permettant de les détecter facilement.
 :::
-
 
 ## 🎲 Du Déterminisme au Probabilisme : Le VAE
 
@@ -161,24 +160,76 @@ Au lieu d'encoder une entrée sous forme d'un point fixe $z$, le VAE l'encode so
 ::: {.card-window}
 ### Interpolation dans l'espace latent (AE vs VAE) {.bi-bezier2}
 
-Comparez la transition entre deux concepts appris ("Chat" et "Chien") dans un espace latent classique (AE) par rapport à un espace régulé (VAE) :
+:::: {.tabs .vae-tabset}
+##### AE (Déterministe) {.bi-bullseye}
+
+##### VAE (Probabiliste) {.bi-bezier2}
+::::
 
 :::: {.row}
 ::::: {.col}
 :::::: {#vae-interpolation-container}
 ```{ojs}
 //| echo: false
-viewof vae_mode = Inputs.radio(["AE (Déterministe)", "VAE (Probabiliste)"], { value: "AE (Déterministe)", label: "Régulation de l'espace latent" })
-viewof vae_alpha = Inputs.range([0, 1], { value: 0.15, step: 0.01, label: "Interpolation (alpha)" })
-vae_interpolation = aptitek.renderLatentInterpolation({ mode: vae_mode, alpha: vae_alpha })
+mutable vaeMode = "AE (Déterministe)"
+
+_vaeTabWatcher = {
+  const w = aptitek.createTabsetWatcher(
+    ".vae-tabset",
+    {
+      "AE (Déterministe)": "AE (Déterministe)",
+      "VAE (Probabiliste)": "VAE (Probabiliste)"
+    },
+    (val) => { mutable vaeMode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+```
+
+```{ojs}
+//| echo: false
+_vae_interpolation = {
+  const container = document.getElementById("vae-interpolation-container");
+  const viz = aptitek.renderLatentInterpolation(container, { mode: vaeMode });
+  invalidation.then(() => {
+    if (container && container.__state) {
+      container.__state.destroy();
+    }
+  });
+  return viz;
+}
 ```
 ::::::
 :::::
 ::::: {.col}
-:::::: {.p-3}
-- **AE (Déterministe)** : Les concepts sont des points isolés. Entre les deux, l'interpolation traverse des zones vides ("Trou sémantique"), produisant des décodages invalides ou incohérents.
-- **VAE (Probabiliste)** : L'espace est modélisé sous forme de nuages de probabilités qui se recouvrent légèrement. L'interpolation permet une transition visuelle continue et réaliste d'un concept à l'autre.
+:::::: {#vae-card-ae .card}
+#### AE (Déterministe) {.bi-bullseye}
+
+Les concepts sont des points isolés. Entre les deux, l'interpolation traverse des zones vides ("Trou sémantique"), produisant des décodages invalides ou incohérents.
 ::::::
+
+:::::: {#vae-card-vae .card}
+#### VAE (Probabiliste) {.bi-bezier2}
+
+L'espace est modélisé sous forme de nuages de probabilités qui se recouvrent légèrement. L'interpolation permet une transition visuelle continue et réaliste d'un concept à l'autre.
+::::::
+
+```{ojs}
+//| echo: false
+_vaeCardVisibility = {
+  const cards = {
+    "AE (Déterministe)": document.getElementById("vae-card-ae"),
+    "VAE (Probabiliste)": document.getElementById("vae-card-vae")
+  };
+  Object.entries(cards).forEach(([state, el]) => {
+    if (el) {
+      el.style.setProperty("display", vaeMode === state ? "" : "none");
+    }
+  });
+  return null;
+}
+```
 :::::
 ::::
 :::
@@ -189,27 +240,21 @@ Les VAE classiques modélisent un espace latent continu. Cependant, de nombreuse
 
 Le **Vector Quantized VAE (VQ-VAE)** remplace l'espace latent continu par un ensemble fini de vecteurs représentatifs, appelé un **Codebook** [@shi_nd].
 
-::: {.card-window .mb-4}
+::: {.card-window}
 ### Simulation : Quantification vectorielle VQ-VAE {.bi-grid-3x3-gap}
 
 Déplacez le vecteur continu de sortie d'encodeur (cercle bleu) pour observer comment il est projeté (*quantifié*) sur le vecteur le plus proche du codebook discret (points verts) :
 
-:::: {.row .align-items-center .g-3}
-::::: {.col-md-7}
+:::: {.row}
+::::: {.col}
 :::::: {#vq-chart-container}
 ::::::
 :::::
-::::: {.col-md-5}
-:::::: {.p-3}
-```{ojs}
-//| echo: false
-viewof vq_x = Inputs.range([0, 10], { value: 3.4, step: 0.1, label: "Axe X (continu)" })
-viewof vq_y = Inputs.range([0, 10], { value: 7.8, step: 0.1, label: "Axe Y (continu)" })
-vq_codebook = aptitek.generateVqCodebook()
-vq_metrics = aptitek.renderVqVaeMetrics({ codebook: vq_codebook, x: vq_x, y: vq_y })
-```
-::::::
-:::::: {#vq-metrics-target}
+::::: {.col}
+:::::: {#vq-metrics-target .metrics}
+| Vecteur continu | Code VQ (k*) | Distance Euclidienne |
+| :-------------- | :----------- | :------------------- |
+| [—]{data-metric="vector" .fw-bold .font-monospace .fs-5 .text-info} | [—]{data-metric="code" .fw-bold .font-monospace .fs-5 .text-success} | [—]{data-metric="distance" .fw-bold .font-monospace .fs-5 .text-muted} |
 ::::::
 :::::: {.small .text-muted}
 Le vecteur continu issu de l'encodeur est projeté sur le code discret $E_{k^*}$ le plus proche au sens de la distance Euclidienne :
@@ -219,12 +264,20 @@ $$k^* = \operatorname{argmin}_k \| z_e(x) - e_k \|_2$$
 ::::
 ```{ojs}
 //| echo: false
-// Bind reactive elements
-{
-  const target = document.getElementById("vq-metrics-target");
-  target.innerHTML = "";
-  target.appendChild(vq_metrics);
+vq_codebook = aptitek.generateVqCodebook()
+
+vq_chart = {
+  const controller = aptitek.renderVqVaeCodebook(
+    "#vq-chart-container",
+    {
+      codebook: vq_codebook,
+      x: 3.4,
+      y: 7.8,
+      metricsTarget: "#vq-metrics-target"
+    }
+  );
+  invalidation.then(() => controller?.destroy?.());
+  return controller?.svg ?? null;
 }
-vq_chart = aptitek.renderVqVaeCodebook(document.getElementById("vq-chart-container"), { codebook: vq_codebook, x: vq_x, y: vq_y })
 ```
 :::
