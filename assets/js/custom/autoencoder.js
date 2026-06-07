@@ -92,6 +92,18 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
   glassGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "rgba(38, 139, 210, 0.22)" }));
   defs.appendChild(glassGrad);
 
+  const backpropArrow = svgEl("marker", {
+    id: "aeBackpropArrow",
+    viewBox: "0 0 10 10",
+    refX: "8",
+    refY: "5",
+    markerWidth: "6",
+    markerHeight: "6",
+    orient: "auto-start-reverse"
+  });
+  backpropArrow.appendChild(svgEl("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "var(--accent-danger)" }));
+  defs.appendChild(backpropArrow);
+
   // Wooden support caps and pillars (behind the glass)
   const capTop = svgEl("rect", { x: "15", y: "15", width: "290", height: "10", fill: "var(--sol-base01)", rx: "3" });
   const capBottom = svgEl("rect", { x: "15", y: "375", width: "290", height: "10", fill: "var(--sol-base01)", rx: "3" });
@@ -106,6 +118,100 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
   // Particle container group
   const particleGroup = svgEl("g");
   svg.appendChild(particleGroup);
+
+  const trainingGroup = svgEl("g");
+  trainingGroup.style.setProperty("display", "none");
+  svg.appendChild(trainingGroup);
+
+  const trainingPanel = svgEl("rect", {
+    x: 42,
+    y: 76,
+    width: 236,
+    height: 78,
+    rx: 10,
+    fill: "var(--sol-base2)",
+    stroke: "var(--accent-danger)",
+    "stroke-width": 1.5,
+    opacity: 0.94
+  });
+  const inputLabel = svgEl("text", {
+    x: 56,
+    y: 101,
+    "font-size": 12,
+    "font-weight": 700,
+    fill: "var(--accent-info)"
+  });
+  inputLabel.textContent = "x";
+  const outputLabel = svgEl("text", {
+    x: 56,
+    y: 134,
+    "font-size": 12,
+    "font-weight": 700,
+    fill: "var(--sol-violet)"
+  });
+  outputLabel.textContent = "x̂";
+  trainingGroup.append(trainingPanel, inputLabel, outputLabel);
+
+  const comparisonPairs = Array.from({ length: 8 }, (_, i) => {
+    const x = 88 + i * 22;
+    const inputDot = svgEl("circle", {
+      cx: x,
+      cy: 96,
+      r: 4,
+      fill: "var(--accent-info)"
+    });
+    const reconDot = svgEl("circle", {
+      cx: x,
+      cy: 128,
+      r: 4,
+      fill: "var(--sol-violet)"
+    });
+    const errorLine = svgEl("line", {
+      x1: x,
+      y1: 100,
+      x2: x,
+      y2: 124,
+      stroke: "var(--accent-danger)",
+      "stroke-width": 1.6,
+      "stroke-dasharray": "3,2"
+    });
+    trainingGroup.append(errorLine, inputDot, reconDot);
+    return { inputDot, reconDot, errorLine, x };
+  });
+
+  const lossLabel = svgEl("text", {
+    x: 160,
+    y: 148,
+    "text-anchor": "middle",
+    "font-size": 11,
+    "font-weight": 700,
+    fill: "var(--accent-danger)"
+  });
+  lossLabel.textContent = "écart x ↔ x̂ = erreur";
+  trainingGroup.appendChild(lossLabel);
+
+  const backpropGroup = svgEl("g");
+  backpropGroup.style.setProperty("display", "none");
+  svg.appendChild(backpropGroup);
+  const backpropPath = svgEl("path", {
+    d: "M 282,330 C 306,260 306,145 226,86",
+    fill: "none",
+    stroke: "var(--accent-danger)",
+    "stroke-width": 4,
+    "stroke-linecap": "round",
+    "stroke-dasharray": "8,5",
+    "marker-end": "url(#aeBackpropArrow)"
+  });
+  const backpropLabel = svgEl("text", {
+    x: 254,
+    y: 226,
+    "text-anchor": "middle",
+    "font-size": 12,
+    "font-weight": 700,
+    fill: "var(--accent-danger)"
+  });
+  backpropLabel.textContent = "erreur";
+  backpropGroup.append(backpropPath, backpropLabel);
 
   // Hourglass Glass Borders (front walls)
   const wallLeft = svgEl("path", { fill: "none", stroke: "var(--sol-base00)", "stroke-width": "3.5" });
@@ -197,14 +303,14 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
   function tick() {
     stateObj.time += 0.02;
 
-    // Auto-advance logic for playback: INPUT → ENCODING → LATENT → DECODING → OUTPUT → INPUT
+    // Auto-advance logic for playback: INPUT → ENCODING → LATENT → DECODING → OUTPUT → BACKPROP → INPUT
     if (stateObj.isPlaying) {
       stateObj.stateTimer += 1;
       if (stateObj.stateTimer >= 150) {
         stateObj.stateTimer = 0;
         
-        const sequence = ["L'Entrée", "L'Encodeur", "Le Bottleneck", "Le Décodeur", "La Sortie"];
-        const stateIds = ["INPUT", "ENCODING", "LATENT", "DECODING", "OUTPUT"];
+        const sequence = ["L'Entrée", "L'Encodeur", "Le Bottleneck", "Le Décodeur", "La Sortie", "Rétropropagation"];
+        const stateIds = ["INPUT", "ENCODING", "LATENT", "DECODING", "OUTPUT", "BACKPROP"];
         const idx = stateIds.indexOf(stateObj.activeStateId);
         const nextIdx = (idx + 1) % sequence.length;
         
@@ -272,6 +378,13 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
           ty = 300 + row * 14;
           targetColor = "var(--sol-violet)";
           break;
+
+        case "BACKPROP":
+          // Keep the reconstruction visible while the error flows back.
+          tx = 80 + col * 22;
+          ty = 300 + row * 14;
+          targetColor = i % 3 === 0 ? "var(--accent-danger)" : "var(--sol-violet)";
+          break;
       }
 
       // Smooth step easing + jitter/noise to simulate sand grains
@@ -286,6 +399,22 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
       p.el.setAttribute("cy", p.y.toFixed(1));
       p.el.setAttribute("fill", targetColor);
     });
+
+    const showTraining = stateObj.activeStateId === "BACKPROP";
+    trainingGroup.style.setProperty("display", showTraining ? "" : "none");
+    backpropGroup.style.setProperty("display", showTraining ? "" : "none");
+
+    if (showTraining) {
+      comparisonPairs.forEach(({ inputDot, reconDot, errorLine, x }, i) => {
+        const offset = ((i % 3) - 1) * 2 + Math.sin(stateObj.time * 3 + i) * 1.2;
+        const reconX = x + offset;
+        reconDot.setAttribute("cx", reconX.toFixed(1));
+        errorLine.setAttribute("x1", x);
+        errorLine.setAttribute("x2", reconX.toFixed(1));
+        inputDot.setAttribute("opacity", "1");
+        reconDot.setAttribute("opacity", Math.abs(offset) < 1 ? "0.85" : "1");
+      });
+    }
 
     animationId = requestAnimationFrame(tick);
   }

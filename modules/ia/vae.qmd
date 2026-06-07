@@ -23,6 +23,8 @@ Un autoencodeur fonctionne comme un **sablier sémantique**. Les grains de sable
 
 ##### La Sortie {.bi-box-arrow-down}
 
+##### Rétropropagation {.bi-arrow-counterclockwise}
+
 ##### [Contrôles]{#ae-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 
@@ -67,9 +69,19 @@ $$g_\phi(z) \to \hat{x}$$
 :::::: {#ae-card-output .card}
 #### La Sortie ($\hat{x}$) {.bi-box-arrow-down}
 
-La réplique reconstruite est comparée à l'entrée originale. L'écart entre $x$ et $\hat{x}$ constitue l'erreur de reconstruction que le réseau cherche à minimiser lors de l'entraînement.
+La réplique reconstruite $\hat{x}$ revient dans le même format que l'entrée. Au début, elle n'est pas parfaite : certains grains retombent presque au bon endroit, d'autres restent décalés.
 
-$$\mathcal{L} = \| x - \hat{x} \|^2$$
+$$\hat{x} = g_\phi(z)$$
+::::::
+
+:::::: {#ae-card-backprop .card}
+#### Rétropropagation {.bi-arrow-counterclockwise}
+
+La sortie reconstruite est comparée à l'entrée originale. Chaque écart entre $x$ et $\hat{x}$ contribue à l'**erreur de reconstruction**.
+
+$$\mathcal{L}_{AE}(\theta, \phi) = \| x - g_\phi(f_\theta(x)) \|^2$$
+
+Pendant l'entraînement, cette erreur remonte dans le réseau : les paramètres de l'encodeur et du décodeur sont ajustés pour mieux faire correspondre la reconstruction à l'entrée.
 ::::::
 :::::
 ::::
@@ -89,7 +101,8 @@ _aeTabWatcher = {
       "L'Encodeur": "ENCODING",
       "Le Bottleneck": "LATENT",
       "Le Décodeur": "DECODING",
-      "La Sortie": "OUTPUT"
+      "La Sortie": "OUTPUT",
+      "Rétropropagation": "BACKPROP"
     },
     (val) => {
       mutable aeState = val;
@@ -124,7 +137,8 @@ _aeCardVisibility = {
     "ENCODING": document.getElementById("ae-card-encoding"),
     "LATENT": document.getElementById("ae-card-latent"),
     "DECODING": document.getElementById("ae-card-decoding"),
-    "OUTPUT": document.getElementById("ae-card-output")
+    "OUTPUT": document.getElementById("ae-card-output"),
+    "BACKPROP": document.getElementById("ae-card-backprop")
   };
   Object.entries(cards).forEach(([state, el]) => {
     if (el) {
@@ -139,10 +153,6 @@ ae_viz = aptitek.updateAutoencoderViz(document.getElementById("ae-viz-container"
 })
 ```
 :::
-
-L'entraînement repose sur la minimisation de l'**erreur de reconstruction** entre l'entrée $x$ et la sortie $\hat{x}$ :
-
-$$\mathcal{L}_{AE}(\theta, \phi) = \| x - g_\phi(f_\theta(x)) \|^2$$
 
 ::: {.callout-note}
 #### Applications pratiques des Autoencodeurs
