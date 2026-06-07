@@ -2,14 +2,39 @@
 // autoencoder.js — Hourglass Simulation driven by Tabset
 // =====================================================================
 
-function selectTabByTitle(title) {
+function normalizeTabLabel(value) {
+  return value.replace(/\uFFFD/g, "").replace(/[\u2018\u2019]/g, "'").trim();
+}
+
+function releaseProgrammaticClick() {
+  window.setTimeout(() => {
+    window.__aeProgrammaticClick = false;
+  }, 0);
+}
+
+function selectTabByTitle(title, { programmatic = false } = {}) {
   const links = document.querySelectorAll(".ae-tabset .nav-link");
+  const targetTitle = normalizeTabLabel(title);
+
+  if (programmatic) {
+    window.__aeProgrammaticClick = true;
+  }
+
   for (const link of links) {
-    if (link.textContent.replace(/\uFFFD/g, "").trim() === title) {
+    if (normalizeTabLabel(link.textContent) === targetTitle) {
       link.click();
-      break;
+      if (programmatic) {
+        releaseProgrammaticClick();
+      }
+      return true;
     }
   }
+
+  if (programmatic) {
+    window.__aeProgrammaticClick = false;
+  }
+
+  return false;
 }
 
 /**
@@ -183,9 +208,7 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
         const idx = stateIds.indexOf(stateObj.activeStateId);
         const nextIdx = (idx + 1) % sequence.length;
         
-        window.__aeProgrammaticClick = true;
-        selectTabByTitle(sequence[nextIdx]);
-        window.__aeProgrammaticClick = false;
+        selectTabByTitle(sequence[nextIdx], { programmatic: true });
       }
     }
 
@@ -279,16 +302,12 @@ export function updateAutoencoderViz(containerEl, { bottleneckDim = 4, inputDim 
     reset: () => {
       stateObj.isPlaying = false;
       stateObj.stateTimer = 0;
-      window.__aeProgrammaticClick = true;
-      selectTabByTitle("L'Entrée");
-      window.__aeProgrammaticClick = false;
+      selectTabByTitle("L'Entrée", { programmatic: true });
     },
     restart: () => {
       stateObj.isPlaying = true;
       stateObj.stateTimer = 0;
-      window.__aeProgrammaticClick = true;
-      selectTabByTitle("L'Entrée");
-      window.__aeProgrammaticClick = false;
+      selectTabByTitle("L'Entrée", { programmatic: true });
     }
   };
 

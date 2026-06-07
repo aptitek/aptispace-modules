@@ -9,34 +9,24 @@ La modélisation générative cherche à comprendre la structure sous-jacente de
 
 Un autoencodeur fonctionne comme un **sablier sémantique**. Les grains de sable représentent les composantes des vecteurs de données.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 ### Architecture d'un Autoencodeur Classique {.bi-cpu}
 
-:::: {.tabs .ae-tabset}
+:::: {.tabs}
 ##### L'Entrée {.bi-box-arrow-in-down}
-
-Le vecteur brut $x$ entre dans le réseau. Chaque composante du vecteur est un « grain de sable » en haut du sablier.
 
 ##### L'Encodeur {.bi-chevron-down}
 
-L'encodeur compresse progressivement $x$ en le projetant vers le col étroit du sablier.
-
 ##### Le Bottleneck {.bi-distribute-vertical}
-
-Le col de bouteille force toute l'information à se condenser en un vecteur latent $z$ de faible dimension.
 
 ##### Le Décodeur {.bi-chevron-up}
 
-Le décodeur reconstruit les données en élargissant $z$ vers la partie inférieure du sablier.
-
 ##### La Sortie {.bi-box-arrow-down}
-
-La réplique $\hat{x}$ est produite. Plus elle est fidèle à $x$, meilleur est l'autoencodeur.
 
 ##### [Contrôles]{#ae-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 
-:::: {.row .g-3 .align-items-stretch}
+:::: {.row}
 ::::: {.col}
 :::::: {#ae-viz-container .chart-container-lg}
 ::::::
@@ -155,20 +145,12 @@ L'entraînement repose sur la minimisation de l'**erreur de reconstruction** ent
 
 $$\mathcal{L}_{AE}(\theta, \phi) = \| x - g_\phi(f_\theta(x)) \|^2$$
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 #### Applications pratiques des Autoencodeurs
 1. **Débruitage (Denoising Autoencoders - DAE)** : On ajoute du bruit à l'entrée $x$, mais le réseau doit reconstruire la version propre. Cela l'empêche d'apprendre la simple fonction identité et le force à capturer la structure réelle des données.
 2. **Détection d'anomalies** : Entraîné uniquement sur des données normales (ex: transactions légitimes), l'autoencodeur obtiendra un taux d'erreur de reconstruction très élevé sur des données anormales (fraudes), permettant de les détecter facilement.
 :::
 
-### La limite de l'AE : la fragmentation du latent
-
-L'espace latent d'un autoencodeur classique est **déterministe** et **non régulé**. Le réseau place les représentations où il le souhaite sans contrainte géométrique.
-
-> [!WARNING]
-> Cela crée un espace latent **fragmenté** avec des zones vides (trous sémantiques). Si l'on choisit un point $z$ au hasard dans une de ces zones vides pour générer une nouvelle image, le décodeur produira un résultat dénué de sens. L'autoencodeur classique est donc un mauvais modèle génératif.
-
----
 
 ## 🎲 Du Déterminisme au Probabilisme : Le VAE
 
@@ -176,13 +158,13 @@ L'**Autoencodeur Variationnel (VAE)** résout le problème de la fragmentation e
 
 Au lieu d'encoder une entrée sous forme d'un point fixe $z$, le VAE l'encode sous forme de paramètres d'une distribution de probabilité : une **moyenne $\mu$** et un **écart-type $\sigma$** (ou sa variance $\sigma^2$).
 
-::: {.card-window .mb-4}
+::: {.card-window}
 ### Interpolation dans l'espace latent (AE vs VAE) {.bi-bezier2}
 
 Comparez la transition entre deux concepts appris ("Chat" et "Chien") dans un espace latent classique (AE) par rapport à un espace régulé (VAE) :
 
-:::: {.row .align-items-center .g-3}
-::::: {.col-md-6}
+:::: {.row}
+::::: {.col}
 :::::: {#vae-interpolation-container}
 ```{ojs}
 //| echo: false
@@ -192,7 +174,7 @@ vae_interpolation = aptitek.renderLatentInterpolation({ mode: vae_mode, alpha: v
 ```
 ::::::
 :::::
-::::: {.col-md-6}
+::::: {.col}
 :::::: {.p-3}
 - **AE (Déterministe)** : Les concepts sont des points isolés. Entre les deux, l'interpolation traverse des zones vides ("Trou sémantique"), produisant des décodages invalides ou incohérents.
 - **VAE (Probabiliste)** : L'espace est modélisé sous forme de nuages de probabilités qui se recouvrent légèrement. L'interpolation permet une transition visuelle continue et réaliste d'un concept à l'autre.
@@ -200,94 +182,6 @@ vae_interpolation = aptitek.renderLatentInterpolation({ mode: vae_mode, alpha: v
 :::::
 ::::
 :::
-
----
-
-## 🧮 Régulation par la Divergence de Kullback-Leibler (KL)
-
-Pour forcer les nuages de probabilités à s'organiser de manière compacte et continue autour de l'origine, nous introduisons une contrainte de régulation appelée la **Divergence de Kullback-Leibler (KL)** [@munoz_nd].
-
-Cette mesure mathématique quantifie l'écart entre la distribution latente prédite par l'encodeur $q(z|x)$ et une distribution de référence cible $p(z) = \mathcal{N}(0, I)$ (une distribution normale centrée réduite) :
-
-$$D_{KL}(q(z|x) \parallel \mathcal{N}(0, I)) = \frac{1}{2} \sum \left( \sigma^2 + \mu^2 - 1 - \log(\sigma^2) \right)$$
-
-::: {.card-window .mb-4}
-### Visualisation interactive de la divergence KL {.bi-graph-up-arrow}
-
-Ajustez la moyenne ($\mu$) et l'écart-type ($\sigma$) de la distribution prédite pour voir comment la divergence KL réagit par rapport à la distribution de référence (a priori) :
-
-:::: {.row .align-items-center .g-3}
-::::: {.col-md-7}
-:::::: {#kl-chart .chart-container-sm}
-::::::
-:::::
-::::: {.col-md-5}
-:::::: {.p-3}
-```{ojs}
-//| echo: false
-viewof kl_mu = Inputs.range([-3, 3], { value: 1.5, step: 0.1, label: "Moyenne (mu)" })
-viewof kl_sigma = Inputs.range([0.1, 2.5], { value: 1.2, step: 0.1, label: "Écart-type (sigma)" })
-```
-::::::
-:::::: {.card .p-3 .text-center .shadow-none .border .mb-3}
-[Valeur de la Divergence KL]{.text-muted .small .text-uppercase .fw-bold .mb-1}
-[kl-val]{#kl-val .fw-bold .font-monospace .fs-3}
-::::::
-:::::: {.small .text-muted}
-- **KL = 0** : Les deux distributions sont parfaitement identiques.
-- **KL Élevé** : Les distributions s'éloignent, ce qui signifie que l'espace latent n'est pas régulé et redevient instable.
-::::::
-:::::
-::::
-```{ojs}
-//| echo: false
-kl_viz = aptitek.updateKLViz(document.getElementById("kl-chart"), document.getElementById("kl-val"), { mu: kl_mu, sigma: kl_sigma })
-```
-:::
-
-### La fonction de perte ELBO (Evidence Lower Bound)
-
-La perte totale du VAE combine la reconstruction et la régulation :
-
-$$\mathcal{L}_{VAE} = \text{Erreur de Reconstruction} + \beta \times D_{KL}(q(z|x) \parallel p(z))$$
-
-::: {.callout-note collapse="true"}
-#### L'impact du paramètre bêta ($\beta$-VAE)
-Le coefficient $\beta$ contrôle le compromis entre reconstruction et régulation [@burgess_2017] :
-- **Si $\beta$ est trop faible** : L'espace est fragmenté comme un AE classique (reconstruction parfaite mais génération impossible).
-- **Si $\beta$ est trop fort** : Les distributions latentes s'écrasent toutes sur $\mathcal{N}(0, I)$ et le décodeur n'arrive plus à distinguer les classes. C'est le phénomène de **Posterior Collapse** (effondrement de l'espace latent).
-:::
-
----
-
-## 🛠️ L'Astuce de Reparamétrisation (*Reparameterization Trick*)
-
-Lors de la propagation avant (*feedforward*), nous devons échantillonner un vecteur latent $z$ à partir de la distribution $\mathcal{N}(\mu, \sigma^2)$ pour alimenter le décodeur. Cependant, l'échantillonnage aléatoire est une opération **non-dérivable**.
-
-> [!CAUTION]
-> Sans dérivabilité, la rétropropagation du gradient (*backpropagation*) est bloquée au niveau de l'échantillonnage. Il est impossible de mettre à jour les poids de l'encodeur.
-
-Pour résoudre ce problème, nous isolons le caractère stochastique (aléatoire) du réseau :
-
-1. Nous échantillonnons une variable de bruit externe $\epsilon \sim \mathcal{N}(0, I)$.
-2. Nous calculons le vecteur latent par une opération déterministe linéaire :
-
-$$z = \mu + \sigma \odot \epsilon$$
-
-::: {.card-window .mb-4}
-### Flux de gradient : Échantillonnage standard vs Reparamétrisation {.bi-diagram-3}
-
-:::: {#reparam-container}
-::::
-```{ojs}
-//| echo: false
-reparam_viz = aptitek.createReparamViz(document.getElementById("reparam-container"))
-```
-:::
-
-Grâce à cette astuce, la variable aléatoire $\epsilon$ est traitée comme une entrée externe constante. Le chemin menant des poids de l'encodeur à la sortie reste déterministe et dérivable, permettant au gradient de s'écouler librement.
-
----
 
 ## 🧮 VQ-VAE : Espace Latent Discret
 
@@ -334,25 +228,3 @@ $$k^* = \operatorname{argmin}_k \| z_e(x) - e_k \|_2$$
 vq_chart = aptitek.renderVqVaeCodebook(document.getElementById("vq-chart-container"), { codebook: vq_codebook, x: vq_x, y: vq_y })
 ```
 :::
-
-### Comment dériver la quantification ? (L'estimateur Straight-Through)
-
-Puisque l'opération de quantification ($\operatorname{argmin}$) a une dérivée nulle partout sauf aux frontières (où elle est indéterminée), le gradient ne peut pas passer à travers.
-
-Le VQ-VAE résout cela avec l'**estimateur Straight-Through (STE)** : on recopie simplement le gradient du décodeur et on l'applique directement à l'encodeur, en court-circuitant l'étape de quantification lors de la rétropropagation :
-
-$$\frac{\partial \mathcal{L}}{\partial z_e(x)} \approx \frac{\partial \mathcal{L}}{\partial z_q(x)}$$
-
----
-
-## 📊 Synthèse des architectures d'Autoencodeurs
-
-| Modèle | Type d'espace latent | Méthode d'échantillonnage | Perte principale | Limite majeure |
-| :--- | :--- | :--- | :--- | :--- |
-| **AE** | Déterministe continu | Aucun (direct) | Reconstruction | Espace fragmenté |
-| **VAE** | Probabiliste continu | Astuce de reparamétrisation | Reconstruction + Divergence KL | Posterior Collapse (effondrement) |
-| **VQ-VAE** | Discret (Codebook) | Quantification vectorielle | Reconstruction + Perte VQ + STE | Codebook Collapse (codes inutilisés) |
-
-: Synthèse comparée des modèles d'autoencodeurs {.table .table-striped .table-hover}
-
-Les VQ-VAE constituent aujourd'hui une brique essentielle des modèles génératifs de pointe. Par exemple, **Stable Diffusion** et **DALL-E** s'appuient sur un autoencodeur discret (souvent appelé VQ-GAN) pour compresser les images en jetons discrets avant d'appliquer leurs mécanismes de génération (diffusions ou transformers).

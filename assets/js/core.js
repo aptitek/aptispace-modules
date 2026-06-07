@@ -338,6 +338,10 @@ export function initTabIcons(tabsetSelector) {
   });
 }
 
+function normalizeTabLabel(value) {
+  return value.replace(/\uFFFD/g, "").replace(/[\u2018\u2019]/g, "'").trim();
+}
+
 /**
  * Sets up a fully-managed Quarto panel-tabset reactive watcher.
  *
@@ -366,6 +370,10 @@ export function initTabIcons(tabsetSelector) {
  * @returns {{ destroy: Function }}
  */
 export function createTabsetWatcher(tabsetSelector, labelMap, onChange) {
+  const normalizedLabelMap = Object.fromEntries(
+    Object.entries(labelMap).map(([label, value]) => [normalizeTabLabel(label), value])
+  );
+
   const tabset = document.querySelector(tabsetSelector);
   if (tabset) {
     const links = tabset.querySelectorAll(".nav-link");
@@ -407,8 +415,8 @@ export function createTabsetWatcher(tabsetSelector, labelMap, onChange) {
     if (!active) return;
 
     // textContent extrait le texte net sans balise <i> — nettoyage final
-    const label = active.textContent.replace(/\uFFFD/g, "").trim();
-    const val = labelMap[label];
+    const label = normalizeTabLabel(active.textContent);
+    const val = normalizedLabelMap[label];
     if (val !== undefined) onChange(val);
   }
 
