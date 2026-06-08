@@ -229,6 +229,61 @@ export function createPyramid(divId, data, options = {}) {
 export const createPiramid = createPyramid;
 
 /**
+ * 🧠 Attention Heatmap — visualise quels tokens se regardent.
+ */
+export function createAttentionHeatmap(divId, data, options = {}) {
+  const tokens = data.tokens ?? [];
+  const matrix = data.matrix ?? [];
+  const focus = options.focus ?? "Tous";
+  const focusIndex = tokens.indexOf(focus);
+  const showSingleToken = focusIndex >= 0;
+  const yTokens = showSingleToken ? [tokens[focusIndex]] : tokens;
+  const zValues = showSingleToken ? [matrix[focusIndex] ?? []] : matrix;
+
+  const trace = {
+    type: "heatmap",
+    x: tokens,
+    y: yTokens,
+    z: zValues,
+    zmin: 0,
+    zmax: 1,
+    colorscale: options.colorscale ?? [
+      [0, getThemeColor("--sol-base2", "#eee8d5")],
+      [0.35, getThemeColor("--sol-cyan", "#2aa198")],
+      [0.7, getThemeColor("--sol-blue", "#268bd2")],
+      [1, getThemeColor("--sol-violet", "#6c71c4")]
+    ],
+    hovertemplate: options.hovertemplate
+      ?? "Le token <b>%{y}</b><br>regarde <b>%{x}</b><br>Intensité : %{z:.0%}<extra></extra>",
+    ...options.trace
+  };
+
+  const layout = {
+    title: { text: options.title ?? "Carte d'attention", font: { size: 16 } },
+    template: getPlotlyTheme(),
+    paper_bgcolor: "transparent",
+    plot_bgcolor: "transparent",
+    margin: options.margin ?? { t: 55, b: 55, l: 80, r: 20 },
+    xaxis: {
+      side: "top",
+      tickangle: 0,
+      automargin: true
+    },
+    yaxis: {
+      automargin: true,
+      autorange: "reversed"
+    },
+    ...options.layout
+  };
+
+  Plotly.react(divId, [trace], layout, {
+    responsive: true,
+    displayModeBar: false,
+    ...options.config
+  });
+}
+
+/**
  * 🌈 Gradient Line Chart — segments colorés individuellement
  * options.gradientColors : tableau de couleurs (une par point)
  */

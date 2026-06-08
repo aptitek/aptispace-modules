@@ -1,0 +1,174 @@
+---
+title: "Le Cœur du Réacteur : Attention et Transformers"
+---
+
+Un **Transformer** est une architecture de réseau de neurones conçue pour traiter une phrase en la regardant presque comme une carte complète, et non comme un petit train de mots qui avance wagon par wagon.
+
+L'idée centrale est simple : au lieu de lire uniquement le mot courant puis de passer au suivant, le modèle peut demander, pour chaque mot : **quels autres mots sont importants pour comprendre celui-ci ?**
+
+## La fin de la lecture mot après mot
+
+Avant les Transformers, beaucoup de modèles de langage lisaient les phrases dans l'ordre. Ils traitaient un mot, gardaient un souvenir interne, puis passaient au mot suivant. Cette méthode fonctionne, mais elle fatigue vite dès que la phrase devient longue.
+
+:::: {.row .g-4 .mb-4}
+::::: {.col}
+:::::: {.card-window .h-100}
+#### 🚂 Lecture séquentielle {.bi-arrow-right}
+
+Le modèle avance de gauche à droite.
+
+- Il voit d'abord **Le**.
+- Puis **chat**.
+- Puis **mange**.
+- Puis le reste de la phrase.
+
+Le sens dépend d'une mémoire qui doit transporter l'information au fil du texte.
+::::::
+:::::
+
+::::: {.col}
+:::::: {.card-window .h-100}
+#### 🛰️ Lecture globale {.bi-bounding-box-circles}
+
+Le modèle observe tous les tokens en même temps.
+
+- Chaque token peut regarder les autres.
+- Les liens utiles deviennent plus forts.
+- Les liens peu utiles deviennent plus faibles.
+
+Le sens se construit comme un réseau de relations.
+::::::
+:::::
+::::
+
+::: {.callout-note}
+Un **token** est un morceau de texte manipulé par le modèle : parfois un mot entier, parfois un fragment de mot. Ici, pour simplifier, nous utiliserons un token par mot.
+:::
+
+## L'attention : une base de données dans la phrase
+
+L'**attention** peut se comprendre avec une métaphore de base de données. Chaque token joue trois rôles complémentaires.
+
+:::: {.card-window .mb-4}
+#### 🗃️ Requête, Clé, Valeur {.bi-database}
+
+::::: {.tabs}
+##### Requête {.bi-search}
+
+La **requête** est la question posée par un token.
+
+Exemple : le token **mange** demande : *"De qui parle-t-on ? Pourquoi cette action arrive-t-elle ?"*
+
+##### Clé {.bi-key}
+
+La **clé** sert à être retrouvé.
+
+Exemple : **chat** possède une clé qui répond bien à la question *"qui mange ?"*. **faim** possède une clé qui répond bien à *"pourquoi ?"*
+
+##### Valeur {.bi-box-arrow-in-down}
+
+La **valeur** est l'information récupérée si la clé correspond.
+
+Exemple : si **mange** regarde fortement **chat** et **faim**, il récupère deux morceaux de sens : le sujet de l'action et sa cause.
+:::::
+::::
+
+On peut résumer ainsi :
+
+| Rôle | Question simple | Image mentale |
+| :--- | :-------------- | :------------ |
+| **Requête** | Qu'est-ce que je cherche ? | Une question |
+| **Clé** | Est-ce que je corresponds à cette question ? | Une étiquette de recherche |
+| **Valeur** | Quelle information je donne si on me trouve ? | Une fiche de réponse |
+
+## Carte d'attention
+
+Dans une carte d'attention, chaque ligne représente un token qui **regarde**, et chaque colonne représente un token **regardé**. Plus la case est intense, plus le lien est fort.
+
+:::: {.card-window .mb-4}
+#### 🗺️ Qui regarde qui ? {.bi-grid-3x3-gap}
+
+::::: {.tabs}
+##### Carte {.bi-eye}
+
+Choisissez un token pour isoler sa ligne d'attention, ou gardez toute la carte.
+
+- [Token observé]{.select #attention-focus options="Tous,Le,chat,mange,car,il,a,faim" value="mange"}
+
+:::::: {#attention-map .chart-container-md}
+::::::
+
+:::::: {.metrics}
+| Token observé          | Lecture |
+| :--------------------- | :------ |
+| [attention_focus]{.val} | Globale |
+::::::
+
+##### Lecture guidée {.bi-compass}
+
+Dans l'exemple **Le chat mange car il a faim**, le token **mange** regarde surtout :
+
+- **chat**, pour identifier le sujet de l'action ;
+- **faim**, pour comprendre la cause ;
+- un peu **il**, car ce pronom renvoie au chat.
+
+Le modèle ne "comprend" pas comme un humain. Il apprend plutôt des poids de relation : certains tokens deviennent de bons indices pour interpréter les autres.
+:::::
+::::
+
+```{ojs}
+//| echo: false
+attentionData = ({
+  tokens: ["Le", "chat", "mange", "car", "il", "a", "faim"],
+  matrix: [
+    [0.35, 0.35, 0.10, 0.05, 0.05, 0.05, 0.05],
+    [0.12, 0.40, 0.22, 0.05, 0.08, 0.05, 0.08],
+    [0.05, 0.32, 0.18, 0.10, 0.12, 0.03, 0.20],
+    [0.03, 0.08, 0.20, 0.18, 0.12, 0.07, 0.32],
+    [0.04, 0.42, 0.12, 0.08, 0.22, 0.04, 0.08],
+    [0.02, 0.18, 0.12, 0.08, 0.25, 0.25, 0.10],
+    [0.02, 0.20, 0.22, 0.12, 0.18, 0.08, 0.18]
+  ]
+})
+
+attentionHeatmap = aptitek.createAttentionHeatmap("attention-map", attentionData, {
+  focus: attention_focus,
+  title: attention_focus === "Tous" ? "Tous les tokens" : `Ce que "${attention_focus}" regarde`
+})
+```
+
+::: {.callout-note collapse="true"}
+### Ce qui se passe sous le capot
+
+Dans un vrai Transformer, les requêtes, clés et valeurs sont des vecteurs appris pendant l'entraînement. Le modèle compare les requêtes aux clés pour produire des poids d'attention, puis combine les valeurs selon ces poids.
+
+Nous gardons ici l'intuition utile : **un token interroge les autres tokens pour récupérer les informations qui l'aident à se représenter le contexte**.
+:::
+
+## Pourquoi les Transformers ont changé l'IA
+
+Le gain principal est double.
+
+:::: {.row .g-4}
+::::: {.col}
+:::::: {.card .h-100}
+#### ⚡ Parallélisation {.bi-lightning-charge}
+
+Comme les tokens sont visibles ensemble, l'entraînement peut exploiter beaucoup mieux les GPU. On traite de grands blocs de texte en parallèle, au lieu de dépendre strictement d'une lecture pas à pas.
+::::::
+:::::
+
+::::: {.col}
+:::::: {.card .h-100}
+#### 🧭 Contexte longue distance {.bi-signpost-split}
+
+Un mot peut se connecter directement à un autre mot éloigné. Dans une phrase longue, cela aide le modèle à suivre les pronoms, les causes, les contraintes et les relations importantes.
+::::::
+:::::
+::::
+
+Un Transformer empile plusieurs couches d'attention. Chaque couche affine les liens : certaines apprennent les relations grammaticales, d'autres les dépendances de sens, d'autres encore les régularités propres au type de texte.
+
+::: {.callout-important}
+À retenir : un Transformer ne lit pas seulement une phrase. Il construit une **carte de relations** entre ses tokens, puis utilise cette carte pour prédire, traduire, résumer ou générer du texte.
+:::

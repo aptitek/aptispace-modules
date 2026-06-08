@@ -3,7 +3,9 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
+    - "modules/**/*.qmd"
     - "!legacy/**"
+    - "!modules/tests/**"
   resources:
     - "assets/**"
 
@@ -27,26 +29,15 @@ website:
     search: false
     contents:
       - section: "🤖 Intelligence Artificielle"
-        contents:
-          - modules/ia/nlp.qmd
-          - modules/ia/autocompletion.qmd
-          - modules/ia/vae.qmd
-          - modules/ia/injection-prompt.qmd
+        contents: modules/ia/*.qmd
       - section: "📊 Data Science"
-        contents:
-          - modules/datascience/dataframe.qmd
-          - modules/datascience/colonnaire.qmd
+        contents: modules/datascience/*.qmd
       - section: "🧮 Mathématiques"
-        contents:
-          - modules/maths/statistiques.qmd
+        contents: modules/maths/*.qmd
       - section: "💻 Informatique"
-        contents:
-          - modules/informatique/histoire.qmd
-          - modules/informatique/information.qmd
-          - modules/informatique/données.qmd
+        contents: modules/informatique/*.qmd
       - section: "🏗️ Architecture"
-        contents:
-          - modules/architecture/memoires.qmd
+        contents: modules/architecture/*.qmd
 
 format:
   html:

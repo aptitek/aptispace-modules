@@ -49,7 +49,8 @@ export {
   createWordCloud,
   createCabling,
   createRamStorageGraph,
-  renderStateMachineGraph
+  renderStateMachineGraph,
+  create3DPieceGraph
 } from "./networks.js";
 
 export {
@@ -57,6 +58,7 @@ export {
   createStackedBar,
   createLine,
   createGradientLine,
+  createAttentionHeatmap,
   createFunnel,
   createPiramid,
   createVuMeter,

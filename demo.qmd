@@ -977,3 +977,150 @@ createGraph("#conteneur", { nodes, links }, {
   onNodeClick: (node, event) => { console.log(node.id); }
 })
 ```
+
+## Pièces 3D et Puzzle Procédural — `create3DPieceGraph`
+
+`create3DPieceGraph(target, graphData, options)` initialise un graphe de force 2D interactif où chaque nœud est dessiné comme un solide 3D extrudé et animé d'une rotation physique continue. Les pièces peuvent être des formes géométriques de base (`cube`, `star`, `gear`, `hexagon`, etc.), des chemins SVG arbitraires `d="..."` échantillonnés dynamiquement, ou une grille de puzzle procédural complète qui s'assemble à la demande.
+
+::: {.callout-note collapse="true"}
+### Options principales de `create3DPieceGraph`
+
+```js
+aptitek.create3DPieceGraph("#conteneur", graphData, {
+  nodeSize: 34,                // Taille de base des pièces
+  cameraDistance: 180,         // Focale perspective de la caméra virtuelle
+  lightDirection: [-0.3, -0.4, 0.85], // Vecteur 3D de la source lumineuse
+  ambientLight: 0.35,          // Luminosité ambiante minimale (0 à 1)
+  rotationSpeed: 1.0,          // Vitesse de rotation par défaut
+  isPuzzle: true,              // Active la génération de grille puzzle automatique
+  rows: 3,                     // Nombre de lignes de puzzle
+  cols: 3                      // Nombre de colonnes de puzzle
+})
+```
+:::
+
+### Démonstration interactive
+
+Ajustez la taille du puzzle, la vitesse de rotation et l'éclairage. Cliquez sur **Assembler** pour voir les pièces orienter doucement leurs faces 3D à plat et s'aligner en grille pour s'emboîter parfaitement. Cliquez sur **Désassembler** pour réactiver les forces physiques et disperser les pièces.
+
+::: {.card-window}
+#### Visualisation de Pièces 3D {.bi-boxes}
+
+:::: {.tabs}
+##### Puzzle Procédural {.bi-puzzle-fill}
+::: {#puzzle-graph-container .chart-container-xl style="height: 380px;"}
+:::
+
+##### Formes SVG {.bi-heart-fill}
+::: {#svg-graph-container .chart-container-xl style="height: 380px;"}
+:::
+
+##### Paramètres {.bi-sliders}
+- [Taille de Grille]{.select #puzzle-size options="2x2,3x3,4x4,5x5" value="3x3"}
+- [Vitesse Rotation]{.slider #puzzle-rot value=1.0 min=0.0 max=3.0 step=0.1}
+- [Éclairage Ambiant]{.slider #puzzle-ambient value=0.35 min=0.05 max=0.8 step=0.05}
+- [Distance Caméra]{.slider #puzzle-cam value=180 min=100 max=300 step=10}
+
+##### []{#puzzle-actions} {.tab-right .no-pane}
+::::
+:::
+
+[Assembler]{.btn .bi-puzzle #btn-assemble} [Désassembler]{.btn .bi-shuffle #btn-disassemble}
+
+```{ojs}
+//| echo: false
+
+// Parse size selection
+puzzleRowsCols = {
+  const parts = puzzle_size.split("x");
+  return {
+    rows: parseInt(parts[0]),
+    cols: parseInt(parts[1])
+  };
+}
+
+// Build Puzzle Graph
+puzzleGraph = {
+  const rows = puzzleRowsCols.rows;
+  const cols = puzzleRowsCols.cols;
+  
+  const graph = aptitek.create3DPieceGraph("#puzzle-graph-container", null, {
+    isPuzzle: true,
+    rows: rows,
+    cols: cols,
+    nodeSize: 32,
+    rotationSpeed: 1.0,
+    ambientLight: 0.35,
+    cameraDistance: 180,
+    height: 360
+  });
+  
+  invalidation.then(() => graph.destroy && graph.destroy());
+  return graph;
+}
+
+// Build SVG Shapes Graph
+svgGraphData = {
+  const nodes = [
+    { id: "cœur", label: "Cœur", color: "var(--sol-magenta)", svgPath: "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" },
+    { id: "nuage", label: "Nuage", color: "var(--sol-blue)", svgPath: "M19.35,10.04C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.04C2.34,8.36 0,10.91 0,14C0,17.31 2.69,20 6,20H19C21.76,20 24,17.76 24,15C24,12.36 21.95,10.22 19.35,10.04Z" },
+    { id: "éclair", label: "Éclair", color: "var(--sol-yellow)", svgPath: "M11.5,2A0.5,0.5 0 0,1 12,2.5V10H17L10.5,22A0.5,0.5 0 0,1 9.8,21.8L12,12H7L11.2,2.2A0.5,0.5 0 0,1 11.5,2Z" },
+    { id: "étoile", label: "Étoile", color: "var(--sol-orange)", svgPath: "M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" },
+    { id: "rouage", label: "Rouage", color: "var(--sol-green)", svgPath: "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.49,2.42C14.45,2.18 14.24,2 14,2H10C9.76,2 9.55,2.18 9.51,2.42L9.14,5.08C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.53,18.66 9.14,18.92L9.51,21.58C9.55,21.82 9.76,22 10,22H14C14.24,22 14.45,21.82 14.49,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" }
+  ];
+  const links = [
+    { source: "cœur", target: "étoile" },
+    { source: "étoile", target: "rouage" },
+    { source: "rouage", target: "nuage" },
+    { source: "nuage", target: "éclair" },
+    { source: "éclair", target: "cœur" }
+  ];
+  return { nodes, links };
+}
+
+svgGraph = {
+  const graph = aptitek.create3DPieceGraph("#svg-graph-container", svgGraphData, {
+    nodeSize: 34,
+    rotationSpeed: 1.0,
+    ambientLight: 0.35,
+    cameraDistance: 180,
+    height: 360
+  });
+  
+  invalidation.then(() => graph.destroy && graph.destroy());
+  return graph;
+}
+
+// Update settings reactively without resetting the simulation state
+paramsUpdater = {
+  const pg = puzzleGraph;
+  const sg = svgGraph;
+  
+  if (pg && pg.updateOptions) {
+    pg.updateOptions({
+      rotationSpeed: puzzle_rot,
+      ambientLight: puzzle_ambient,
+      cameraDistance: puzzle_cam
+    });
+  }
+  if (sg && sg.updateOptions) {
+    sg.updateOptions({
+      rotationSpeed: puzzle_rot,
+      ambientLight: puzzle_ambient,
+      cameraDistance: puzzle_cam
+    });
+  }
+}
+
+// Assemble/Disassemble button triggers
+assembleTrigger = {
+  btn_assemble;
+  if (puzzleGraph) puzzleGraph.assemble();
+}
+
+disassembleTrigger = {
+  btn_disassemble;
+  if (puzzleGraph) puzzleGraph.disassemble();
+}
+```
+
