@@ -51,6 +51,7 @@ export {
   createRamStorageGraph,
   renderStateMachineGraph,
   create3DPieceGraph,
+  createKvPuzzleGraph,
   createAttentionTokenGraph
 } from "./networks.js";
 

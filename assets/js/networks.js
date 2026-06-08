@@ -2154,6 +2154,391 @@ export function create3DPieceGraph(container, graphData, options = {}) {
 }
 
 /**
+ * Puzzle board that shows raw Q·K scores before softmax normalization.
+ */
+export function createKvPuzzleGraph(container, options = {}, invalidation = null) {
+  const targetEl = typeof container === "string" ? document.querySelector(container) : container;
+  if (!targetEl) {
+    console.warn("createKvPuzzleGraph: Target container not found.", container);
+    return null;
+  }
+  targetEl.innerHTML = "";
+
+  const tokens = options.tokens || [
+    "Le", "petit", "chat", "curieux", "observe", "la", "fenêtre", "quand",
+    "la", "pluie", "tombe", "sur", "les", "tuiles", "rouges", "du",
+    "vieux", "toit", "pendant", "que", "la", "lampe", "éclaire", "doucement",
+    "son", "bol", "vide", "près", "du", "canapé", "bleu", "calme"
+  ];
+  const rows = options.rows ?? 4;
+  const cols = options.cols ?? 8;
+  const expectedTokenCount = rows * cols;
+  const boardTokens = tokens.slice(0, expectedTokenCount);
+  while (boardTokens.length < expectedTokenCount) {
+    boardTokens.push(`tok${boardTokens.length + 1}`);
+  }
+
+  const qValues = options.qValues || boardTokens.map((_, index) => 8 + ((index * 7 + 11) % 23));
+  const kValues = options.kValues || boardTokens.map((_, index) => 7 + ((index * 5 + 17) % 19));
+  const nodeSize = options.nodeSize ?? 72;
+  const labelFontSize = options.labelFontSize ?? 12;
+  const scoreFontSize = options.scoreFontSize ?? 10;
+  const linkFontSize = options.linkFontSize ?? 8;
+  const initialRect = targetEl.getBoundingClientRect();
+  const height = options.height ?? Math.max(initialRect.height || 0, 520);
+  const widthFallback = options.width ?? 860;
+  const cameraDistance = options.cameraDistance ?? 240;
+  const ambientLight = options.ambientLight ?? 0.46;
+  const lightDirection = options.lightDirection || [-0.24, -0.34, 0.9];
+  let currentWidth = widthFallback;
+  let rafId = null;
+
+  const lightLength = Math.sqrt(
+    lightDirection[0] * lightDirection[0] +
+    lightDirection[1] * lightDirection[1] +
+    lightDirection[2] * lightDirection[2]
+  ) || 1;
+  const normLx = lightDirection[0] / lightLength;
+  const normLy = lightDirection[1] / lightLength;
+  const normLz = lightDirection[2] / lightLength;
+
+  const graphHost = document.createElement("div");
+  graphHost.className = "w-100";
+  graphHost.setAttribute("role", "img");
+  graphHost.setAttribute("aria-label", "Scores bruts Q point K sur une plaque de puzzle");
+  targetEl.style.setProperty("min-height", `${height}px`);
+  graphHost.style.setProperty("height", `${height}px`);
+  targetEl.appendChild(graphHost);
+
+  const grid = generatePuzzleGrid(rows, cols);
+  const nodes = boardTokens.map((token, index) => {
+    const gridPiece = grid[index];
+    return {
+      id: `${token}-${index}`,
+      label: token,
+      q: qValues[index] ?? 0,
+      k: kValues[index] ?? 0,
+      score: 0,
+      strength: 0,
+      index,
+      r: gridPiece?.r ?? Math.floor(index / cols),
+      c: gridPiece?.c ?? index % cols,
+      edges: gridPiece?.edges || [0, 1, 0, -1],
+      edgeProfiles: gridPiece?.edgeProfiles || [],
+      size: nodeSize,
+      phase: Math.random() * Math.PI * 2,
+      baseRx: (Math.random() - 0.5) * 0.16,
+      baseRy: (Math.random() - 0.5) * 0.16,
+      baseRz: (Math.random() - 0.5) * 0.18,
+      gapX: (Math.random() - 0.5) * nodeSize * 0.12,
+      gapY: (Math.random() - 0.5) * nodeSize * 0.14
+    };
+  });
+
+  nodes.forEach(node => {
+    node.model3d = extrudePolygon(generatePuzzlePieceShape(node.size, node.edges, node.edgeProfiles), node.size * 0.3);
+  });
+
+  const links = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const sourceIndex = r * cols + c;
+      if (c < cols - 1) {
+        const targetIndex = sourceIndex + 1;
+        const q = qValues[sourceIndex] ?? 0;
+        const k = kValues[targetIndex] ?? 0;
+        links.push({
+          source: nodes[sourceIndex].id,
+          target: nodes[targetIndex].id,
+          q,
+          k,
+          product: q * k,
+          orientation: "horizontal"
+        });
+      }
+      if (r < rows - 1) {
+        const targetIndex = sourceIndex + cols;
+        const q = qValues[sourceIndex] ?? 0;
+        const k = kValues[targetIndex] ?? 0;
+        links.push({
+          source: nodes[sourceIndex].id,
+          target: nodes[targetIndex].id,
+          q,
+          k,
+          product: q * k,
+          orientation: "vertical"
+        });
+      }
+    }
+  }
+
+  const products = links.map(link => link.product);
+  const minScore = Math.min(...products);
+  const maxScore = Math.max(...products);
+  const scoreRange = Math.max(1, maxScore - minScore);
+  nodes.forEach(node => {
+    const relatedProducts = links
+      .filter(link => link.source === node.id || link.target === node.id)
+      .map(link => link.product);
+    node.score = Math.max(...relatedProducts, 0);
+    node.strength = (node.score - minScore) / scoreRange;
+  });
+
+  function interpolateHexColor(fromHex, toHex, t) {
+    const from = fromHex.slice(1);
+    const to = toHex.slice(1);
+    const r = Math.round(parseInt(from.slice(0, 2), 16) + (parseInt(to.slice(0, 2), 16) - parseInt(from.slice(0, 2), 16)) * t);
+    const g = Math.round(parseInt(from.slice(2, 4), 16) + (parseInt(to.slice(2, 4), 16) - parseInt(from.slice(2, 4), 16)) * t);
+    const b = Math.round(parseInt(from.slice(4, 6), 16) + (parseInt(to.slice(4, 6), 16) - parseInt(from.slice(4, 6), 16)) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function scoreColor(strength) {
+    const t = Math.max(0, Math.min(1, strength));
+    if (t < 0.34) {
+      return interpolateHexColor(SOL_FALLBACKS.base1, SOL_FALLBACKS.cyan, t / 0.34);
+    }
+    if (t < 0.72) {
+      return interpolateHexColor(SOL_FALLBACKS.cyan, SOL_FALLBACKS.yellow, (t - 0.34) / 0.38);
+    }
+    return interpolateHexColor(SOL_FALLBACKS.yellow, SOL_FALLBACKS.orange, (t - 0.72) / 0.28);
+  }
+
+  function applyPuzzlePositions() {
+    nodes.forEach(node => {
+      const strengthPull = (node.strength - 0.5) * nodeSize * 0.08;
+      node.fx = (node.c - (cols - 1) / 2) * nodeSize * 0.92 + node.gapX - strengthPull;
+      node.fy = (node.r - (rows - 1) / 2) * nodeSize * 0.82 + node.gapY;
+      node.x = node.fx;
+      node.y = node.fy;
+    });
+  }
+
+  function drawCenteredPill(ctx, text, x, y, fontSize, textColor, globalScale) {
+    ctx.font = `bold ${fontSize / globalScale}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const textWidth = ctx.measureText(text).width;
+    const pillHeight = fontSize + 7 / globalScale;
+    drawRoundedRect(
+      ctx,
+      x - textWidth / 2 - 6 / globalScale,
+      y - pillHeight / 2,
+      textWidth + 12 / globalScale,
+      pillHeight,
+      pillHeight / 2
+    );
+    ctx.fillStyle = utils.rgba(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3, 0.84);
+    ctx.fill();
+    ctx.fillStyle = textColor;
+    ctx.fillText(text, x, y);
+  }
+
+  function drawPuzzlePiece(node, ctx, globalScale = 1) {
+    const time = performance.now() * 0.001;
+    const rx = node.baseRx + Math.sin(time * 0.9 + node.phase) * 0.035;
+    const ry = node.baseRy + Math.cos(time * 0.8 + node.phase) * 0.035;
+    const rz = node.baseRz + Math.sin(time * 0.55 + node.phase) * 0.018;
+    const cosX = Math.cos(rx), sinX = Math.sin(rx);
+    const cosY = Math.cos(ry), sinY = Math.sin(ry);
+    const cosZ = Math.cos(rz), sinZ = Math.sin(rz);
+    const baseColor = scoreColor(node.strength);
+    const border = resolveCssValue("var(--sol-base01)") || SOL_FALLBACKS.base01;
+    const text = resolveCssValue("var(--sol-base03)") || SOL_FALLBACKS.base03;
+
+    const rotatedVertices = node.model3d.vertices.map(v => {
+      const x1 = v[0];
+      const y1 = v[1] * cosX - v[2] * sinX;
+      const z1 = v[1] * sinX + v[2] * cosX;
+      const x2 = x1 * cosY + z1 * sinY;
+      const y2 = y1;
+      const z2 = -x1 * sinY + z1 * cosY;
+      const x3 = x2 * cosZ - y2 * sinZ;
+      const y3 = x2 * sinZ + y2 * cosZ;
+      return [x3, y3, z2];
+    });
+
+    const facesData = node.model3d.faces.map((faceIndices, faceIndex) => {
+      const faceVertices = faceIndices.map(idx => rotatedVertices[idx]);
+      const [normNx, normNy, normNz] = computeFaceNormal3D(faceVertices);
+      const centerZ = faceVertices.reduce((sum, v) => sum + v[2], 0) / faceVertices.length;
+      return {
+        faceIndex,
+        isCap: faceIndex < 2,
+        vertices: faceVertices,
+        normal: [normNx, normNy, normNz],
+        centerZ
+      };
+    });
+
+    const visibleFaces = [
+      ...facesData
+        .filter(face => !face.isCap && face.normal[2] > -0.08)
+        .sort((a, b) => a.faceIndex - b.faceIndex),
+      ...facesData
+        .filter(face => face.isCap && face.normal[2] > -0.08)
+        .sort((a, b) => {
+          if (Math.abs(a.centerZ - b.centerZ) > 0.0001) return a.centerZ - b.centerZ;
+          return a.faceIndex - b.faceIndex;
+        })
+    ];
+
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.shadowColor = utils.rgba(baseColor, 0.24);
+    ctx.shadowBlur = 10 + node.strength * 8;
+
+    visibleFaces.forEach(face => {
+      const dot = face.normal[0] * normLx + face.normal[1] * normLy + face.normal[2] * normLz;
+      const intensity = ambientLight + (1 - ambientLight) * Math.max(0, dot);
+      const projected = face.vertices.map(v => {
+        const scale = cameraDistance / (cameraDistance - v[2]);
+        return [v[0] * scale, v[1] * scale];
+      });
+
+      ctx.beginPath();
+      ctx.moveTo(projected[0][0], projected[0][1]);
+      for (let i = 1; i < projected.length; i++) {
+        ctx.lineTo(projected[i][0], projected[i][1]);
+      }
+      ctx.closePath();
+      ctx.fillStyle = shadeColor(baseColor, intensity);
+      ctx.fill();
+
+      if (face.isCap) {
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = 0.8 / globalScale;
+        ctx.strokeStyle = border;
+        ctx.stroke();
+      }
+    });
+
+    ctx.shadowBlur = 0;
+    drawCenteredPill(ctx, node.label, 0, -9 / globalScale, labelFontSize, text, globalScale);
+    drawCenteredPill(ctx, `max ${Math.round(node.score)}`, 0, 13 / globalScale, scoreFontSize, baseColor, globalScale);
+    ctx.restore();
+  }
+
+  function drawConnectionLabel(link, ctx, globalScale = 1) {
+    const source = link.source;
+    const target = link.target;
+    if (typeof source !== "object" || typeof target !== "object") return;
+
+    const x = source.x + (target.x - source.x) * 0.5;
+    const y = source.y + (target.y - source.y) * 0.5;
+    const t = (link.product - minScore) / scoreRange;
+    const color = scoreColor(t);
+    const fSize = linkFontSize / globalScale;
+    const lineHeight = fSize + 2 / globalScale;
+    const lines = [`q=${link.q}`, `k=${link.k}`, `q×k=${link.product}`];
+
+    ctx.save();
+    ctx.font = `bold ${fSize}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const textWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+    const pillW = textWidth + 8 / globalScale;
+    const pillH = lineHeight * lines.length + 6 / globalScale;
+    drawRoundedRect(ctx, x - pillW / 2, y - pillH / 2, pillW, pillH, 5 / globalScale);
+    ctx.fillStyle = utils.rgba(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3, 0.92);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.8 / globalScale;
+    ctx.stroke();
+    ctx.fillStyle = color;
+    lines.forEach((line, index) => {
+      const lineY = y + (index - 1) * lineHeight;
+      ctx.fillText(line, x, lineY);
+    });
+    ctx.restore();
+  }
+
+  applyPuzzlePositions();
+
+  const rect = targetEl.getBoundingClientRect();
+  currentWidth = options.width || rect.width || widthFallback;
+  const graph = ForceGraph()(graphHost)
+    .graphData({ nodes, links })
+    .backgroundColor("transparent")
+    .width(currentWidth)
+    .height(height)
+    .cooldownTicks(Infinity)
+    .linkWidth(link => 0.8 + ((link.product - minScore) / scoreRange) * 2.4)
+    .linkColor(link => utils.rgba(scoreColor((link.product - minScore) / scoreRange), 0.62))
+    .linkCanvasObjectMode(() => "after")
+    .linkCanvasObject((link, ctx, globalScale) => {
+      drawConnectionLabel(link, ctx, globalScale);
+    })
+    .enableZoomInteraction(false)
+    .enablePanInteraction(false)
+    .enableNodeDrag(false)
+    .nodeCanvasObject((node, ctx, globalScale) => {
+      ctx.save();
+      ctx.translate(node.x, node.y);
+      drawPuzzlePiece(node, ctx, globalScale);
+      ctx.restore();
+    })
+    .nodePointerAreaPaint((node, color, ctx) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, nodeSize * 0.55, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+
+  const autoZoom = (duration = 240) => {
+    requestAnimationFrame(() => {
+      const padding = nodeSize * 1.15;
+      const xs = nodes.map(node => node.x ?? node.fx);
+      const ys = nodes.map(node => node.y ?? node.fy);
+      const minX = Math.min(...xs) - padding;
+      const maxX = Math.max(...xs) + padding;
+      const minY = Math.min(...ys) - padding;
+      const maxY = Math.max(...ys) + padding;
+      const targetZoom = Math.min(
+        (currentWidth || widthFallback) / Math.max(1, maxX - minX),
+        height / Math.max(1, maxY - minY)
+      ) * 0.92;
+      graph.centerAt((minX + maxX) / 2, (minY + maxY) / 2, duration);
+      graph.zoom(targetZoom, duration);
+    });
+  };
+
+  const resizeObserver = new ResizeObserver(entries => {
+    const entry = entries[0];
+    currentWidth = options.width || entry.contentRect.width || widthFallback;
+    graph.width(currentWidth);
+    applyPuzzlePositions();
+    graph.graphData({ nodes, links });
+    autoZoom(160);
+  });
+  resizeObserver.observe(targetEl);
+
+  const animate = () => {
+    graph.refresh();
+    rafId = requestAnimationFrame(animate);
+  };
+  rafId = requestAnimationFrame(animate);
+  setTimeout(() => autoZoom(300), 0);
+
+  const api = {
+    destroy() {
+      if (rafId) cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
+      graph._destructor?.();
+      targetEl.innerHTML = "";
+    }
+  };
+
+  if (invalidation && typeof invalidation.then === "function") {
+    invalidation.then(() => api.destroy());
+  }
+
+  return api;
+}
+
+/**
  * Interactive token attention map. Click a token to show its strongest outgoing attention links.
  */
 export function createAttentionTokenGraph(container, options = {}, invalidation = null) {
