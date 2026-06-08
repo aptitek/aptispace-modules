@@ -2253,7 +2253,15 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
       label: `${Math.round(weight * 100)}%`,
       weight,
       status: weight >= 0.25 ? "current" : "default"
-    }));
+    }))
+    .concat([{
+      source: tokens[activeIndex],
+      target: tokens[activeIndex],
+      label: `${Math.round(matrix[activeIndex][activeIndex] * 100)}%`,
+      weight: matrix[activeIndex][activeIndex],
+      status: "self",
+      self: true
+    }]);
 
   function attentionLinkColor(weight = 0) {
     const t = Math.max(0, Math.min(1, (weight - 0.05) / 0.4));
@@ -2489,6 +2497,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
     .linkDirectionalArrowColor(link => attentionLinkColor(link.weight))
     .linkDirectionalArrowRelPos(0.88)
     .linkCurvature(link => {
+      if (link.self) return 0;
       const sourceIndex = typeof link.source === "object" ? link.source.index : tokens.indexOf(link.source);
       const targetIndex = typeof link.target === "object" ? link.target.index : tokens.indexOf(link.target);
       const span = Math.abs(targetIndex - sourceIndex);
@@ -2500,6 +2509,52 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
       const source = link.source;
       const target = link.target;
       if (typeof source !== "object" || typeof target !== "object") return;
+
+      if (link.self) {
+        const color = attentionLinkColor(link.weight);
+        const loopRadius = (source.size || nodeSize) * 0.72;
+        const loopX = source.x;
+        const loopY = source.y - loopRadius * 0.72;
+        const fSize = 11 / globalScale;
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = attentionLinkWidth(link.weight) / globalScale;
+        ctx.beginPath();
+        ctx.ellipse(loopX, loopY, loopRadius * 0.72, loopRadius * 0.46, -0.35, 0.15 * Math.PI, 1.92 * Math.PI);
+        ctx.stroke();
+
+        const arrowAngle = -0.55;
+        const arrowX = loopX + Math.cos(arrowAngle) * loopRadius * 0.54;
+        const arrowY = loopY + Math.sin(arrowAngle) * loopRadius * 0.35;
+        const arrowSize = 7 / globalScale;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX - Math.cos(arrowAngle - 0.55) * arrowSize, arrowY - Math.sin(arrowAngle - 0.55) * arrowSize);
+        ctx.lineTo(arrowX - Math.cos(arrowAngle + 0.55) * arrowSize, arrowY - Math.sin(arrowAngle + 0.55) * arrowSize);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = `bold ${fSize}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const label = `self ${link.label}`;
+        const textWidth = ctx.measureText(label).width;
+        const pillW = textWidth + 10 / globalScale;
+        const pillH = fSize + 7 / globalScale;
+        const labelY = loopY - loopRadius * 0.5;
+        drawRoundedRect(ctx, loopX - pillW / 2, labelY - pillH / 2, pillW, pillH, pillH / 2);
+        ctx.fillStyle = utils.rgba(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3, 0.9);
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1 / globalScale;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fillText(label, loopX, labelY);
+        ctx.restore();
+        return;
+      }
 
       const x = source.x + (target.x - source.x) * 0.5;
       const y = source.y + (target.y - source.y) * 0.5;

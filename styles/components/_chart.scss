@@ -12,6 +12,7 @@
 //   default → 280 px   (no suffix — most common)
 //   lg  → 300 px   (slightly taller plots)
 //   xl  → 340 px   (state machines, tall canvases)
+//   xxl → 440 px   (large interactive simulations)
 
 .chart-container    { height: 280px; }
 .chart-container-xs { height: 180px; }
@@ -19,6 +20,7 @@
 .chart-container-md { height: 260px; }
 .chart-container-lg { height: 300px; }
 .chart-container-xl { height: 340px; }
+.chart-container-xxl { height: 440px; }
 
 .word-cloud-container {
     display: flex;
