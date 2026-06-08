@@ -2176,8 +2176,9 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
   ];
   const maxLinks = options.maxLinks ?? 3;
   const nodeSize = options.nodeSize ?? 58;
+  const labelFontSize = options.labelFontSize ?? 18;
   const initialTargetRect = targetEl.getBoundingClientRect();
-  const height = options.height ?? (initialTargetRect.height || 380);
+  const height = options.height ?? Math.max(initialTargetRect.height || 0, 440);
   const widthFallback = options.width ?? 720;
   const cameraDistance = options.cameraDistance ?? 210;
   const ambientLight = options.ambientLight ?? 0.42;
@@ -2216,6 +2217,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
   graphHost.className = "w-100";
   graphHost.setAttribute("role", "img");
   graphHost.setAttribute("aria-label", "Carte d'attention interactive en pièces de puzzle");
+  targetEl.style.setProperty("min-height", `${height}px`);
   graphHost.style.setProperty("height", `${height}px`);
 
   targetEl.appendChild(controls);
@@ -2412,11 +2414,12 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
     if (mode === "circle") {
       ctx.rotate(-(node.angle || 0));
     }
-    ctx.font = `bold ${Math.max(12, size * 0.22) / globalScale}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
+    const nodeFontSize = Math.max(labelFontSize, size * 0.28) / globalScale;
+    ctx.font = `bold ${nodeFontSize}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const labelWidth = ctx.measureText(node.label).width;
-    const labelHeight = Math.max(12, size * 0.22) / globalScale + 6 / globalScale;
+    const labelHeight = nodeFontSize + 8 / globalScale;
     drawRoundedRect(ctx, -labelWidth / 2 - 5 / globalScale, -labelHeight / 2, labelWidth + 10 / globalScale, labelHeight, labelHeight / 2);
     ctx.fillStyle = utils.rgba(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3, 0.78);
     ctx.fill();
@@ -2515,7 +2518,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
         const loopRadius = (source.size || nodeSize) * 0.72;
         const loopX = source.x;
         const loopY = source.y - loopRadius * 0.72;
-        const fSize = 11 / globalScale;
+        const fSize = 13 / globalScale;
 
         ctx.save();
         ctx.strokeStyle = color;
@@ -2559,7 +2562,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
       const x = source.x + (target.x - source.x) * 0.5;
       const y = source.y + (target.y - source.y) * 0.5;
       const color = attentionLinkColor(link.weight);
-      const fSize = 11 / globalScale;
+      const fSize = 13 / globalScale;
       ctx.save();
       ctx.font = `bold ${fSize}px ${options.fontFamily || "var(--font-code, Consolas, monospace)"}`;
       ctx.textAlign = "center";
