@@ -1540,22 +1540,101 @@ function generateRegularPolygon2D(sides = 6, radius = 20) {
  * Generates the 2D polygon of a puzzle piece with matching edges.
  * edges = [top, right, bottom, left] where 0=flat, 1=tab (out), -1=blank (in)
  */
-function generatePuzzlePieceShape(size, edges = [0, 0, 0, 0]) {
-  const half = size / 2;
+function smoothPuzzleProfilePoints(controlPoints, steps = 5) {
   const points = [];
 
-  // Tab profile template along a normalized segment [0, 1]
-  const profile = [
-    { u: 0.0,  h: 0.0 },
-    { u: 0.35, h: 0.0 },
-    { u: 0.38, h: 0.15 },
-    { u: 0.32, h: 0.32 },
-    { u: 0.50, h: 0.38 },
-    { u: 0.68, h: 0.32 },
-    { u: 0.62, h: 0.15 },
-    { u: 0.65, h: 0.0 },
-    { u: 1.0,  h: 0.0 }
+  for (let i = 0; i < controlPoints.length - 1; i++) {
+    const from = controlPoints[i];
+    const to = controlPoints[i + 1];
+
+    for (let step = 0; step < steps; step++) {
+      const t = step / steps;
+      const eased = t * t * (3 - 2 * t);
+      points.push({
+        u: from.u + (to.u - from.u) * eased,
+        h: from.h + (to.h - from.h) * eased
+      });
+    }
+  }
+
+  points.push(controlPoints[controlPoints.length - 1]);
+  return points;
+}
+
+function createPuzzleEdgeProfile() {
+  const center = 0.5 + (Math.random() - 0.5) * 0.12;
+  const leftNeckHalf = 0.085 + Math.random() * 0.035;
+  const rightNeckHalf = 0.075 + Math.random() * 0.04;
+  const headHalf = 0.18 + Math.random() * 0.035;
+  const leftNeck = Math.max(0.2, center - leftNeckHalf);
+  const rightNeck = Math.min(0.8, center + rightNeckHalf);
+  const leftHead = Math.max(0.14, center - headHalf);
+  const rightHead = Math.min(0.86, center + headHalf);
+  const height = 0.3 + Math.random() * 0.06;
+  const stemHeight = height * (0.14 + Math.random() * 0.04);
+  const leftCapBaseHeight = height * (0.32 + Math.random() * 0.06);
+  const rightCapBaseHeight = height * (0.32 + Math.random() * 0.06);
+  const crownOffset = (Math.random() - 0.5) * 0.02;
+
+  const controlPoints = [
+    { u: 0.0, h: 0.0 },
+    { u: Math.max(0.04, leftHead - 0.08), h: 0.0 },
+    { u: leftNeck, h: 0.0 },
+    { u: center - leftNeckHalf * 0.52, h: stemHeight },
+    { u: leftHead, h: leftCapBaseHeight },
+    { u: center - headHalf * 0.88, h: height * 0.72 },
+    { u: center - headHalf * 0.62, h: height * 0.9 },
+    { u: center - headHalf * 0.28, h: height * 0.99 },
+    { u: center + crownOffset, h: height },
+    { u: center + headHalf * 0.28, h: height * 0.99 },
+    { u: center + headHalf * 0.62, h: height * 0.9 },
+    { u: center + headHalf * 0.88, h: height * 0.72 },
+    { u: rightHead, h: rightCapBaseHeight },
+    { u: center + rightNeckHalf * 0.58, h: stemHeight * (0.9 + Math.random() * 0.22) },
+    { u: rightNeck, h: 0.0 },
+    { u: Math.min(0.98, rightHead + 0.08), h: 0.0 },
+    { u: 1.0, h: 0.0 }
   ];
+
+  return {
+    points: smoothPuzzleProfilePoints(controlPoints)
+  };
+}
+
+function getPuzzleEdgePoints(edge) {
+  const points = edge.profile?.points || createPuzzleEdgeProfile().points;
+  if (!edge.reverse) return points;
+
+  return points
+    .slice()
+    .reverse()
+    .map(pt => ({ u: 1 - pt.u, h: pt.h }));
+}
+
+function normalizePuzzleEdge(edge, edgeProfile) {
+  const profileDescriptor = edgeProfile && edgeProfile.profile
+    ? edgeProfile
+    : { profile: edgeProfile, reverse: false };
+
+  if (typeof edge === "object" && edge !== null) {
+    return {
+      sign: edge.sign ?? 0,
+      profile: edge.profile || profileDescriptor.profile || createPuzzleEdgeProfile(),
+      reverse: Boolean(edge.reverse ?? profileDescriptor.reverse)
+    };
+  }
+
+  return {
+    sign: edge ?? 0,
+    profile: profileDescriptor.profile || createPuzzleEdgeProfile(),
+    reverse: Boolean(profileDescriptor.reverse)
+  };
+}
+
+function generatePuzzlePieceShape(size, edges = [0, 0, 0, 0], edgeProfiles = []) {
+  const half = size / 2;
+  const points = [];
+  const samplesPerEdge = 32;
 
   const corners = [
     [-half, -half], // Top-Left
@@ -1567,7 +1646,8 @@ function generatePuzzlePieceShape(size, edges = [0, 0, 0, 0]) {
   for (let i = 0; i < 4; i++) {
     const p1 = corners[i];
     const p2 = corners[(i + 1) % 4];
-    const sign = edges[i];
+    const edge = normalizePuzzleEdge(edges[i], edgeProfiles[i]);
+    const sign = edge.sign;
 
     const dx = p2[0] - p1[0];
     const dy = p2[1] - p1[1];
@@ -1578,19 +1658,41 @@ function generatePuzzlePieceShape(size, edges = [0, 0, 0, 0]) {
     // Outward normal vector
     const nx = ty;
     const ny = -tx;
+    const edgePoints = sign === 0
+      ? Array.from({ length: samplesPerEdge }, (_, j) => ({ u: j / samplesPerEdge, h: 0 }))
+      : getPuzzleEdgePoints(edge);
 
-    for (let j = 0; j < profile.length - 1; j++) {
-      const pt = profile[j];
-      const u = pt.u;
-      const h = pt.h * sign * size * 0.26; // bulb scale
+    for (const pt of edgePoints.slice(0, -1)) {
+      const h = pt.h * sign * size;
 
-      const px = p1[0] + u * dx + h * nx;
-      const py = p1[1] + u * dy + h * ny;
+      const px = p1[0] + pt.u * dx + h * nx;
+      const py = p1[1] + pt.u * dy + h * ny;
       points.push([px, py]);
     }
   }
 
   return points;
+}
+
+function computeFaceNormal3D(vertices) {
+  let nx = 0;
+  let ny = 0;
+  let nz = 0;
+
+  for (let i = 0; i < vertices.length; i++) {
+    const current = vertices[i];
+    const next = vertices[(i + 1) % vertices.length];
+    nx += (current[1] - next[1]) * (current[2] + next[2]);
+    ny += (current[2] - next[2]) * (current[0] + next[0]);
+    nz += (current[0] - next[0]) * (current[1] + next[1]);
+  }
+
+  const length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+  if (length <= 0.000001) {
+    return [0, 0, 1];
+  }
+
+  return [nx / length, ny / length, nz / length];
 }
 
 /**
@@ -1642,16 +1744,20 @@ function extrudePolygon(points2d, thickness) {
 export function generatePuzzleGrid(rows, cols) {
   const horizontalEdges = Array.from({ length: rows - 1 }, () => Array(cols).fill(0));
   const verticalEdges = Array.from({ length: rows }, () => Array(cols - 1).fill(0));
+  const horizontalProfiles = Array.from({ length: rows - 1 }, () => Array(cols).fill(null));
+  const verticalProfiles = Array.from({ length: rows }, () => Array(cols - 1).fill(null));
 
   for (let r = 0; r < rows - 1; r++) {
     for (let c = 0; c < cols; c++) {
       horizontalEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+      horizontalProfiles[r][c] = createPuzzleEdgeProfile();
     }
   }
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols - 1; c++) {
       verticalEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+      verticalProfiles[r][c] = createPuzzleEdgeProfile();
     }
   }
 
@@ -1662,11 +1768,21 @@ export function generatePuzzleGrid(rows, cols) {
       const bottom = r === rows - 1 ? 0 : horizontalEdges[r][c];
       const left = c === 0 ? 0 : -verticalEdges[r][c - 1];
       const right = c === cols - 1 ? 0 : verticalEdges[r][c];
+      const topProfile = r === 0 ? null : horizontalProfiles[r - 1][c];
+      const bottomProfile = r === rows - 1 ? null : horizontalProfiles[r][c];
+      const leftProfile = c === 0 ? null : verticalProfiles[r][c - 1];
+      const rightProfile = c === cols - 1 ? null : verticalProfiles[r][c];
 
       grid.push({
         r,
         c,
-        edges: [top, right, bottom, left]
+        edges: [top, right, bottom, left],
+        edgeProfiles: [
+          topProfile ? { profile: topProfile, reverse: false } : null,
+          rightProfile ? { profile: rightProfile, reverse: false } : null,
+          bottomProfile ? { profile: bottomProfile, reverse: true } : null,
+          leftProfile ? { profile: leftProfile, reverse: true } : null
+        ]
       });
     }
   }
@@ -1748,6 +1864,7 @@ export function create3DPieceGraph(container, graphData, options = {}) {
         r: item.r,
         c: item.c,
         edges: item.edges,
+        edgeProfiles: item.edgeProfiles,
         shape: "puzzle",
         color: colors[colorIdx]
       };
@@ -1824,7 +1941,7 @@ export function create3DPieceGraph(container, graphData, options = {}) {
       case "gear":
         return extrudePolygon(generateGear2D(8, size * 0.35, size * 0.5), size * 0.35);
       case "puzzle":
-        return extrudePolygon(generatePuzzlePieceShape(size, node.edges || [1, -1, 1, -1]), size * 0.32);
+        return extrudePolygon(generatePuzzlePieceShape(size, node.edges || [1, -1, 1, -1], node.edgeProfiles), size * 0.32);
       case "cylinder":
       case "disk":
         return extrudePolygon(generateRegularPolygon2D(18, size * 0.5), size * 0.35);
@@ -1898,33 +2015,17 @@ export function create3DPieceGraph(container, graphData, options = {}) {
     });
 
     // 3. Prepare face data (normal and center Z for depth sorting)
-    const facesData = node.model3d.faces.map(faceIndices => {
+    const facesData = node.model3d.faces.map((faceIndices, faceIndex) => {
       const faceVertices = faceIndices.map(idx => rotatedVertices[idx]);
-
-      const v0 = faceVertices[0];
-      const v1 = faceVertices[1];
-      const v2 = faceVertices[2];
-
-      const ax = v1[0] - v0[0], ay = v1[1] - v0[1], az = v1[2] - v0[2];
-      const bx = v2[0] - v0[0], by = v2[1] - v0[1], bz = v2[2] - v0[2];
-
-      const nx = ay * bz - az * by;
-      const ny = az * bx - ax * bz;
-      const nz = ax * by - ay * bx;
-
-      const nLen = Math.sqrt(nx*nx + ny*ny + nz*nz);
-      let normNx = 0, normNy = 0, normNz = 1;
-      if (nLen > 0) {
-        normNx = nx / nLen;
-        normNy = ny / nLen;
-        normNz = nz / nLen;
-      }
+      const [normNx, normNy, normNz] = computeFaceNormal3D(faceVertices);
 
       let centerZ = 0;
       faceVertices.forEach(v => centerZ += v[2]);
       centerZ /= faceVertices.length;
 
       return {
+        faceIndex,
+        isCap: faceIndex < 2,
         indices: faceIndices,
         vertices: faceVertices,
         normal: [normNx, normNy, normNz],
@@ -1932,14 +2033,27 @@ export function create3DPieceGraph(container, graphData, options = {}) {
       };
     });
 
-    // 4. Backface culling + depth sorting (ascending centerZ, larger z is closer to viewer)
-    const visibleFaces = facesData.filter(f => f.normal[2] > 0);
-    visibleFaces.sort((a, b) => a.centerZ - b.centerZ);
+    // 4. Stable rendering order.
+    // Puzzle pieces create many tiny side faces; keep their order stable, but do not draw back faces.
+    const sideFaces = facesData
+      .filter(f => !f.isCap && f.normal[2] > -0.08)
+      .sort((a, b) => a.faceIndex - b.faceIndex);
+    const capFaces = facesData
+      .filter(f => f.isCap && f.normal[2] > -0.08)
+      .sort((a, b) => {
+      const depthA = a.centerZ + (a.isCap ? 0.02 : 0);
+      const depthB = b.centerZ + (b.isCap ? 0.02 : 0);
+      if (Math.abs(depthA - depthB) > 0.0001) return depthA - depthB;
+      return a.faceIndex - b.faceIndex;
+    });
+    const visibleFaces = [...sideFaces, ...capFaces];
 
     const baseColor = node.color || cfg.nodeBg;
     const borderColor = node.borderColor || cfg.nodeBorder;
 
     ctx.save();
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
 
     // 5. Draw each visible face
     visibleFaces.forEach(face => {
@@ -1966,9 +2080,11 @@ export function create3DPieceGraph(container, graphData, options = {}) {
       ctx.fillStyle = shadeColor(baseColor, intensity);
       ctx.fill();
 
-      ctx.strokeStyle = resolveCssValue(borderColor) || borderColor;
-      ctx.lineWidth = 0.6 / globalScale;
-      ctx.stroke();
+      if (face.isCap) {
+        ctx.strokeStyle = resolveCssValue(borderColor) || borderColor;
+        ctx.lineWidth = 0.6 / globalScale;
+        ctx.stroke();
+      }
     });
 
     // 6. Draw Label text over the piece
