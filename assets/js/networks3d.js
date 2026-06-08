@@ -1,9 +1,9 @@
 // ==========================================
 // networks3d.js - Primitives 3D et Puzzle
 // ==========================================
-import ForceGraph from "https://esm.sh/force-graph";
-import { resolveCssValue, utils } from "./core.js";
-import { SOL_FALLBACKS, drawRoundedRect } from "./networks.js";
+import * as THREE from "https://esm.sh/three";
+import { resolveCssValue } from "./core.js";
+import { SOL_FALLBACKS } from "./networks.js";
 
 // =====================================================================
 // 🧩 UTILITIES FOR 3D ROTATING SHAPES & PROCEDURAL PUZZLE GRID
@@ -433,8 +433,99 @@ export function generatePuzzleGrid(rows, cols) {
 // 🕸️ 3D PIECE FORCE GRAPH
 // =====================================================================
 
+function makeThreeShape(points) {
+  const shape = new THREE.Shape();
+  points.forEach(([x, y], index) => {
+    if (index === 0) shape.moveTo(x, -y);
+    else shape.lineTo(x, -y);
+  });
+  shape.closePath();
+  return shape;
+}
+
+function simplifyThreePoints(points, stride = 3) {
+  const step = Math.max(1, Math.floor(stride));
+  if (step === 1 || points.length < 24) return points;
+  const simplified = points.filter((_, index) => index % step === 0);
+  return simplified.length >= 12 ? simplified : points;
+}
+
+function makeExtrudedGeometry(points, depth, stride = 3) {
+  const shape = makeThreeShape(simplifyThreePoints(points, stride));
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth,
+    bevelEnabled: false,
+    curveSegments: 1
+  });
+  geometry.center();
+  return geometry;
+}
+
+function geometryForPieceNode(node, size, depth, stride = 3) {
+  if (node.svgPath) {
+    const sampled = sampleSvgPath(node.svgPath, 40);
+    const scaled = centerAndScalePoints(sampled, size);
+    return makeExtrudedGeometry(scaled, depth, Math.max(1, stride - 1));
+  }
+
+  switch (node.shape) {
+    case "cube":
+      return new THREE.BoxGeometry(size, size, depth * 2.4);
+    case "star":
+      return makeExtrudedGeometry(generateStar2D(5, size * 0.22, size * 0.5), depth, 1);
+    case "gear":
+      return makeExtrudedGeometry(generateGear2D(8, size * 0.35, size * 0.5), depth, 1);
+    case "puzzle":
+      return makeExtrudedGeometry(generatePuzzlePieceShape(size, node.edges || [1, -1, 1, -1], node.edgeProfiles), depth, stride);
+    case "cylinder":
+    case "disk":
+      return new THREE.CylinderGeometry(size * 0.5, size * 0.5, depth * 2, 32).rotateX(Math.PI / 2);
+    case "hexagon":
+      return makeExtrudedGeometry(generateRegularPolygon2D(6, size * 0.5), depth, 1);
+    default:
+      return makeExtrudedGeometry(generateRegularPolygon2D(16, size * 0.5), depth, 1);
+  }
+}
+
+function makeOverlayLabel(text, color, fontSize = 11) {
+  const el = document.createElement("div");
+  el.textContent = text;
+  el.style.setProperty("position", "absolute");
+  el.style.setProperty("left", "0");
+  el.style.setProperty("top", "0");
+  el.style.setProperty("transform", "translate(-50%, -50%)");
+  el.style.setProperty("padding", "0.12rem 0.28rem");
+  el.style.setProperty("border-radius", "0.35rem");
+  el.style.setProperty("font-family", "var(--font-code, Consolas, monospace)");
+  el.style.setProperty("font-size", `${fontSize}px`);
+  el.style.setProperty("font-weight", "700");
+  el.style.setProperty("line-height", "1.1");
+  el.style.setProperty("white-space", "pre");
+  el.style.setProperty("pointer-events", "none");
+  el.style.setProperty("color", color);
+  el.style.setProperty("background-color", resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3);
+  return el;
+}
+
+function projectOverlay(position, camera, width, height) {
+  const projected = position.clone().project(camera);
+  return {
+    x: (projected.x * 0.5 + 0.5) * width,
+    y: (-projected.y * 0.5 + 0.5) * height,
+    visible: projected.z >= -1 && projected.z <= 1
+  };
+}
+
+function disposeThreeObject(object) {
+  object.traverse(child => {
+    child.geometry?.dispose?.();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.filter(Boolean).forEach(material => material.dispose?.());
+  });
+}
+
 /**
- * Creates a 3D rotating node force graph on a 2D Canvas context.
+ * Creates a WebGL 3D piece graph with procedural puzzle support.
  */
 export function create3DPieceGraph(container, graphData, options = {}) {
   const targetEl = typeof container === "string" ? document.querySelector(container) : container;
@@ -443,48 +534,29 @@ export function create3DPieceGraph(container, graphData, options = {}) {
     return null;
   }
   targetEl.innerHTML = "";
+  targetEl.style.setProperty("position", "relative");
 
-  const defaultOptions = {
+  const cfg = {
     nodeSize: 34,
     nodeBg: "var(--sol-blue)",
-    nodeBorder: "var(--sol-base02)",
     nodeText: "var(--sol-base3)",
     fontSize: 10,
-    fontFamily: "var(--font-code, Consolas, monospace)",
-    linkWidth: 1.5,
-    cooldownTicks: Infinity,
+    rotationSpeed: 1,
     cameraDistance: 180,
+    ambientLight: 0.35,
     lightDirection: [-0.3, -0.4, 0.85],
-    ambientLight: 0.3,
-    rotationSpeed: 1.0,
     isPuzzle: false,
     rows: 3,
     cols: 3,
-    onNodeClick: null
+    height: 350,
+    pointStride: 4,
+    pieceDepth: 8,
+    onNodeClick: null,
+    ...options
   };
-  const cfg = { ...defaultOptions, ...options };
 
-  // Light Vector setup
-  let lx, ly, lz, lLength, normLx, normLy, normLz;
-  function updateLight() {
-    lx = cfg.lightDirection[0];
-    ly = cfg.lightDirection[1];
-    lz = cfg.lightDirection[2];
-    lLength = Math.sqrt(lx*lx + ly*ly + lz*lz);
-    normLx = lx / lLength;
-    normLy = ly / lLength;
-    normLz = lz / lLength;
-  }
-  updateLight();
-
-  let isAssembled = false;
-
-  // 1. Generate Puzzle Grid if requested
   if (cfg.isPuzzle && (!graphData || !graphData.nodes || graphData.nodes.length === 0)) {
-    const rows = cfg.rows;
-    const cols = cfg.cols;
-    const gridData = generatePuzzleGrid(rows, cols);
-
+    const gridData = generatePuzzleGrid(cfg.rows, cfg.cols);
     const colors = [
       "var(--sol-blue)",
       "var(--sol-cyan)",
@@ -494,302 +566,222 @@ export function create3DPieceGraph(container, graphData, options = {}) {
       "var(--sol-magenta)",
       "var(--sol-violet)"
     ];
-
-    const nodes = gridData.map(item => {
-      const id = `p_${item.r}_${item.c}`;
-      const colorIdx = (item.r * cols + item.c) % colors.length;
-      return {
-        id,
-        label: `${item.r + 1},${item.c + 1}`,
-        r: item.r,
-        c: item.c,
-        edges: item.edges,
-        edgeProfiles: item.edgeProfiles,
-        shape: "puzzle",
-        color: colors[colorIdx]
-      };
-    });
-
+    const nodes = gridData.map(item => ({
+      id: `p_${item.r}_${item.c}`,
+      label: `${item.r + 1},${item.c + 1}`,
+      r: item.r,
+      c: item.c,
+      edges: item.edges,
+      edgeProfiles: item.edgeProfiles,
+      shape: "puzzle",
+      color: colors[(item.r * cfg.cols + item.c) % colors.length]
+    }));
     const links = [];
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols - 1; c++) {
-        links.push({ source: `p_${r}_${c}`, target: `p_${r}_${c + 1}` });
-      }
+    for (let r = 0; r < cfg.rows; r++) {
+      for (let c = 0; c < cfg.cols - 1; c++) links.push({ source: `p_${r}_${c}`, target: `p_${r}_${c + 1}` });
     }
-    for (let r = 0; r < rows - 1; r++) {
-      for (let c = 0; c < cols; c++) {
-        links.push({ source: `p_${r}_${c}`, target: `p_${r + 1}_${c}` });
-      }
+    for (let r = 0; r < cfg.rows - 1; r++) {
+      for (let c = 0; c < cfg.cols; c++) links.push({ source: `p_${r}_${c}`, target: `p_${r + 1}_${c}` });
     }
-
     graphData = { nodes, links };
   }
 
-  const cols = Math.max(...graphData.nodes.map(n => n.c ?? 0)) + 1;
-  const rows = Math.max(...graphData.nodes.map(n => n.r ?? 0)) + 1;
+  const nodes = graphData?.nodes || [];
+  const links = graphData?.links || [];
+  const cols = Math.max(1, Math.max(...nodes.map(n => n.c ?? 0)) + 1);
+  const rows = Math.max(1, Math.max(...nodes.map(n => n.r ?? 0)) + 1);
+  let isAssembled = false;
+  let width = targetEl.getBoundingClientRect().width || 600;
+  const height = cfg.height || targetEl.getBoundingClientRect().height || 350;
+  let frameId = null;
 
-  // 2. Prepare nodes 3D meshes & rotations
-  graphData.nodes.forEach(node => {
-    node.rx = Math.random() * 2 * Math.PI;
-    node.ry = Math.random() * 2 * Math.PI;
-    node.rz = Math.random() * 2 * Math.PI;
+  targetEl.style.setProperty("min-height", `${height}px`);
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 5000);
+  camera.position.set(0, 0, 900);
+  camera.lookAt(0, 0, 0);
 
-    node.drx = (Math.random() * 0.015 + 0.005) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
-    node.dry = (Math.random() * 0.015 + 0.005) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
-    node.drz = (Math.random() * 0.01 + 0.002) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setClearAlpha(0);
+  renderer.domElement.className = "w-100 d-block";
+  targetEl.appendChild(renderer.domElement);
 
-    const size = node.size || cfg.nodeSize;
-    node.model3d = get3DModel(node, size);
-  });
+  const overlay = document.createElement("div");
+  overlay.style.setProperty("position", "absolute");
+  overlay.style.setProperty("inset", "0");
+  overlay.style.setProperty("overflow", "hidden");
+  overlay.style.setProperty("pointer-events", "none");
+  targetEl.appendChild(overlay);
 
-  function get3DModel(node, size) {
-    if (node.svgPath) {
-      const sampled = sampleSvgPath(node.svgPath, 36);
-      const scaled = centerAndScalePoints(sampled, size);
-      return extrudePolygon(scaled, size * 0.35);
-    }
+  const ambient = new THREE.AmbientLight(new THREE.Color(resolveCssValue("var(--sol-base2)") || SOL_FALLBACKS.base2), 1.2);
+  scene.add(ambient);
+  const key = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3), 2.5);
+  key.position.set(-120, 160, 300);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-cyan)") || SOL_FALLBACKS.cyan), 0.7);
+  rim.position.set(180, -140, 220);
+  scene.add(rim);
 
-    switch (node.shape) {
-      case "cube":
-        const half = size / 2;
-        return {
-          vertices: [
-            [-half, -half, -half], [half, -half, -half], [half, half, -half], [-half, half, -half],
-            [-half, -half, half], [half, -half, half], [half, half, half], [-half, half, half]
-          ],
-          faces: [
-            [4, 5, 6, 7], // Front
-            [1, 0, 3, 2], // Back
-            [0, 1, 5, 4], // Top
-            [3, 7, 6, 2], // Bottom
-            [0, 4, 7, 3], // Left
-            [1, 2, 6, 5]  // Right
-          ]
-        };
-      case "tetrahedron":
-        const s = size * 0.65;
-        return {
-          vertices: [
-            [s, s, s], [-s, -s, s], [-s, s, -s], [s, -s, -s]
-          ],
-          faces: [
-            [0, 1, 2], [0, 2, 3], [0, 3, 1], [1, 3, 2]
-          ]
-        };
-      case "star":
-        return extrudePolygon(generateStar2D(5, size * 0.22, size * 0.5), size * 0.35);
-      case "gear":
-        return extrudePolygon(generateGear2D(8, size * 0.35, size * 0.5), size * 0.35);
-      case "puzzle":
-        return extrudePolygon(generatePuzzlePieceShape(size, node.edges || [1, -1, 1, -1], node.edgeProfiles), size * 0.32);
-      case "cylinder":
-      case "disk":
-        return extrudePolygon(generateRegularPolygon2D(18, size * 0.5), size * 0.35);
-      case "hexagon":
-        return extrudePolygon(generateRegularPolygon2D(6, size * 0.5), size * 0.35);
-      default:
-        return extrudePolygon(generateRegularPolygon2D(16, size * 0.5), size * 0.35);
-    }
+  const group = new THREE.Group();
+  scene.add(group);
+  const meshById = new Map();
+  const labels = [];
+  const lines = [];
+
+  function randomSpreadPosition(index) {
+    const angle = (index / Math.max(1, nodes.length)) * Math.PI * 2;
+    const radius = cfg.nodeSize * Math.max(cols, rows) * 0.9;
+    return new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, (Math.random() - 0.5) * cfg.nodeSize * 0.35);
   }
 
-  // 3. Initialize ForceGraph
-  const graph = ForceGraph()(targetEl)
-    .graphData(graphData)
-    .backgroundColor('transparent')
-    .cooldownTicks(cfg.cooldownTicks)
-    .linkWidth(cfg.linkWidth)
-    .linkColor(() => isAssembled ? "transparent" : (resolveCssValue("var(--sol-base1)") || SOL_FALLBACKS.base1))
-    .linkDirectionalArrowLength(() => isAssembled ? 0 : 4)
-    .linkDirectionalArrowRelPos(1);
+  function assembledPosition(node) {
+    const spacing = cfg.nodeSize * 1.02;
+    return new THREE.Vector3((node.c - (cols - 1) / 2) * spacing, -((node.r - (rows - 1) / 2) * spacing), 0);
+  }
 
-  const containerRect = targetEl.getBoundingClientRect();
-  graph.width(cfg.width || containerRect.width || 600);
-  graph.height(cfg.height || containerRect.height || 350);
+  nodes.forEach((node, index) => {
+    const size = node.size || cfg.nodeSize;
+    const color = resolveCssValue(node.color || cfg.nodeBg) || SOL_FALLBACKS.blue;
+    const geometry = geometryForPieceNode(node, size, size * 0.22, cfg.pointStride);
+    const material = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.72, metalness: 0.04 });
+    const mesh = new THREE.Mesh(geometry, material);
+    const start = cfg.isPuzzle ? randomSpreadPosition(index) : randomSpreadPosition(index);
+    mesh.position.copy(start);
+    mesh.rotation.set((Math.random() - 0.5) * 0.65, (Math.random() - 0.5) * 0.65, (Math.random() - 0.5) * 0.5);
+    mesh.userData = { node, phase: Math.random() * Math.PI * 2, baseRotation: mesh.rotation.clone() };
+    group.add(mesh);
+    meshById.set(node.id, mesh);
 
-  graph.d3Force('charge').strength(-cfg.nodeSize * 9);
-  graph.d3Force('link')?.distance(cfg.nodeSize * 3.5);
-
-  // Custom Node 3D Canvas drawing
-  graph.nodeCanvasObject((node, ctx, globalScale) => {
-    // 1. Update rotations
-    if (isAssembled) {
-      node.rx = normalizeAngle(node.rx) * 0.8;
-      node.ry = normalizeAngle(node.ry) * 0.8;
-      node.rz = normalizeAngle(node.rz) * 0.8;
-
-      if (Math.abs(node.rx) < 0.001) node.rx = 0;
-      if (Math.abs(node.ry) < 0.001) node.ry = 0;
-      if (Math.abs(node.rz) < 0.001) node.rz = 0;
-    } else {
-      const vx = node.vx || 0;
-      const vy = node.vy || 0;
-      const speedScale = 0.002;
-
-      node.rx = (node.rx + (node.drx || 0.01) + vy * speedScale) % (2 * Math.PI);
-      node.ry = (node.ry + (node.dry || 0.015) + vx * speedScale) % (2 * Math.PI);
-      node.rz = (node.rz + (node.drz || 0.005) + (vx + vy) * 0.5 * speedScale) % (2 * Math.PI);
-    }
-
-    // 2. Rotate all vertices in 3D
-    const cosX = Math.cos(node.rx), sinX = Math.sin(node.rx);
-    const cosY = Math.cos(node.ry), sinY = Math.sin(node.ry);
-    const cosZ = Math.cos(node.rz), sinZ = Math.sin(node.rz);
-
-    const rotatedVertices = node.model3d.vertices.map(v => {
-      // Rotation X
-      let x1 = v[0];
-      let y1 = v[1] * cosX - v[2] * sinX;
-      let z1 = v[1] * sinX + v[2] * cosX;
-
-      // Rotation Y
-      let x2 = x1 * cosY + z1 * sinY;
-      let y2 = y1;
-      let z2 = -x1 * sinY + z1 * cosY;
-
-      // Rotation Z
-      let x3 = x2 * cosZ - y2 * sinZ;
-      let y3 = x2 * sinZ + y2 * cosZ;
-      let z3 = z2;
-
-      return [x3, y3, z3];
-    });
-
-    // 3. Prepare face data (normal and center Z for depth sorting)
-    const facesData = node.model3d.faces.map((faceIndices, faceIndex) => {
-      const faceVertices = faceIndices.map(idx => rotatedVertices[idx]);
-      const [normNx, normNy, normNz] = computeFaceNormal3D(faceVertices);
-
-      let centerZ = 0;
-      faceVertices.forEach(v => centerZ += v[2]);
-      centerZ /= faceVertices.length;
-
-      return {
-        faceIndex,
-        isCap: faceIndex < 2,
-        indices: faceIndices,
-        vertices: faceVertices,
-        normal: [normNx, normNy, normNz],
-        centerZ: centerZ
-      };
-    });
-
-    // 4. Stable rendering order.
-    // Puzzle pieces create many tiny side faces; keep their order stable, but do not draw back faces.
-    const sideFaces = facesData
-      .filter(f => !f.isCap && f.normal[2] > -0.08)
-      .sort((a, b) => a.faceIndex - b.faceIndex);
-    const capFaces = facesData
-      .filter(f => f.isCap && f.normal[2] > -0.08)
-      .sort((a, b) => {
-      const depthA = a.centerZ + (a.isCap ? 0.02 : 0);
-      const depthB = b.centerZ + (b.isCap ? 0.02 : 0);
-      if (Math.abs(depthA - depthB) > 0.0001) return depthA - depthB;
-      return a.faceIndex - b.faceIndex;
-    });
-    const visibleFaces = [...sideFaces, ...capFaces];
-
-    const baseColor = node.color || cfg.nodeBg;
-    const borderColor = node.borderColor || cfg.nodeBorder;
-
-    ctx.save();
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-
-    // 5. Draw each visible face
-    visibleFaces.forEach(face => {
-      const dot = face.normal[0] * normLx + face.normal[1] * normLy + face.normal[2] * normLz;
-      const intensity = cfg.ambientLight + (1 - cfg.ambientLight) * Math.max(0, dot);
-
-      // Project using perspective focal length
-      const projected = face.vertices.map(v => {
-        const d = cfg.cameraDistance;
-        const scale = d / (d - v[2]);
-        return [
-          node.x + v[0] * scale,
-          node.y + v[1] * scale
-        ];
-      });
-
-      ctx.beginPath();
-      ctx.moveTo(projected[0][0], projected[0][1]);
-      for (let i = 1; i < projected.length; i++) {
-        ctx.lineTo(projected[i][0], projected[i][1]);
-      }
-      ctx.closePath();
-
-      ctx.fillStyle = shadeColor(baseColor, intensity);
-      ctx.fill();
-
-      if (face.isCap) {
-        ctx.strokeStyle = resolveCssValue(borderColor) || borderColor;
-        ctx.lineWidth = 0.6 / globalScale;
-        ctx.stroke();
-      }
-    });
-
-    // 6. Draw Label text over the piece
-    if (node.label && !isAssembled) {
-      const fSize = cfg.fontSize / globalScale;
-      ctx.font = `bold ${fSize}px ${cfg.fontFamily}`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      const textWidth = ctx.measureText(node.label).width;
-      ctx.fillStyle = utils.rgba(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3, 0.75);
-      drawRoundedRect(ctx, node.x - textWidth/2 - 2, node.y - fSize/2 - 2, textWidth + 4, fSize + 4, 2);
-      ctx.fill();
-
-      ctx.fillStyle = resolveCssValue(node.textColor || cfg.nodeText) || cfg.nodeText;
-      ctx.fillText(node.label, node.x, node.y);
-    }
-
-    ctx.restore();
+    const label = makeOverlayLabel(node.label || node.id, resolveCssValue(node.textColor || cfg.nodeText) || SOL_FALLBACKS.base3, cfg.fontSize);
+    overlay.appendChild(label);
+    labels.push({ element: label, mesh, offset: new THREE.Vector3(0, 0, size * 0.25) });
   });
 
-  // 4. Expose assembly state and controls
-  graph.assemble = () => {
-    isAssembled = true;
-    graphData.nodes.forEach(node => {
-      if (node.r !== undefined && node.c !== undefined) {
-        node.fx = (node.c - (cols - 1) / 2) * (node.size || cfg.nodeSize);
-        node.fy = (node.r - (rows - 1) / 2) * (node.size || cfg.nodeSize);
-      }
+  links.forEach(link => {
+    const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+    const targetId = typeof link.target === "object" ? link.target.id : link.target;
+    const source = meshById.get(sourceId);
+    const target = meshById.get(targetId);
+    if (!source || !target) return;
+    const geometry = new THREE.BufferGeometry().setFromPoints([source.position.clone(), target.position.clone()]);
+    const material = new THREE.LineBasicMaterial({ color: new THREE.Color(resolveCssValue("var(--sol-base1)") || SOL_FALLBACKS.base1), transparent: true, opacity: 0.45 });
+    const line = new THREE.Line(geometry, material);
+    group.add(line);
+    lines.push({ line, source, target });
+  });
+
+  function updateLines() {
+    lines.forEach(({ line, source, target }) => {
+      line.geometry.setFromPoints([source.position.clone(), target.position.clone()]);
+      line.geometry.attributes.position.needsUpdate = true;
     });
-    graph.d3ReheatSimulation();
-  };
+  }
 
-  graph.disassemble = () => {
-    isAssembled = false;
-    graphData.nodes.forEach(node => {
-      node.fx = null;
-      node.fy = null;
-
-      // Random kick to burst out
-      node.vx = (Math.random() - 0.5) * 60;
-      node.vy = (Math.random() - 0.5) * 60;
-
-      node.drx = (Math.random() * 0.015 + 0.005) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
-      node.dry = (Math.random() * 0.015 + 0.005) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
-      node.drz = (Math.random() * 0.01 + 0.002) * cfg.rotationSpeed * (Math.random() < 0.5 ? 1 : -1);
+  function layoutTargets() {
+    nodes.forEach((node, index) => {
+      const mesh = meshById.get(node.id);
+      if (!mesh) return;
+      mesh.userData.target = isAssembled && node.r !== undefined && node.c !== undefined
+        ? assembledPosition(node)
+        : randomSpreadPosition(index);
     });
-    graph.d3ReheatSimulation();
-  };
+  }
+  layoutTargets();
 
-  graph.isAssembled = () => isAssembled;
+  function resize() {
+    width = targetEl.getBoundingClientRect().width || width || 600;
+    renderer.setSize(width, height);
+    const aspect = width / height;
+    const cameraScale = Math.max(0.55, Math.min(1.75, cfg.cameraDistance / 180));
+    const viewHeight = cfg.nodeSize * Math.max(rows * 1.8, cols / aspect * 1.6, 5) * cameraScale;
+    const viewWidth = viewHeight * aspect;
+    camera.left = -viewWidth / 2;
+    camera.right = viewWidth / 2;
+    camera.top = viewHeight / 2;
+    camera.bottom = -viewHeight / 2;
+    camera.updateProjectionMatrix();
+  }
 
-  graph.updateOptions = (newOpts) => {
-    Object.assign(cfg, newOpts);
-    if (newOpts.lightDirection) {
-      updateLight();
+  function applyLighting() {
+    ambient.intensity = 0.75 + Math.max(0.05, Math.min(0.8, cfg.ambientLight)) * 1.6;
+    const [lx, ly, lz] = cfg.lightDirection || [-0.3, -0.4, 0.85];
+    key.position.set(lx * 400, ly * 400, Math.max(0.2, lz) * 400);
+  }
+
+  function updateLabels() {
+    labels.forEach(({ element, mesh, offset }) => {
+      const screen = projectOverlay(mesh.position.clone().add(offset), camera, width, height);
+      element.style.setProperty("transform", `translate(${screen.x}px, ${screen.y}px) translate(-50%, -50%)`);
+      element.style.setProperty("display", screen.visible ? "block" : "none");
+    });
+  }
+
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(targetEl);
+  applyLighting();
+  resize();
+
+  function animate(time = 0) {
+    const t = time * 0.001;
+    group.children.forEach(child => {
+      if (!child.isMesh) return;
+      const target = child.userData.target || child.position;
+      child.position.lerp(target, 0.08);
+      const phase = child.userData.phase || 0;
+      const base = child.userData.baseRotation;
+      child.rotation.x = base.x + Math.sin(t * cfg.rotationSpeed * 0.7 + phase) * 0.035;
+      child.rotation.y = base.y + Math.cos(t * cfg.rotationSpeed * 0.6 + phase) * 0.035;
+      child.rotation.z = base.z + Math.sin(t * cfg.rotationSpeed * 0.35 + phase) * 0.018;
+    });
+    updateLines();
+    renderer.render(scene, camera);
+    updateLabels();
+    frameId = requestAnimationFrame(animate);
+  }
+  frameId = requestAnimationFrame(animate);
+
+  const graph = {
+    assemble() {
+      isAssembled = true;
+      layoutTargets();
+    },
+    disassemble() {
+      isAssembled = false;
+      layoutTargets();
+    },
+    isAssembled() {
+      return isAssembled;
+    },
+    updateOptions(newOpts = {}) {
+      Object.assign(cfg, newOpts);
+      applyLighting();
+      resize();
+    },
+    destroy() {
+      if (frameId) cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      disposeThreeObject(scene);
+      renderer.dispose();
+      renderer.domElement.remove();
+      overlay.remove();
+      targetEl.innerHTML = "";
     }
   };
 
   if (cfg.onNodeClick) {
-    graph.onNodeClick((node, event) => {
-      cfg.onNodeClick(node, event);
+    renderer.domElement.addEventListener("click", event => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = camera.left + ((event.clientX - rect.left) / Math.max(1, rect.width)) * (camera.right - camera.left);
+      const y = camera.top - ((event.clientY - rect.top) / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+      const nearest = nodes
+        .map(node => ({ node, mesh: meshById.get(node.id) }))
+        .filter(item => item.mesh)
+        .map(item => ({ ...item, d: Math.hypot(item.mesh.position.x - x, item.mesh.position.y - y) }))
+        .sort((a, b) => a.d - b.d)[0];
+      if (nearest && nearest.d <= cfg.nodeSize * 0.8) cfg.onNodeClick(nearest.node, event);
     });
   }
 
   return graph;
 }
-

@@ -980,7 +980,7 @@ createGraph("#conteneur", { nodes, links }, {
 
 ## Pièces 3D et Puzzle Procédural — `create3DPieceGraph`
 
-`create3DPieceGraph(target, graphData, options)` initialise un graphe de force 2D interactif où chaque nœud est dessiné comme un solide 3D extrudé et animé d'une rotation physique continue. Les pièces peuvent être des formes géométriques de base (`cube`, `star`, `gear`, `hexagon`, etc.), des chemins SVG arbitraires `d="..."` échantillonnés dynamiquement, ou une grille de puzzle procédural complète qui s'assemble à la demande.
+`create3DPieceGraph(target, graphData, options)` initialise une scène WebGL interactive où chaque nœud est un vrai solide 3D extrudé. Les pièces peuvent être des formes géométriques de base (`cube`, `star`, `gear`, `hexagon`, etc.), des chemins SVG arbitraires `d="..."` échantillonnés dynamiquement, ou une grille de puzzle procédural complète qui s'assemble à la demande.
 
 ::: {.callout-note collapse="true"}
 ### Options principales de `create3DPieceGraph`
@@ -988,7 +988,7 @@ createGraph("#conteneur", { nodes, links }, {
 ```js
 aptitek.create3DPieceGraph("#conteneur", graphData, {
   nodeSize: 34,                // Taille de base des pièces
-  cameraDistance: 180,         // Focale perspective de la caméra virtuelle
+  cameraDistance: 180,         // Zoom de la caméra orthographique
   lightDirection: [-0.3, -0.4, 0.85], // Vecteur 3D de la source lumineuse
   ambientLight: 0.35,          // Luminosité ambiante minimale (0 à 1)
   rotationSpeed: 1.0,          // Vitesse de rotation par défaut
@@ -1001,19 +1001,19 @@ aptitek.create3DPieceGraph("#conteneur", graphData, {
 
 ### Démonstration interactive
 
-Ajustez la taille du puzzle, la vitesse de rotation et l'éclairage. Cliquez sur **Assembler** pour voir les pièces orienter doucement leurs faces 3D à plat et s'aligner en grille pour s'emboîter parfaitement. Cliquez sur **Désassembler** pour réactiver les forces physiques et disperser les pièces.
+Ajustez la taille du puzzle, la vitesse de rotation et l'éclairage. Cliquez sur **Assembler** pour voir les pièces s'aligner en grille et s'emboîter parfaitement. Cliquez sur **Désassembler** pour les replacer en scène éclatée.
 
 ::: {.card-window}
 #### Visualisation de Pièces 3D {.bi-boxes}
 
 :::: {.tabs}
 ##### Puzzle Procédural {.bi-puzzle-fill}
-::::: {#puzzle-graph-container .chart-container-xl style="height: 380px;"}
-:::::
+:::::: {#puzzle-graph-container .chart-container-xl}
+::::::
 
 ##### Formes SVG {.bi-heart-fill}
-::::: {#svg-graph-container .chart-container-xl style="height: 380px;"}
-:::::
+:::::: {#svg-graph-container .chart-container-xl}
+::::::
 
 ##### Paramètres {.bi-sliders}
 
