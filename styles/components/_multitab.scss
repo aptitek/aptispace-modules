@@ -1,0 +1,44 @@
+/*-- scss:rules --*/
+
+// =============================================================================
+// MULTITAB — ui.multitab() (deprecated, en attente de suppression)
+// =============================================================================
+
+.multitab-container {
+  display: inline-flex;
+  background: var(--sol-base2);
+  border: 1px solid var(--sol-base1);
+  border-radius: 20px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 2px 4px rgba(var(--sol-base03-rgb), 0.05);
+  flex-wrap: wrap;
+}
+
+.multitab-btn {
+  border: none;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 0.85em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  color: var(--sol-base01);
+
+  &.is-active {
+    background: var(--multitab-active-color, var(--sol-blue));
+    color: var(--sol-base3);
+    box-shadow: 0 2px 8px rgba(var(--sol-base03-rgb), 0.15);
+  }
+}
+
+// =============================================================================
+// TOGGLE — ui.toggle()
+// =============================================================================
+
+.toggle-label {
+  font-size: 0.75rem;
+}

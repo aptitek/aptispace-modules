@@ -24,7 +24,7 @@ Chacun possède un identifiant, puis plusieurs informations observées.
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Index {.bi-fingerprint}
 
 L'index est l'**identifiant** de l'individu.
@@ -43,7 +43,7 @@ Comme un numéro de sécurité sociale, il sert à désigner une personne sans a
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Série statistique {.bi-bar-chart}
 
 Une colonne est une **série statistique** : la même information mesurée pour plusieurs individus.
@@ -60,7 +60,7 @@ Une colonne est une **série statistique** : la même information mesurée pour 
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Individu {.bi-person-lines-fill}
 
 Une ligne est un **individu** : tout ce que l'on sait sur une observation.
@@ -105,7 +105,7 @@ On ne fait pas encore de statistiques ici.
 On apprend d'abord à pointer la bonne partie du tableau.
 :::
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Lire une série {.bi-graph-up}
 
 :::: {#df-age-series-graph .chart-container-sm}
@@ -120,7 +120,7 @@ aptitek.createBar("df-age-series-graph", { x: ["d01", "d02", "d03", "d04"], y: [
 Le graphique représente une seule colonne.
 Chaque barre reste attachée à son index : `d03` correspond toujours à Charlie.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Retrouver un individu {.bi-search}
 
 :::: {#df-index-cost-graph .chart-container-sm}
@@ -141,7 +141,7 @@ Pour comprendre un DataFrame, on alterne entre trois niveaux de lecture.
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Sélectionner {.bi-crosshair}
 
 On part d'un identifiant ou d'une condition.
@@ -156,7 +156,7 @@ La question est : **quels individus garder ?**
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Évaluer {.bi-clipboard-data}
 
 On vérifie si une série semble cohérente avant d'aller plus loin.
@@ -171,7 +171,7 @@ La question est : **cette colonne raconte-t-elle quelque chose de plausible ?**
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Comprendre {.bi-puzzle}
 
 On revient à quelques individus pour donner du sens aux chiffres.

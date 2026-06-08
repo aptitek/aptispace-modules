@@ -8,7 +8,7 @@ Un ordinateur ne comprend que des nombres. Pour analyser une phrase, il faut d'a
 
 Les ordinateurs sont d'excellentes machines à calculer, mais ils sont incapables de lire ou de comprendre le texte brut. Pour eux, une phrase n'est qu'une suite arbitraire de caractères.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 ### Le Défi du NLP : Traduire le Langage en Nombres {.bi-translate}
 
 - **Le Problème** : Comment soumettre des phrases à des algorithmes mathématiques (classifieurs, moteurs de recherche, modèles de langage) ? Les mots n'ont pas de valeur numérique intrinsèque.
@@ -16,9 +16,9 @@ Les ordinateurs sont d'excellentes machines à calculer, mais ils sont incapable
 - **La Solution historique** : L'encodage fréquentiel. On commence par simplement compter les mots (**Bag of Words**), puis on affine cette mesure en pénalisant les mots trop banals et en récompensant les termes spécifiques (**TF-IDF**).
 :::
 
-::: {.row .g-4}
+::: {.row gap=4}
 :::: {.col}
-::::: {.card .h-100}
+::::: {.card}
 #### Bag of Words (BoW) — Le Sac de Mots {.bi-boxes}
 
 Le modèle **Bag of Words** ignore complètement l'ordre des mots et la grammaire. Il se contente de collecter tous les mots uniques d'un document et de compter leurs occurrences. Le document devient un simple "sac" de fréquences.
@@ -38,7 +38,7 @@ Le modèle **Bag of Words** ignore complètement l'ordre des mots et la grammair
 ::::
 
 :::: {.col}
-::::: {.card .h-100}
+::::: {.card}
 #### TF-IDF — L'Empreinte Spécifique {.bi-funnel}
 
 Le comptage brut (BoW) a un défaut majeur : les mots les plus fréquents dans une langue (comme "le", "de", "est") polluent le vecteur sans apporter d'information sur le thème. **TF-IDF** corrige cela en combinant deux mesures :
@@ -60,7 +60,7 @@ Le comptage brut (BoW) a un défaut majeur : les mots les plus fréquents dans u
 ::::
 :::
 
-::: {.card-window .mb-4}
+::: {.card-window}
 ### Démonstrateur Interactif : Vecteur BoW vs TF-IDF {.bi-sliders}
 
 :::: {#vector-demo-container}
@@ -88,30 +88,30 @@ La prochaine génération de techniques — les **embeddings denses** comme Word
 
 Visualisez l'impact de l'encodage par sac de mots (BoW) sur la mémoire système. Pour un unique Tweet de 9 mots, le dictionnaire de 100 000 dimensions force la création d'un vecteur gigantesque rempli presque exclusivement de zéros.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Le Mur de la Sparsité (Bag of Words) {.bi-activity}
 
 :::: {.tabs .sparsity-tabset}
 ##### Simulation {.bi-play-circle}
 
-::::: {.row .align-items-center .g-3 .mb-3}
+::::: {.row align=center gap=3 mb=3}
 :::::: {.col}
 ::::::: {#sparsity-tweet}
 :::::::
 ::::::
-:::::: {.col .text-center}
-[Densité du Vecteur]{.density-label .small .text-muted .text-uppercase}
+:::::: {.col .col-centered}
+[Densité du Vecteur]{.density-label}
 [sparsity-comparison]{.progress-ring #sparsity-comparison-ring max=100 label=sparsity-comparison-label color=warning}
 ::::::
 :::::
 
-::::: {.row .g-3 .mt-1}
+::::: {.row gap=3 mt=1}
 :::::: {.col}
 ::::::: {#sparsity-term .terminal}
 #### VecteurSparsitéBoW {.bi-terminal}
 :::::::
 ::::::
-:::::: {.col .d-flex .flex-column .gap-3}
+:::::: {.col .col-stack}
 ::::::: {#sparsity-vu .chart-container-xs}
 :::::::
 ::::::: {#sparsity-history .chart-container-xs}

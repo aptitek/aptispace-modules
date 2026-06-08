@@ -83,7 +83,7 @@ export function createSimulationControl(target, options = {}, invalidation) {
   host.append(playBtn, pauseBtn, stopBtn, restartBtn);
 
   const setVisible = (btn, visible) => {
-    btn.style.display = visible ? "" : "none";
+    btn.classList.toggle("d-none", !visible);
   };
 
   const render = () => {

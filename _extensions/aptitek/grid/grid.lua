@@ -68,6 +68,25 @@ end
 function Div(el)
   -- Case 1: Simple auto-balanced grid system (row with col children)
   if el.classes:includes('row') then
+    -- Translate semantic attributes on .row into Bootstrap utility classes:
+    --   gap=N   → g-N   (Bootstrap gutter)
+    --   align=center/start/end → align-items-{value}
+    --   mb=N    → mb-N
+    --   mt=N    → mt-N
+    for _, attr in ipairs({"gap", "mb", "mt"}) do
+      local val = el.attributes[attr]
+      if val then
+        local prefix = attr == "gap" and "g-" or (attr .. "-")
+        el.classes:insert(prefix .. val)
+        el.attributes[attr] = nil
+      end
+    end
+    local align = el.attributes["align"]
+    if align then
+      el.classes:insert("align-items-" .. align)
+      el.attributes["align"] = nil
+    end
+
     -- Find all direct children that are Divs with class 'col'
     local cols = {}
     for _, child in ipairs(el.content) do
@@ -75,7 +94,7 @@ function Div(el)
         table.insert(cols, child)
       end
     end
-    
+
     local num_cols = #cols
     if num_cols > 0 then
       -- Automatically map column count to standard Bootstrap classes:
@@ -84,19 +103,43 @@ function Div(el)
       -- 3 columns: col-12 col-md-4 (33% each)
       -- 4 columns: col-12 col-md-6 (2x2 grid is best for concept cards)
       -- >=5 columns: col-12 col-md-4 col-lg-3
-      local col_class = "col-12"
+      local default_col_class = "col-12"
       if num_cols == 2 then
-        col_class = "col-12 col-md-6"
+        default_col_class = "col-12 col-md-6"
       elseif num_cols == 3 then
-        col_class = "col-12 col-md-4"
+        default_col_class = "col-12 col-md-4"
       elseif num_cols == 4 then
-        col_class = "col-12 col-md-6"
+        default_col_class = "col-12 col-md-6"
       elseif num_cols >= 5 then
-        col_class = "col-12 col-md-4 col-lg-3"
+        default_col_class = "col-12 col-md-4 col-lg-3"
       end
-      
-      -- Replace simple 'col' class with standard Bootstrap responsive class definitions
+
+      -- Replace simple 'col' class with Bootstrap responsive class definitions.
+      -- span=N    → col-12 col-md-N  (md breakpoint asymmetric column)
+      -- span-lg=N → col-12 col-lg-N  (lg breakpoint asymmetric column)
       for _, col_div in ipairs(cols) do
+        local span = col_div.attributes["span"]
+        local span_lg = col_div.attributes["span-lg"]
+        local col_class
+        if span then
+          col_class = "col-12 col-md-" .. span
+          col_div.attributes["span"] = nil
+        elseif span_lg then
+          col_class = "col-12 col-lg-" .. span_lg
+          col_div.attributes["span-lg"] = nil
+        else
+          col_class = default_col_class
+        end
+
+        -- Translate mb=N / mt=N attributes on individual cols
+        for _, attr in ipairs({"mb", "mt"}) do
+          local val = col_div.attributes[attr]
+          if val then
+            col_div.classes:insert(attr .. "-" .. val)
+            col_div.attributes[attr] = nil
+          end
+        end
+
         local new_classes = {}
         for _, cls in ipairs(col_div.classes) do
           if cls ~= "col" then
@@ -109,7 +152,7 @@ function Div(el)
         col_div.classes = new_classes
       end
     end
-    
+
     return el
   end
 
@@ -165,11 +208,11 @@ function Div(el)
         if is_col then
           table.insert(cols, child)
         else
-          table.insert(cols, pandoc.Div({child}, {class = col_class}))
+          table.insert(cols, pandoc.Div({child}, pandoc.Attr("", {col_class})))
         end
       end
-      
-      local row_div = pandoc.Div(cols, {class = "row"})
+
+      local row_div = pandoc.Div(cols, pandoc.Attr("", {"row"}))
       el.content = {row_div}
     end
     

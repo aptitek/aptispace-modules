@@ -50,7 +50,7 @@ Pour bien comprendre comment nous sommes passés d'un outil déterministe à une
 ::: {.callout-note}
 #### 🌳 Qu'est-ce que l'AST (Abstract Syntax Tree) ?
 
-:::: {.row .align-items-center}
+:::: {.row align=center}
 
 ::::: {.col}
 Dans **l'ère statique**, les outils reposent sur l'**AST** (Arbre Syntaxique Abstrait). C'est une représentation sous forme d'arbre de la structure de votre code.

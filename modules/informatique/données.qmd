@@ -10,8 +10,8 @@ Classifier une variable est la première étape de toute analyse. Cette taxonomi
 
 ::: {.row}
 :::: {.col}
-::::: {.card .h-100}
-#### Nominale [Qualitative]{.badge .bg-info .ms-auto} {.bi-info-circle}
+::::: {.card}
+#### Nominale [Qualitative]{.concept-badge .tag-info} {.bi-info-circle}
 
 :::::: {#plot-nominale .chart-container-xs}
 ::::::
@@ -35,8 +35,8 @@ Catégories ou étiquettes **sans ordre naturel ni hiérarchie**. Les chiffres n
 ::::
 
 :::: {.col}
-::::: {.card .h-100}
-#### Ordinale [Qualitative]{.badge .bg-info .ms-auto} {.bi-sort-alpha-down}
+::::: {.card}
+#### Ordinale [Qualitative]{.concept-badge .tag-info} {.bi-sort-alpha-down}
 
 :::::: {#plot-ordinale .chart-container-xs}
 ::::::
@@ -69,8 +69,8 @@ Catégories dotées d'une **hiérarchie stricte**. La distance mathématique ent
 
 ::: {.row .mt-4}
 :::: {.col}
-::::: {.card .h-100}
-#### Discrète [Quantitative]{.badge .bg-success .ms-auto} {.bi-graph-up-arrow}
+::::: {.card}
+#### Discrète [Quantitative]{.concept-badge .tag-success} {.bi-graph-up-arrow}
 
 :::::: {#plot-discrete .chart-container-xs}
 ::::::
@@ -100,8 +100,8 @@ Valeurs numériques **entières dénombrables**. On compte des unités distincte
 ::::
 
 :::: {.col}
-::::: {.card .h-100}
-#### Continue [Quantitative]{.badge .bg-success .ms-auto} {.bi-bezier2}
+::::: {.card}
+#### Continue [Quantitative]{.concept-badge .tag-success} {.bi-bezier2}
 
 :::::: {#plot-continuous .chart-container-xs}
 ::::::
@@ -165,7 +165,7 @@ C'est toujours le **but final de l'enquête** qui dicte la nature de la variable
 
 ## Classification des Données
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Panneau de brassage des indices {.bi-ethernet}
 
 :::: {#cabling-data .d-none}
@@ -222,15 +222,15 @@ viewof powerOn = createLever("#power-lever", invalidation)
 :::: {#cabling-feedback-panel .terminal .mt-4 .d-none}
 #### Diagnostic du signal {.bi-terminal}
 
-::::: {.feedback-card .feedback-incomplete .terminal-line .text-warning .fw-bold .mb-3}
+::::: {.feedback-card .feedback-incomplete .terminal-line}
 [!] SIGNAL BROUILLÉ : Brassage incomplet. L'analyse ne peut pas démarrer ({{score}}/{{total}} connectés).
 :::::
 
-::::: {.feedback-card .feedback-validated .terminal-line .text-success .fw-bold .mb-3}
+::::: {.feedback-card .feedback-validated .terminal-line}
 [+] DIAGNOSTIC VALIDÉ : Excellent travail, le signal est pur ({{score}}/{{total}} corrects).
 :::::
 
-::::: {.feedback-card .feedback-error .terminal-line .text-danger .fw-bold .mb-3}
+::::: {.feedback-card .feedback-error .terminal-line}
 [-] CONFLIT DE SIGNAL : Des courts-circuits subsistent. Analysez la nature des variables ({{score}}/{{total}} corrects).
 :::::
 
@@ -292,9 +292,9 @@ uiLogic = {
 
 Un nombre sans unité n'a aucune signification concrète. **Documenter et valider l'unité** associée à chaque variable quantitative est une étape critique — souvent négligée avec des conséquences catastrophiques.
 
-::: {.row .mb-4}
-:::: {.col-12 .col-md-7}
-::::: {.card-window .h-100}
+::: {.row mb=4}
+:::: {.col span=7}
+::::: {.card-window}
 #### La Catastrophe de Mars Climate Orbiter (1999) {.bi-rocket}
 
 En 1999, la sonde de la NASA à **328 millions de dollars** a été pulvérisée dans l'atmosphère martienne à cause d'une seule confusion d'unités.
@@ -305,8 +305,8 @@ Un sous-traitant calculait la poussée des moteurs en **unités impériales** (l
 :::::
 ::::
 
-:::: {.col-12 .col-md-5}
-::::: {.card-window .h-100}
+:::: {.col span=5}
+::::: {.card-window}
 #### Même chiffre, valeur physique différente {.bi-bar-chart}
 
 :::::: {#plot-units .chart-container-sm}
@@ -350,7 +350,7 @@ renderUnits = {
 
 Le **domaine** représente l'ensemble des valeurs logiquement admissibles pour une variable. Définir des bornes strictes est la première ligne de défense contre les valeurs aberrantes avant tout traitement algorithmique.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Visualisation d'un domaine — Variable : Âge (années) {.bi-diagram-3}
 
 :::: {#plot-domain .chart-container-sm}
@@ -463,7 +463,7 @@ Toute valeur hors du domaine est soit une erreur de saisie, soit une anomalie à
 
 ## Encodage en Mémoire (RAM)
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Simulateur d'encodage physique {.bi-cpu}
 
 :::: {.tabs .ram-tabset}
@@ -547,7 +547,7 @@ rawInput = Generators.input(document.getElementById('rawInput'))
 ::::
 
 :::: {.ram-byte-template .d-none}
-::::: {.d-flex .flex-column .align-items-center .m-1}
+::::: {.ram-byte-item}
 :::::: {.ram-byte-box class="{{inactiveClass}}" title="Bits: {{binary}}"}
 {{hex}}
 ::::::

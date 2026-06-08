@@ -86,11 +86,19 @@
 .magnify-glass {
   position: absolute;
   z-index: 3;
+  // Taille pilotée par JS via --glass-radius (setProperty)
+  width:  calc(var(--glass-radius, 80px) * 2);
+  height: calc(var(--glass-radius, 80px) * 2);
   border: 2px solid var(--sol-base1);
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(var(--sol-base03-rgb), 0.3), inset 0 0 15px rgba(var(--sol-base03-rgb), 0.4);
-  pointer-events: none; // Laisse passer les clics vers la poignée
+  pointer-events: none;
   transform: translate(-50%, -50%);
+
+  // Transition douce au relâchement ; supprimée pendant le drag via .is-dragging
+  .magnify-wrapper:not(.is-dragging) & {
+    transition: transform 0.1s ease-out;
+  }
 }
 
 .magnify-handle {
@@ -114,7 +122,7 @@
 
 .magnify-scanner {
   position: absolute;
-  top: -10px;
+  top: -10px; // position de repos — JS retire l'inline top au reset
   left: 0;
   width: 100%;
   height: 3px;
@@ -126,5 +134,7 @@
 
   &.is-scanning {
     opacity: 1;
+    // Durée pilotée par JS via --scan-duration (setProperty)
+    transition: top var(--scan-duration, 3000ms) linear;
   }
 }

@@ -6,7 +6,7 @@ Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si l
 
 ## La Pyramide des Vitesses
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Radiographie d'un ordinateur {.bi-cpu}
 
 :::: {.tabs .mem-mobo-tabset}
@@ -14,26 +14,26 @@ Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si l
 
 ::::: {.row}
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 Au repos, toutes vos données (fichiers, scripts, bases de données) dorment sur le **disque**. C'est le stockage le plus lent, mais sa capacité est immense et non volatile — les données survivent à l'extinction.
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Vitesse {.bi-speedometer2}
 
-[]{.progress-bar .bg-danger data-progress=1}
+[]{.progressbar color='danger' data-progress=1}
 
 *Très lente* · [~15 000 ns]{.text-muted}
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Capacité {.bi-database}
 
-[]{.progress-bar .bg-primary data-progress=100}
+[]{.progressbar color='primary' data-progress=100}
 
 *Immense* · [1 TB]{.text-muted}
 :::::::
@@ -44,26 +44,26 @@ Au repos, toutes vos données (fichiers, scripts, bases de données) dorment sur
 
 ::::: {.row}
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 Quand un programme s'exécute, les données passent du disque à la **RAM** — bien plus rapide, mais volatile (vidée à l'extinction) et de capacité limitée.
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Vitesse {.bi-speedometer2}
 
-[]{.progress-bar .bg-warning data-progress=35}
+[]{.progressbar color='warning' data-progress=35}
 
 *Moyenne* · [~60 ns]{.text-muted}
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Capacité {.bi-database}
 
-[]{.progress-bar .bg-primary data-progress=65}
+[]{.progressbar color='primary' data-progress=65}
 
 *Modérée* · [16 GB]{.text-muted}
 :::::::
@@ -74,26 +74,26 @@ Quand un programme s'exécute, les données passent du disque à la **RAM** — 
 
 ::::: {.row}
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 Pour anticiper les besoins du CPU, les données sont pré-chargées en **Cache L3** — un cache partagé entre tous les cœurs du processeur. Très rapide, mais mesuré en mégaoctets.
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Vitesse {.bi-speedometer2}
 
-[]{.progress-bar .bg-success data-progress=70}
+[]{.progressbar color='success' data-progress=70}
 
 *Très rapide* · [~10 ns]{.text-muted}
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Capacité {.bi-database}
 
-[]{.progress-bar .bg-primary data-progress=8}
+[]{.progressbar color='primary' data-progress=8}
 
 *Très faible* · [16 MB]{.text-muted}
 :::::::
@@ -104,26 +104,26 @@ Pour anticiper les besoins du CPU, les données sont pré-chargées en **Cache L
 
 ::::: {.row}
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 Chaque cœur possède ses propres caches **L2** (moyen) et **L1** (ultra-rapide). C'est ici que se joue le **cache hit ou miss** : la donnée est-elle déjà là ?
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Vitesse {.bi-speedometer2}
 
-[]{.progress-bar .bg-success data-progress=95}
+[]{.progressbar color='success' data-progress=95}
 
 *Instantané* · [1 – 3 ns]{.text-muted}
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Capacité {.bi-database}
 
-[]{.progress-bar .bg-primary data-progress=3}
+[]{.progressbar color='primary' data-progress=3}
 
 *Minuscule* · [576 KB]{.text-muted}
 :::::::
@@ -134,26 +134,26 @@ Chaque cœur possède ses propres caches **L2** (moyen) et **L1** (ultra-rapide)
 
 ::::: {.row}
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 Tout en haut : les **registres** du cœur. Ce sont quelques centaines d'octets directement câblés aux unités de calcul. Vitesse maximale, mais on ne peut y stocker que l'opération en cours.
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Vitesse {.bi-speedometer2}
 
-[]{.progress-bar .bg-success data-progress=100}
+[]{.progressbar color='success' data-progress=100}
 
 *Vitesse lumière* · [< 0,3 ns]{.text-muted}
 :::::::
 ::::::
 
 :::::: {.col}
-::::::: {.card .h-100}
+::::::: {.card}
 ##### Capacité {.bi-database}
 
-[]{.progress-bar .bg-primary data-progress=1}
+[]{.progressbar color='primary' data-progress=1}
 
 *Quelques octets* · [512 B]{.text-muted}
 :::::::
@@ -161,7 +161,7 @@ Tout en haut : les **registres** du cœur. Ce sont quelques centaines d'octets d
 :::::
 ::::
 
-:::: {#mem-motherboard-view .motherboard-view .w-100}
+:::: {#mem-motherboard-view .motherboard-view}
 ![](/assets/ui/motherboard.svg){.background}
 ::::
 
@@ -220,7 +220,7 @@ _memMoboUpdate = { memMoboComponent.update(memHardwareState); }
 
 Quand le CPU a besoin d'une donnée, il la cherche dans l'ordre : **L1 → L2 → L3 → RAM**. S'il la trouve au premier essai, c'est un **hit**. Sinon, c'est un **miss** — et chaque niveau supplémentaire coûte un temps précieux.
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Le coût d'un miss {.bi-stopwatch}
 
 Un **Cache Hit** (barre bleue) coûte 3 ns. Un **Cache Miss** oblige le CPU à descendre niveau par niveau — jusqu'à 60 ns en RAM, soit **20× plus lent**.

@@ -40,6 +40,13 @@
     }
 }
 
+.ram-byte-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.25rem;
+}
+
 .ram-byte-box {
     position: relative;
     z-index: 2;

@@ -157,56 +157,24 @@ export const ui = {
   multitab: ({ options = [], value = "", colorClass = "is-info" }) => {
     const container = document.createElement("div");
     container.className = "multitab-container";
-    container.style.cssText = `
-      display: inline-flex;
-      background: var(--sol-base2);
-      border: 1px solid var(--sol-base1);
-      border-radius: 20px;
-      padding: 4px;
-      gap: 4px;
-      margin-bottom: 20px;
-      box-shadow: inset 0 2px 4px rgba(0, 43, 54, 0.05);
-      flex-wrap: wrap;
-    `;
+    const activeColor = colorClass === "is-info" ? "var(--sol-blue)" : "var(--sol-green)";
+    container.style.setProperty("--multitab-active-color", activeColor);
+
     let activeValue = value || options[0] || "";
     container.value = activeValue;
-    const btnColor = colorClass === "is-info" ? "var(--sol-blue)" : "var(--sol-green)";
+
     const buttons = options.map(opt => {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.className = `multitab-btn${opt === activeValue ? " is-active" : ""}`;
       btn.textContent = opt;
-      btn.style.cssText = `
-        border: none;
-        padding: 6px 16px;
-        border-radius: 16px;
-        font-family: inherit;
-        font-size: 0.85em;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        background: transparent;
-        color: var(--sol-base01);
-      `;
-      const setStyle = (isActive) => {
-        if (isActive) {
-          btn.style.background = btnColor;
-          btn.style.color = "var(--sol-base3)";
-          btn.style.boxShadow = "0 2px 8px rgba(0, 43, 54, 0.15)";
-        } else {
-          btn.style.background = "transparent";
-          btn.style.color = "var(--sol-base01);";
-          btn.style.boxShadow = "none";
-        }
-      };
-      setStyle(opt === activeValue);
+      btn.opt = opt;
       btn.addEventListener("click", () => {
         if (container.value === opt) return;
         container.value = opt;
-        buttons.forEach(b => b.setStyle(b.opt === opt));
+        buttons.forEach(b => b.classList.toggle("is-active", b.opt === opt));
         container.dispatchEvent(new Event("input", { bubbles: true }));
       });
-      btn.opt = opt;
-      btn.setStyle = setStyle;
       container.appendChild(btn);
       return btn;
     });
@@ -324,8 +292,7 @@ export const ui = {
 
     if (labelText) {
       const labelEl = document.createElement('span');
-      labelEl.className = 'fw-bold small text-muted text-uppercase';
-      labelEl.style.fontSize = '0.75rem';
+      labelEl.className = 'toggle-label fw-bold small text-muted text-uppercase';
       labelEl.innerText = labelText;
       container.appendChild(labelEl);
     }
@@ -443,7 +410,7 @@ const decorateCodeBlocks = () => {
     // If wrapper is inside a tabset, skip filename/header addition and let tabset handle it!
     if (wrapper.closest(".tab-pane")) {
       const fileDiv = wrapper.querySelector(".code-with-filename-file");
-      if (fileDiv) fileDiv.style.display = "none";
+      if (fileDiv) fileDiv.classList.add("d-none");
       return;
     }
     
@@ -451,7 +418,7 @@ const decorateCodeBlocks = () => {
     const sourceCode = wrapper.querySelector("div.sourceCode");
     if (fileDiv && sourceCode) {
       const filename = fileDiv.textContent.trim();
-      fileDiv.style.display = "none"; // Hide standard Quarto filename label
+      fileDiv.classList.add("d-none"); // Hide standard Quarto filename label
       
       const pre = sourceCode.querySelector("pre");
       if (pre && !pre.dataset.hasHeader) {
@@ -597,7 +564,7 @@ const decorateExerciseHeader = (header) => {
   titleDivs.forEach(div => {
     const text = div.textContent.trim().toLowerCase();
     if (text === "exercise" && div.childNodes.length === 1 && div.childNodes[0].nodeType === Node.TEXT_NODE) {
-      div.style.display = "none";
+      div.classList.add("d-none");
     }
   });
 

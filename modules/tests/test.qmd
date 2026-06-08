@@ -4,8 +4,8 @@ title: "Nature variable"
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Nominale [Qualitative]{.badge .bg-info .float-end} {.bi-info-circle}
+::::: {.card-window}
+#### Nominale [Qualitative]{.concept-badge .tag-info} {.bi-info-circle}
 
 :::::: {#plot-nominale .chart-container-xs}
 ::::::
@@ -29,8 +29,8 @@ Catégories ou étiquettes sans aucun ordre de grandeur ni hiérarchie naturelle
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Ordinale [Qualitative]{.badge .bg-info .float-end} {.bi-sort-alpha-down}
+::::: {.card-window}
+#### Ordinale [Qualitative]{.concept-badge .tag-info} {.bi-sort-alpha-down}
 
 :::::: {#plot-ordinale .chart-container-xs}
 ::::::
@@ -61,10 +61,10 @@ Catégories textuelles dotées d'une hiérarchie stricte et d'une logique de ran
 ::::
 :::
 
-::: {.row .mt-4}
+::: {.row mt=4}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Discrète [Quantitative]{.badge .bg-success .float-end} {.bi-graph-up-arrow}
+::::: {.card-window}
+#### Discrète [Quantitative]{.concept-badge .tag-success} {.bi-graph-up-arrow}
 
 :::::: {#plot-discrete .chart-container-xs}
 ::::::
@@ -94,8 +94,8 @@ Valeurs numériques entières dénombrables. On compte des unités distinctes et
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Continue [Quantitative]{.badge .bg-success .float-end} {.bi-bezier2}
+::::: {.card-window}
+#### Continue [Quantitative]{.concept-badge .tag-success} {.bi-bezier2}
 
 :::::: {#plot-continuous .chart-container-xs}
 ::::::
@@ -139,7 +139,7 @@ Valeurs décimales mesurables sur une échelle infinie. Il existe un nombre infi
 
 ## Cablage
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Panneau de brassage des indices {.bi-ethernet}
 
 :::: {#cabling-data .d-none}
@@ -196,15 +196,15 @@ viewof powerOn = createLever("#power-lever", invalidation)
 :::: {#cabling-feedback-panel .terminal .mt-4 .d-none}
 #### Diagnostic du signal {.bi-terminal}
 
-::::: {.feedback-card .feedback-incomplete .terminal-line .text-warning .fw-bold .mb-3}
+::::: {.feedback-card .feedback-incomplete .terminal-line}
 [!] SIGNAL BROUILLÉ : Brassage incomplet. L'analyse ne peut pas démarrer ({{score}}/{{total}} connectés).
 :::::
 
-::::: {.feedback-card .feedback-validated .terminal-line .text-success .fw-bold .mb-3}
+::::: {.feedback-card .feedback-validated .terminal-line}
 [+] DIAGNOSTIC VALIDÉ : Excellent travail, le signal est pur ({{score}}/{{total}} corrects).
 :::::
 
-::::: {.feedback-card .feedback-error .terminal-line .text-danger .fw-bold .mb-3}
+::::: {.feedback-card .feedback-error .terminal-line}
 [-] CONFLIT DE SIGNAL : Des courts-circuits subsistent. Analysez la nature des variables ({{score}}/{{total}} corrects).
 :::::
 
@@ -264,7 +264,7 @@ uiLogic = {
 
 ## Encodage en Mémoire (RAM)
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Simulateur d'encodage physique {.bi-cpu}
 
 :::: {.tabs .ram-tabset}
@@ -348,7 +348,7 @@ rawInput = Generators.input(document.getElementById('rawInput'))
 ::::
 
 :::: {.ram-byte-template .d-none}
-::::: {.d-flex .flex-column .align-items-center .m-1}
+::::: {.ram-byte-item}
 :::::: {.ram-byte-box class="{{inactiveClass}}" title="Bits: {{binary}}"}
 {{hex}}
 ::::::
@@ -364,7 +364,7 @@ updateRamUI = renderRam(ramData)
 
 ## Stockage Colonnaire vs Ligne (RAM)
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Simulateur de structure RAM : Ligne vs Colonne {.bi-layout-three-columns}
 
 :::: {.tabs .ram-storage-tabset}
@@ -424,26 +424,26 @@ ramTestControl = aptitek.createSimulationControl("#ram-test-ctrl", {
 
 ## Architecture Matérielle & Flux de Données
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Simulateur de flux d'exécution & Hiérarchie Mémoire {.bi-cpu}
 
 :::: {.tabs .mobo-tabset}
 ##### SSD {.bi-hdd-network}
 
-::::: {.row .align-items-center}
-:::::: {.col-12 .col-md-5}
+::::: {.row align=center}
+:::::: {.col span=5}
 Au repos, toutes les données de votre projet (les fichiers CSV, les scripts Python) dorment sur le Disque Dur. C'est le niveau d'accès le plus lent, mais avec une capacité de stockage immense et non volatile (les données restent à l'extinction).
 ::::::
 
-:::::: {.col-12 .col-md-7}
+:::::: {.col span=7}
 ::::::: {.card-window}
 ##### Profil de performance {.bi-bar-chart}
 
-**🟩 Vitesse d'accès**   | []{.progress-bar .bg-danger data-progress=1}
+**🟩 Vitesse d'accès**   | []{.progressbar color='danger' data-progress=1}
 -------------------------|--------------------------------------------|
 *Très Lent*              | [15 000 ns]{.text-muted}
 
-**🟦 Capacité**          | []{.progress-bar .bg-primary data-progress=100}
+**🟦 Capacité**          | []{.progressbar color='primary' data-progress=100}
 -------------------------|--------------------------------------------|
 *Immense*                | [1 TB]{.text-muted}
 :::::::
@@ -452,20 +452,20 @@ Au repos, toutes les données de votre projet (les fichiers CSV, les scripts Pyt
 
 ##### RAM {.bi-memory}
 
-::::: {.row .align-items-center}
-:::::: {.col-12 .col-md-5}
+::::: {.row align=center}
+:::::: {.col span=5}
 Lorsque vous exécutez `pd.read_csv("data.csv")`, les données transitent du SSD vers la RAM sous le contrôle du Chipset. La RAM est beaucoup plus rapide que le SSD, mais elle est volatile (vidée à l'extinction) et sa capacité reste limitée.
 ::::::
 
-:::::: {.col-12 .col-md-7}
+:::::: {.col span=7}
 ::::::: {.card-window}
 ##### Profil de performance {.bi-bar-chart}
 
-**🟩 Vitesse d'accès**   | []{.progress-bar .bg-warning data-progress=35}
+**🟩 Vitesse d'accès**   | []{.progressbar color='warning' data-progress=35}
 -------------------------|--------------------------------------------|
 *Moyenne*                | [60 ns]{.text-muted}
 
-**🟦 Capacité**          | []{.progress-bar .bg-primary data-progress=65}
+**🟦 Capacité**          | []{.progressbar color='primary' data-progress=65}
 -------------------------|--------------------------------------------|
 *Modérée*                | [16 GB]{.text-muted}
 :::::::
@@ -474,20 +474,20 @@ Lorsque vous exécutez `pd.read_csv("data.csv")`, les données transitent du SSD
 
 ##### Cache L3 {.bi-layers-half}
 
-::::: {.row .align-items-center}
-:::::: {.col-12 .col-md-5}
+::::: {.row align=center}
+:::::: {.col span=5}
 Pour devancer les besoins du processeur, les données sont pré-chargées depuis la RAM vers le Cache L3 de la puce. Ce cache est partagé entre tous les cœurs du CPU. Sa vitesse est très élevée, mais sa taille se compte en mégaoctets.
 ::::::
 
-:::::: {.col-12 .col-md-7}
+:::::: {.col span=7}
 ::::::: {.card-window}
 ##### Profil de performance {.bi-bar-chart}
 
-**🟩 Vitesse d'accès**   | []{.progress-bar .bg-success data-progress=70}
+**🟩 Vitesse d'accès**   | []{.progressbar color='success' data-progress=70}
 -------------------------|--------------------------------------------|
 *Très Rapide*            | [10 ns]{.text-muted}
 
-**🟦 Capacité**          | []{.progress-bar .bg-primary data-progress=8}
+**🟦 Capacité**          | []{.progressbar color='primary' data-progress=8}
 -------------------------|--------------------------------------------|
 *Très Faible*            | [16 MB]{.text-muted}
 :::::::
@@ -496,20 +496,20 @@ Pour devancer les besoins du processeur, les données sont pré-chargées depuis
 
 ##### Caches L2 & L1 {.bi-lightning-charge}
 
-::::: {.row .align-items-center}
-:::::: {.col-12 .col-md-5}
+::::: {.row align=center}
+:::::: {.col span=5}
 Pour accélérer encore le traitement, chaque cœur possède ses propres caches dédiés L2 (moyen) et L1 (ultra-rapide). La donnée demandée est descendue au plus près des unités de calcul (Hit) pour éviter l'accès RAM extrêmement pénalisant (Miss).
 ::::::
 
-:::::: {.col-12 .col-md-7}
+:::::: {.col span=7}
 ::::::: {.card-window}
 ##### Profil de performance {.bi-bar-chart}
 
-**🟩 Vitesse d'accès**   | []{.progress-bar .bg-success data-progress=90}
+**🟩 Vitesse d'accès**   | []{.progressbar color='success' data-progress=90}
 -------------------------|--------------------------------------------|
 *Instantané*             | [1 - 3 ns]{.text-muted}
 
-**🟦 Capacité**          | []{.progress-bar .bg-primary data-progress=3}
+**🟦 Capacité**          | []{.progressbar color='primary' data-progress=3}
 -------------------------|--------------------------------------------|
 *Minuscule*              | [576 KB]{.text-muted}
 :::::::
@@ -518,20 +518,20 @@ Pour accélérer encore le traitement, chaque cœur possède ses propres caches 
 
 ##### Registres {.bi-cpu}
 
-::::: {.row .align-items-center}
-:::::: {.col-12 .col-md-5}
+::::: {.row align=center}
+:::::: {.col span=5}
 Tout en haut de la pyramide, les registres internes du cœur traitent les données à la vitesse du processeur (calculs arithmétiques immédiats en moins d'une fraction de nanoseconde). C'est la mémoire ultime en vitesse, mais limitée à quelques octets !
 ::::::
 
-:::::: {.col-12 .col-md-7}
+:::::: {.col span=7}
 ::::::: {.card-window}
 ##### Profil de performance {.bi-bar-chart}
 
-**🟩 Vitesse d'accès**   | []{.progress-bar .bg-success data-progress=100}
+**🟩 Vitesse d'accès**   | []{.progressbar color='success' data-progress=100}
 -------------------------|--------------------------------------------|
 *Vitesse Lumière*        | [< 0.3 ns]{.text-muted}
 
-**🟦 Capacité**          | []{.progress-bar .bg-primary data-progress=1}
+**🟦 Capacité**          | []{.progressbar color='primary' data-progress=1}
 -------------------------|--------------------------------------------|
 *Quelques octets*        | [512 B]{.text-muted}
 :::::::
@@ -602,7 +602,7 @@ updateMotherboardUI = {
 
 ## Diagnostic Machine à États {.bi-cpu}
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Diagnostic Machine à États {.bi-cpu}
 
 :::: {.tabs}
@@ -746,7 +746,7 @@ testSmGraph = {
 
 ## Flux de Tokens interactif (Composant Labeled Text)
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Visualisation Interactive de Texte & Tokens {.bi-tags}
 
 :::: {.tabs}
@@ -754,15 +754,15 @@ testSmGraph = {
 
 Pour un Transformer, le texte brut est illisible : il doit d'abord être découpé en unités d'information (tokens) repérées par des IDs numériques.
 
-::::: {.row .mt-4}
-:::::: {.col-12 .col-lg-8}
-::::::: {.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider}
+::::: {.row mt=4}
+:::::: {.col span-lg=8}
+::::::: {.section-label}
 Flux de Tokens (Capsules)
 :::::::
 ::::::: {#test-token-stream}
 :::::::
 ::::::
-:::::: {.col-12 .col-lg-4 .mt-3 .mt-lg-0}
+:::::: {.col span-lg=4 .col-mt-mobile}
 ::::::: {.card-window}
 ##### Inspecteur de Token {.bi-info-circle}
 

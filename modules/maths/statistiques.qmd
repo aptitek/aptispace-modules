@@ -19,8 +19,8 @@ On peut la lire avec quatre questions très simples :
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Moyenne [Centre]{.badge .bg-info .ms-auto} {.bi-speedometer2}
+::::: {.card-window}
+#### Moyenne [Centre]{.concept-badge .tag-info} {.bi-speedometer2}
 
 :::::: {#stats-mean-graph .chart-container-xs}
 ::::::
@@ -50,8 +50,8 @@ La moyenne est sensible aux valeurs très grandes ou très petites.
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Médiane et quartiles [Position]{.badge .bg-success .ms-auto} {.bi-rulers}
+::::: {.card-window}
+#### Médiane et quartiles [Position]{.concept-badge .tag-success} {.bi-rulers}
 
 :::::: {#stats-quartile-graph .chart-container-xs}
 ::::::
@@ -81,10 +81,10 @@ La zone entre `Q1` et `Q3` contient la partie centrale des données.
 ::::
 :::
 
-::: {.row .mt-4}
+::: {.row mt=4}
 :::: {.col}
-::::: {.card-window .h-100}
-#### Variance [Dispersion]{.badge .bg-warning .ms-auto} {.bi-arrows-angle-expand}
+::::: {.card-window}
+#### Variance [Dispersion]{.concept-badge .tag-warning} {.bi-arrows-angle-expand}
 
 :::::: {#stats-variance-graph .chart-container-xs}
 ::::::
@@ -114,8 +114,8 @@ $$
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
-#### Écart type [Unité lisible]{.badge .bg-primary .ms-auto} {.bi-bullseye}
+::::: {.card-window}
+#### Écart type [Unité lisible]{.concept-badge .tag-primary} {.bi-bullseye}
 
 :::::: {#stats-std-graph .chart-container-xs}
 ::::::
@@ -149,7 +149,7 @@ On peut le lire comme une distance typique autour de la moyenne.
 
 ## Choisir le bon résumé
 
-::: {.card-window .mt-4 .mb-4}
+::: {.card-window}
 #### Panneau de brassage statistique {.bi-ethernet}
 
 :::: {#stats-cabling-data .d-none}
@@ -204,18 +204,18 @@ Reliez chaque indice au bon outil statistique, puis alimentez le panneau pour v�
 viewof statsPowerOn = aptitek.createLever("#stats-power-lever", invalidation)
 ```
 
-:::: {#stats-cabling-feedback .terminal .mt-4 .d-none}
+:::: {#stats-cabling-feedback .terminal .d-none}
 #### Diagnostic statistique {.bi-terminal}
 
-::::: {.feedback-card .feedback-incomplete .terminal-line .text-warning .fw-bold .mb-3}
+::::: {.feedback-card .feedback-incomplete .terminal-line}
 [!] SIGNAL INCOMPLET : toutes les questions ne sont pas encore reliées ({{score}}/{{total}} connectées).
 :::::
 
-::::: {.feedback-card .feedback-validated .terminal-line .text-success .fw-bold .mb-3}
+::::: {.feedback-card .feedback-validated .terminal-line}
 [+] SIGNAL VALIDÉ : les résumés statistiques sont bien associés ({{score}}/{{total}} corrects).
 :::::
 
-::::: {.feedback-card .feedback-error .terminal-line .text-danger .fw-bold .mb-3}
+::::: {.feedback-card .feedback-error .terminal-line}
 [-] SIGNAL BROUILLÉ : certains outils ne répondent pas à la bonne question ({{score}}/{{total}} corrects).
 :::::
 

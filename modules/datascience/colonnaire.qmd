@@ -19,7 +19,7 @@ Pour ranger cette grille, il faut donc choisir un ordre.
 
 ::: {.row}
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Par lignes {.bi-table}
 
 Les valeurs d'un même individu sont rangées côte à côte.
@@ -36,7 +36,7 @@ Cette forme est naturelle quand on ajoute, modifie ou lit une fiche complète.
 ::::
 
 :::: {.col}
-::::: {.card-window .h-100}
+::::: {.card-window}
 #### Par colonnes {.bi-layout-three-columns}
 
 Les valeurs d'une même variable sont rangées côte à côte.
@@ -78,7 +78,7 @@ C'est l'idée derrière les **cache hits** et **cache misses** montrés dans le 
 
 ## Simulateur RAM
 
-::: {.card-window .mb-4}
+::: {.card-window}
 #### Ligne ou colonne ? {.bi-layout-three-columns}
 
 Choisissez un mode de stockage, puis observez le trajet du processeur pour lire toute la colonne `Salaire`.

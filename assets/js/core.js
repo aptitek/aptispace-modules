@@ -404,7 +404,6 @@ export function createTabsetWatcher(tabsetSelector, labelMap, onChange) {
         const icon = document.createElement("i");
         icon.className = `bi ${biClass} me-1`;
         icon.setAttribute("aria-hidden", "true");
-        icon.style.transition = "color 0.15s ease";
         link.prepend(icon);
       }
     });
@@ -478,7 +477,7 @@ export function initTabActions() {
     });
 
     // 3. Hide original container
-    container.style.display = 'none';
+    container.classList.add('d-none');
   });
 }
 

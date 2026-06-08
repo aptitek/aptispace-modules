@@ -38,7 +38,12 @@ Your primary directive is to act as a strict guardian of the project's architect
    * **`bi-icons`** — Injects Bootstrap Icons from `.bi-icon-name` classes at compile time.
    * **`tabs`** — Converts `.tabs` divs into Bootstrap tabsets with control header support.
    * **`ojs-inputs`** — Enhances OJS dynamic input handling.
-   * **`grid`** — Custom grid layout system.
+   * **`grid`** — Custom grid layout system. The `.row` div accepts semantic attributes translated to Bootstrap classes at compile time by the Lua filter — **never write raw Bootstrap utility classes in QMD for layout**:
+     * `gap=N`, `mb=N`, `mt=N` on `.row` → `g-N`, `mb-N`, `mt-N`
+     * `align=center/start/end` on `.row` → `align-items-*`
+     * `span=N` on `.col` → `col-12 col-md-N` (asymmetric md-breakpoint column)
+     * `span-lg=N` on `.col` → `col-12 col-lg-N` (asymmetric lg-breakpoint column)
+     * **Strictly banned in QMD:** `.col-md-N`, `.col-lg-N`, `.g-N`, `.align-items-*`, `.h-100` on cards — use filter attributes or semantic CSS classes instead.
    * **`embed`** — Embed/iframe injection.
    * **`download-fonts`** — Font asset management (Recursive VF, Fira Code).
 
@@ -71,6 +76,8 @@ Your primary directive is to act as a strict guardian of the project's architect
    * **No `style="..."` attributes in QMD divs.** Always use a Bootstrap utility or a CSS class.
    * **No `style="..."` in template literals inside OJS cells.** Extract the DOM to a JS function; use CSS classes + `data-*` attributes for state-driven appearance.
    * **No `el.style.property = value` in JS.** Use `el.style.setProperty("property", value)` for dynamic values. *(Exception: `el.style.width` on Bootstrap `.progress-bar`, and `el.style.cssText` for drag handles or mid-gesture imperative values)*.
+   * **`el.style.display` is banned.** Use `classList.add("d-none")` / `classList.remove("d-none")` / `classList.toggle("d-none", !visible)` instead.
+   * **`el.style.transition` is banned.** Define transitions in CSS. Toggle a state class (`classList.add("is-dragging")`, `classList.remove("is-scanning")`) and let CSS handle the transition on that class.
    * **Dynamic State Colors:** Place a `data-state` attribute on the element, not inline styles. CSS drives the color via `[data-state="danger"] { color: var(--accent-danger); }`.
    * **Dynamic Layout Values:** Use `style.setProperty("--custom-prop", value)` consumed by a CSS rule.
    * **No hardcoded hex colors.** JS: use `var(--sol-*)` strings or `SOL_FALLBACKS.*` for Canvas 2D. SCSS: use `$sol-*` or `var(--sol-*)`. The only permitted hex literals are inside `SOL_FALLBACKS` in `networks.js` and `theme/solarized/variables.scss`.
@@ -79,6 +86,28 @@ Your primary directive is to act as a strict guardian of the project's architect
 2. **Token & Design System:**
     * **Semantic First:** Use semantic tokens, not raw colors (e.g., `var(--accent-danger)` before `var(--sol-red)`).
     * **Bootstrap Utilities First:** If `d-flex`, `gap-3`, `p-3`, `text-muted`, `rounded` cover it, no custom class needed.
+
+3. **Forbidden Bootstrap Utilities in QMD — Mandatory Semantic Replacements:**
+
+   The following patterns are **banned** in `.qmd` files. Each has a project-defined semantic equivalent:
+
+   | Banned pattern | Semantic replacement |
+   | :--- | :--- |
+   | `.h-100` on `.card`/`.card-window` inside `.row` | *Automatic* — CSS rule `.col > .card, .col > .card-window { height: 100% }` |
+   | `.mb-4` on `.card-window` | Remove — cards do not need bottom margin |
+   | `.g-4` on `.row` | `gap=4` attribute on `.row` |
+   | `.align-items-center` on `.row` | `align=center` attribute on `.row` |
+   | `.col-md-N` / `.col-lg-N` | `span=N` / `span-lg=N` attribute on `.col` |
+   | `.d-flex .flex-column .gap-3` in a col | `.col-stack` |
+   | `.text-center` in a col | `.col-centered` |
+   | `.badge .bg-info/.bg-success .ms-auto/.float-end` (heading badge) | `.concept-badge .tag-info/.tag-success/.tag-warning/.tag-primary/.tag-danger` |
+   | `.progress-bar .bg-*` | `.progressbar color='*'` (ojs-inputs Lua filter) |
+   | `.text-warning/.text-success/.text-danger .fw-bold .mb-3` on feedback lines | `.feedback-card .feedback-incomplete/.feedback-validated/.feedback-error` |
+   | `.fw-bold .font-monospace .fs-5 .text-info/.text-success/.text-muted` (metrics) | `.metric-value .metric-info/.metric-success/.metric-muted` |
+   | `.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider` (section label) | `.section-label` |
+   | `.d-flex .flex-column .align-items-center .m-1` (RAM byte item) | `.ram-byte-item` |
+   | `.fw-bold` on injection/label marker | `.injection-label` |
+   | `.mt-3 .mt-lg-0` on a stacked-to-side-by-side col | `.col-mt-mobile` |
     * **Dark Theme:** Overrides belong in the SCSS mixin, not duplicated in `.dark` and `@media (prefers-color-scheme: dark)` separately.
     * **Design Tokens Source:** `theme/solarized/variables.scss` defines the full Solarized palette (`$sol-base03` → `$sol-base3`, accent colors) and Bootstrap semantic mappings (`$primary`, `$success`, etc.). All SCSS rules in `theme/solarized/base.scss` consume these variables.
 
@@ -127,4 +156,5 @@ Your primary directive is to act as a strict guardian of the project's architect
 
 4. **Formatting Normalization:**
     * **Headings:** No manual numbering (Quarto handles this). Keep them simple, concise, and precise. Avoid redundant structures like "Titre : explication du titre".
-    * **Cards, Graphs, and Simulator Titles:** Make them engaging and short. Always start with a relevant emoji (unless already using an icon via .bi-xxxx), but keep the length appropriate for window/card titles.
+    * **Cards, Graphs, and Simulator Titles:** Make them engaging and short. Always start with a relevant emoji (unless already using an icon via `.bi-xxxx`), but keep the length appropriate for window/card titles.
+    * **Emoji vs Icon (Mutually Exclusive):** A heading must **never** have both an emoji in its text AND a `.bi-*` icon class attribute. Use one or the other. Prefer `.bi-*` for card/window titles (compiled to SVG). Emojis are acceptable on standalone section headings (`##`, `###`) that have no icon class.
