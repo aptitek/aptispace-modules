@@ -102,12 +102,12 @@ function buildKvPuzzleData(options = {}) {
       c: gridPiece?.c ?? index % cols,
       edges: gridPiece?.edges || [0, 1, 0, -1],
       edgeProfiles: gridPiece?.edgeProfiles || [],
-      baseRx: (Math.random() - 0.5) * 0.14,
-      baseRy: (Math.random() - 0.5) * 0.14,
-      baseRz: (Math.random() - 0.5) * 0.16,
-      gapX: (Math.random() - 0.5) * 0.12,
-      gapY: (Math.random() - 0.5) * 0.12,
-      gapZ: (Math.random() - 0.5) * 0.035,
+      baseRx: (Math.random() - 0.5) * 0.34,
+      baseRy: (Math.random() - 0.5) * 0.34,
+      baseRz: (Math.random() - 0.5) * 0.28,
+      gapX: (Math.random() - 0.5) * 0.22,
+      gapY: (Math.random() - 0.5) * 0.2,
+      gapZ: (Math.random() - 0.5) * 0.08,
       phase: Math.random() * Math.PI * 2
     };
   });
@@ -171,6 +171,24 @@ function projectToOverlay(position, camera, width, height) {
   };
 }
 
+function distanceToSegment(point, start, end) {
+  const vx = end.x - start.x;
+  const vy = end.y - start.y;
+  const wx = point.x - start.x;
+  const wy = point.y - start.y;
+  const lenSq = vx * vx + vy * vy;
+  const t = lenSq > 0 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / lenSq)) : 0;
+  const px = start.x + t * vx;
+  const py = start.y + t * vy;
+  const dx = point.x - px;
+  const dy = point.y - py;
+  return {
+    distance: Math.sqrt(dx * dx + dy * dy),
+    closest: new THREE.Vector3(px, py, Math.max(start.z, end.z) + 0.28),
+    t
+  };
+}
+
 function disposeObject(object) {
   object.traverse(child => {
     if (child.geometry) child.geometry.dispose();
@@ -195,10 +213,8 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
 
   const data = buildKvPuzzleData(options);
   const pieceSize = options.pieceSize ?? 1;
-  const pieceDepth = options.pieceDepth ?? 0.12;
+  const pieceDepth = options.pieceDepth ?? 0.2;
   const pointStride = options.pointStride ?? 8;
-  const maxConnectionLabels = options.maxConnectionLabels ?? 8;
-  const showNodeScores = options.showNodeScores ?? false;
   const animatePieces = options.animatePieces ?? false;
   const showLines = options.showLines ?? true;
   const showLabels = options.showLabels ?? true;
@@ -209,6 +225,7 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   let labelFrameId = null;
   const pendingLabelBuilders = [];
   const overlayLabels = [];
+  const hoverableLinks = [];
   let overlayWidth = 1;
   let overlayHeight = height;
   targetEl.style.setProperty("min-height", `${height}px`);
@@ -248,6 +265,9 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   const keyLight = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3), 2.8);
   keyLight.position.set(-2.5, 3, 7);
   scene.add(keyLight);
+  const sideLight = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-yellow)") || SOL_FALLBACKS.yellow), 0.45);
+  sideLight.position.set(2.5, 1.5, 3);
+  scene.add(sideLight);
   const rimLight = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-cyan)") || SOL_FALLBACKS.cyan), 0.65);
   rimLight.position.set(4, -3, 5);
   scene.add(rimLight);
@@ -279,8 +299,8 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
       metalness: 0.05
     });
     const mesh = new THREE.Mesh(geometry, material);
-    const x = (node.c - (data.cols - 1) / 2) * pieceSize * 0.92 + node.gapX;
-    const y = -((node.r - (data.rows - 1) / 2) * pieceSize * 0.82 + node.gapY);
+    const x = (node.c - (data.cols - 1) / 2) * pieceSize * 1.08 + node.gapX;
+    const y = -((node.r - (data.rows - 1) / 2) * pieceSize * 0.98 + node.gapY);
     mesh.position.set(x, y, node.gapZ);
     mesh.rotation.set(node.baseRx, node.baseRy, node.baseRz);
     mesh.userData = { node, baseRotation: mesh.rotation.clone() };
@@ -303,13 +323,6 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
 
   });
 
-  const labelledLinks = new Set(
-    data.links
-      .slice()
-      .sort((a, b) => b.product - a.product)
-      .slice(0, maxConnectionLabels)
-  );
-
   if (showLines) data.links.forEach(link => {
     const source = nodeById.get(link.source);
     const target = nodeById.get(link.target);
@@ -328,9 +341,11 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
       opacity: 0.56 + Math.max(0, Math.min(1, t)) * 0.34
     });
     const line = new THREE.Line(geometry, material);
+    link.sourceNode = source;
+    link.targetNode = target;
+    link.line = line;
+    hoverableLinks.push(link);
     board.add(line);
-
-    if (!showLabels || !labelledLinks.has(link)) return;
   });
 
   function drainLabelQueue() {
@@ -379,7 +394,7 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
 
     if (hoveredNode?.mesh) {
       const screen = projectToOverlay(
-        new THREE.Vector3(hoveredNode.mesh.position.x, hoveredNode.mesh.position.y - 0.44, 0.55),
+        hoveredNode.hoverPosition || new THREE.Vector3(hoveredNode.mesh.position.x, hoveredNode.mesh.position.y - 0.44, 0.55),
         camera,
         overlayWidth,
         overlayHeight
@@ -395,8 +410,40 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
     const py = event.clientY - rect.top;
     const worldX = camera.left + (px / Math.max(1, rect.width)) * (camera.right - camera.left);
     const worldY = camera.top - (py / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+    const pointer = new THREE.Vector3(worldX, worldY, 0.24);
+    let nearestLink = null;
+    let nearestLinkHit = null;
+    let nearestLinkDistance = Infinity;
     let nearest = null;
     let nearestDistance = Infinity;
+
+    hoverableLinks.forEach(link => {
+      const source = link.sourceNode?.mesh?.position;
+      const target = link.targetNode?.mesh?.position;
+      if (!source || !target) return;
+      const hit = distanceToSegment(pointer, source, target);
+      if (hit.distance < nearestLinkDistance) {
+        nearestLink = link;
+        nearestLinkHit = hit;
+        nearestLinkDistance = hit.distance;
+      }
+    });
+
+    if (nearestLink && nearestLinkHit && nearestLinkDistance <= pieceSize * 0.13 && nearestLinkHit.t > 0.12 && nearestLinkHit.t < 0.88) {
+      const source = nearestLink.sourceNode;
+      const target = nearestLink.targetNode;
+      const forward = (source.q ?? 0) * (target.k ?? 0);
+      const backward = (target.q ?? 0) * (source.k ?? 0);
+      hoveredNode = {
+        mesh: source.mesh,
+        hoverPosition: nearestLinkHit.closest,
+        strength: Math.max(0, Math.min(1, (Math.max(forward, backward) - data.minScore) / data.scoreRange))
+      };
+      hoverLabel.textContent = `${source.label} → ${target.label}\nq=${source.q} k=${target.k} q×k=${forward}\n${target.label} → ${source.label}\nq=${target.q} k=${source.k} q×k=${backward}`;
+      hoverLabel.style.setProperty("color", scoreColor(hoveredNode.strength));
+      renderer.domElement.style.setProperty("cursor", "pointer");
+      return;
+    }
 
     data.nodes.forEach(node => {
       if (!node.mesh) return;
@@ -417,7 +464,7 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
     }
 
     hoveredNode = nearest;
-    hoverLabel.textContent = `q=${nearest.q}\nk=${nearest.k}\nq×k=${nearest.q * nearest.k}\nmax=${Math.round(nearest.score)}`;
+    hoverLabel.textContent = `${nearest.label}\nmax=${Math.round(nearest.score)}`;
     hoverLabel.style.setProperty("color", scoreColor(nearest.strength));
     renderer.domElement.style.setProperty("cursor", "pointer");
 
