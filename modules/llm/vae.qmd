@@ -86,7 +86,6 @@ Pendant l'entraînement, cette erreur remonte dans le réseau : les paramètres 
 :::::
 ::::
 
-
 ```{ojs}
 //| echo: false
 
@@ -262,8 +261,8 @@ Déplacez le vecteur continu de sortie d'encodeur (cercle bleu) pour observer co
 :::::
 ::::: {.col}
 :::::: {#vq-metrics-target .metrics}
-| Vecteur continu | Code VQ (k*) | Distance Euclidienne |
-| :-------------- | :----------- | :------------------- |
+| Vecteur continu                                                     | Code VQ (k*)                                                         | Distance Euclidienne                                                   |
+| :------------------------------------------------------------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------- |
 | [—]{data-metric="vector" .fw-bold .font-monospace .fs-5 .text-info} | [—]{data-metric="code" .fw-bold .font-monospace .fs-5 .text-success} | [—]{data-metric="distance" .fw-bold .font-monospace .fs-5 .text-muted} |
 ::::::
 :::::: {.small .text-muted}

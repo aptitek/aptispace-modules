@@ -1,0 +1,49 @@
+---
+title: "Le Scaled Dot-Product Attention"
+---
+
+Un **Transformer** ne lit pas seulement une phrase de gauche à droite. Il regarde les mots ensemble et construit une **carte de relations**.
+
+Ici, on suit une version simplifiée de la phrase :
+
+> **Le chat mange car il a faim**
+
+## L'attention
+
+L'attention répond à une question simple : **quels tokens aident le mieux à comprendre le token que je suis en train d'étudier ?**
+
+::: {.callout-note}
+Un **token** est un morceau de texte manipulé par le modèle. Dans cette page, pour rester lisible, on utilise un token par mot.
+:::
+
+## Carte d'attention
+
+::: {.card-window}
+#### 🗺️ Qui regarde qui ? {.bi-diagram-3}
+
+La phrase commence assemblée à plat : les pièces s'emboîtent comme un puzzle. Cliquez sur **Désassembler** pour passer en carte circulaire, puis cliquez sur un mot pour afficher les tokens qu'il regarde le plus fortement.
+
+:::: {#attention-token-graph .chart-container-xxl}
+::::
+:::
+
+```{ojs}
+//| echo: false
+attentionTokenGraph = aptitek.createAttentionTokenGraph("#attention-token-graph", {}, invalidation)
+```
+
+Quand vous cliquez sur **mange**, le modèle regarde surtout **chat**, **faim** et **il**. Cela lui donne des indices sur le sujet de l'action, sa cause, et le pronom qui renvoie au chat.
+
+## Le produit scalaire normalisé
+
+Dans un vrai Transformer, chaque token possède une **requête**, une **clé** et une **valeur**. La requête d'un token est comparée aux clés des autres tokens. Plus la comparaison est forte, plus le lien d'attention est fort.
+
+::: {.callout-note collapse="true"}
+### Formule
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$
+
+La division par $\sqrt{d_k}$ évite que les scores deviennent trop grands avant le softmax.
+:::

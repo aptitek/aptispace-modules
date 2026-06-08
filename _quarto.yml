@@ -27,17 +27,7 @@ website:
   sidebar:
     style: "docked"
     search: false
-    contents:
-      - section: "🤖 Intelligence Artificielle"
-        contents: modules/ia/*.qmd
-      - section: "📊 Data Science"
-        contents: modules/datascience/*.qmd
-      - section: "🧮 Mathématiques"
-        contents: modules/maths/*.qmd
-      - section: "💻 Informatique"
-        contents: modules/informatique/*.qmd
-      - section: "🏗️ Architecture"
-        contents: modules/architecture/*.qmd
+    contents: auto
 
 format:
   html:

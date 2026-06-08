@@ -692,19 +692,19 @@ aptitek.createSvgDistanceHandle("#conteneur", {
 ```
 :::
 
-:::: {.card-window}
+::: {.card-window}
 ### Poignée libre {.bi-crosshair}
 
 Déplacez la poignée jaune : elle reste libre dans tout le SVG, tandis que `alpha`
 est recalculé à partir des distances aux deux ancres.
 
-::::: {#demo-distance-handle .chart-container-sm}
-:::::
+:::: {#demo-distance-handle .chart-container-sm}
+::::
 
 ```{ojs}
 demoDistanceHandle = aptitek.createSvgDistanceHandle("#demo-distance-handle", {}, invalidation)
 ```
-::::
+:::
 
 ## Graphiques Plotly — `createBar` · `createLine` · `createFunnel` · `createPiramid`
 
@@ -1008,14 +1008,15 @@ Ajustez la taille du puzzle, la vitesse de rotation et l'éclairage. Cliquez sur
 
 :::: {.tabs}
 ##### Puzzle Procédural {.bi-puzzle-fill}
-::: {#puzzle-graph-container .chart-container-xl style="height: 380px;"}
-:::
+::::: {#puzzle-graph-container .chart-container-xl style="height: 380px;"}
+:::::
 
 ##### Formes SVG {.bi-heart-fill}
-::: {#svg-graph-container .chart-container-xl style="height: 380px;"}
-:::
+::::: {#svg-graph-container .chart-container-xl style="height: 380px;"}
+:::::
 
 ##### Paramètres {.bi-sliders}
+
 - [Taille de Grille]{.select #puzzle-size options="2x2,3x3,4x4,5x5" value="3x3"}
 - [Vitesse Rotation]{.slider #puzzle-rot value=1.0 min=0.0 max=3.0 step=0.1}
 - [Éclairage Ambiant]{.slider #puzzle-ambient value=0.35 min=0.05 max=0.8 step=0.05}
@@ -1043,7 +1044,7 @@ puzzleRowsCols = {
 puzzleGraph = {
   const rows = puzzleRowsCols.rows;
   const cols = puzzleRowsCols.cols;
-  
+
   const graph = aptitek.create3DPieceGraph("#puzzle-graph-container", null, {
     isPuzzle: true,
     rows: rows,
@@ -1054,7 +1055,7 @@ puzzleGraph = {
     cameraDistance: 180,
     height: 360
   });
-  
+
   invalidation.then(() => graph.destroy && graph.destroy());
   return graph;
 }
@@ -1086,7 +1087,7 @@ svgGraph = {
     cameraDistance: 180,
     height: 360
   });
-  
+
   invalidation.then(() => graph.destroy && graph.destroy());
   return graph;
 }
@@ -1095,7 +1096,7 @@ svgGraph = {
 paramsUpdater = {
   const pg = puzzleGraph;
   const sg = svgGraph;
-  
+
   if (pg && pg.updateOptions) {
     pg.updateOptions({
       rotationSpeed: puzzle_rot,
@@ -1123,4 +1124,3 @@ disassembleTrigger = {
   if (puzzleGraph) puzzleGraph.disassemble();
 }
 ```
-

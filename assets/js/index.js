@@ -50,7 +50,8 @@ export {
   createCabling,
   createRamStorageGraph,
   renderStateMachineGraph,
-  create3DPieceGraph
+  create3DPieceGraph,
+  createAttentionTokenGraph
 } from "./networks.js";
 
 export {
