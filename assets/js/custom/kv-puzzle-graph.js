@@ -1,0 +1,476 @@
+// ==========================================
+// kv-puzzle-graph.js - Scores QK en puzzle WebGL
+// ==========================================
+import * as THREE from "https://esm.sh/three";
+import { resolveCssValue } from "../core.js";
+import { SOL_FALLBACKS } from "../networks.js";
+import { generatePuzzleGrid, generatePuzzlePieceShape } from "../networks3d.js";
+
+function interpolateHexColor(fromHex, toHex, t) {
+  const from = fromHex.slice(1);
+  const to = toHex.slice(1);
+  const r = Math.round(parseInt(from.slice(0, 2), 16) + (parseInt(to.slice(0, 2), 16) - parseInt(from.slice(0, 2), 16)) * t);
+  const g = Math.round(parseInt(from.slice(2, 4), 16) + (parseInt(to.slice(2, 4), 16) - parseInt(from.slice(2, 4), 16)) * t);
+  const b = Math.round(parseInt(from.slice(4, 6), 16) + (parseInt(to.slice(4, 6), 16) - parseInt(from.slice(4, 6), 16)) * t);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function scoreColor(strength) {
+  const t = Math.max(0, Math.min(1, strength));
+  if (t < 0.34) {
+    return interpolateHexColor(SOL_FALLBACKS.base1, SOL_FALLBACKS.cyan, t / 0.34);
+  }
+  if (t < 0.72) {
+    return interpolateHexColor(SOL_FALLBACKS.cyan, SOL_FALLBACKS.yellow, (t - 0.34) / 0.38);
+  }
+  return interpolateHexColor(SOL_FALLBACKS.yellow, SOL_FALLBACKS.orange, (t - 0.72) / 0.28);
+}
+
+function makePuzzleShape(points) {
+  const shape = new THREE.Shape();
+  points.forEach(([x, y], index) => {
+    if (index === 0) {
+      shape.moveTo(x, -y);
+      return;
+    }
+    shape.lineTo(x, -y);
+  });
+  shape.closePath();
+  return shape;
+}
+
+function simplifyOutlinePoints(points, stride = 2) {
+  const step = Math.max(1, Math.floor(stride));
+  if (step === 1 || points.length < 24) return points;
+  const simplified = points.filter((_, index) => index % step === 0);
+  return simplified.length >= 12 ? simplified : points;
+}
+
+function makeDomLabel(text, { color, size, backgroundColor = null }) {
+  const label = document.createElement("div");
+  label.className = "kv-puzzle-label";
+  label.textContent = text;
+  label.style.setProperty("position", "absolute");
+  label.style.setProperty("left", "0");
+  label.style.setProperty("top", "0");
+  label.style.setProperty("transform", "translate(-50%, -50%)");
+  label.style.setProperty("padding", "0.12rem 0.28rem");
+  label.style.setProperty("border-radius", "0.35rem");
+  label.style.setProperty("font-family", resolveCssValue("var(--font-code)") || "Consolas, monospace");
+  label.style.setProperty("font-size", `${size}px`);
+  label.style.setProperty("font-weight", "700");
+  label.style.setProperty("line-height", "1.12");
+  label.style.setProperty("white-space", "pre");
+  label.style.setProperty("text-align", "center");
+  label.style.setProperty("pointer-events", "none");
+  label.style.setProperty("color", color);
+  if (backgroundColor) {
+    label.style.setProperty("background-color", backgroundColor);
+  }
+  return label;
+}
+
+function buildKvPuzzleData(options = {}) {
+  const tokens = options.tokens || [
+    "Le", "petit", "chat", "curieux", "observe", "la", "fenêtre", "quand",
+    "la", "pluie", "tombe", "sur", "les", "tuiles", "rouges", "du",
+    "vieux", "toit", "pendant", "que", "la", "lampe", "éclaire", "doucement",
+    "son", "bol", "vide", "près", "du", "canapé", "bleu", "calme"
+  ];
+  const rows = options.rows ?? 4;
+  const cols = options.cols ?? 8;
+  const expectedTokenCount = rows * cols;
+  const boardTokens = tokens.slice(0, expectedTokenCount);
+  while (boardTokens.length < expectedTokenCount) {
+    boardTokens.push(`tok${boardTokens.length + 1}`);
+  }
+
+  const qValues = options.qValues || boardTokens.map((_, index) => 8 + ((index * 7 + 11) % 23));
+  const kValues = options.kValues || boardTokens.map((_, index) => 7 + ((index * 5 + 17) % 19));
+  const grid = generatePuzzleGrid(rows, cols);
+  const nodes = boardTokens.map((token, index) => {
+    const gridPiece = grid[index];
+    return {
+      id: `${token}-${index}`,
+      label: token,
+      q: qValues[index] ?? 0,
+      k: kValues[index] ?? 0,
+      score: 0,
+      strength: 0,
+      index,
+      r: gridPiece?.r ?? Math.floor(index / cols),
+      c: gridPiece?.c ?? index % cols,
+      edges: gridPiece?.edges || [0, 1, 0, -1],
+      edgeProfiles: gridPiece?.edgeProfiles || [],
+      baseRx: (Math.random() - 0.5) * 0.14,
+      baseRy: (Math.random() - 0.5) * 0.14,
+      baseRz: (Math.random() - 0.5) * 0.16,
+      gapX: (Math.random() - 0.5) * 0.12,
+      gapY: (Math.random() - 0.5) * 0.12,
+      gapZ: (Math.random() - 0.5) * 0.035,
+      phase: Math.random() * Math.PI * 2
+    };
+  });
+
+  const links = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const sourceIndex = r * cols + c;
+      if (c < cols - 1) {
+        const targetIndex = sourceIndex + 1;
+        const q = qValues[sourceIndex] ?? 0;
+        const k = kValues[targetIndex] ?? 0;
+        links.push({
+          source: nodes[sourceIndex].id,
+          target: nodes[targetIndex].id,
+          sourceIndex,
+          targetIndex,
+          q,
+          k,
+          product: q * k
+        });
+      }
+      if (r < rows - 1) {
+        const targetIndex = sourceIndex + cols;
+        const q = qValues[sourceIndex] ?? 0;
+        const k = kValues[targetIndex] ?? 0;
+        links.push({
+          source: nodes[sourceIndex].id,
+          target: nodes[targetIndex].id,
+          sourceIndex,
+          targetIndex,
+          q,
+          k,
+          product: q * k
+        });
+      }
+    }
+  }
+
+  const products = links.map(link => link.product);
+  const minScore = Math.min(...products);
+  const maxScore = Math.max(...products);
+  const scoreRange = Math.max(1, maxScore - minScore);
+  nodes.forEach(node => {
+    const relatedProducts = links
+      .filter(link => link.source === node.id || link.target === node.id)
+      .map(link => link.product);
+    node.score = Math.max(...relatedProducts, 0);
+    node.strength = (node.score - minScore) / scoreRange;
+  });
+
+  return { rows, cols, nodes, links, minScore, scoreRange };
+}
+
+function projectToOverlay(position, camera, width, height) {
+  const projected = position.clone().project(camera);
+  return {
+    x: (projected.x * 0.5 + 0.5) * width,
+    y: (-projected.y * 0.5 + 0.5) * height,
+    visible: projected.z >= -1 && projected.z <= 1
+  };
+}
+
+function disposeObject(object) {
+  object.traverse(child => {
+    if (child.geometry) child.geometry.dispose();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.filter(Boolean).forEach(material => {
+      if (material.map) material.map.dispose();
+      material.dispose?.();
+    });
+  });
+}
+
+/**
+ * Puzzle board that shows raw Q·K scores before softmax normalization.
+ */
+export function createKvPuzzleGraph(container, options = {}, invalidation = null) {
+  const targetEl = typeof container === "string" ? document.querySelector(container) : container;
+  if (!targetEl) {
+    console.warn("createKvPuzzleGraph: Target container not found.", container);
+    return null;
+  }
+  targetEl.innerHTML = "";
+
+  const data = buildKvPuzzleData(options);
+  const pieceSize = options.pieceSize ?? 1;
+  const pieceDepth = options.pieceDepth ?? 0.12;
+  const pointStride = options.pointStride ?? 8;
+  const maxConnectionLabels = options.maxConnectionLabels ?? 8;
+  const showNodeScores = options.showNodeScores ?? false;
+  const animatePieces = options.animatePieces ?? false;
+  const showLines = options.showLines ?? true;
+  const showLabels = options.showLabels ?? true;
+  const height = options.height ?? Math.max(targetEl.getBoundingClientRect().height || 0, 520);
+  const backgroundColor = resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3;
+  const textColor = resolveCssValue("var(--sol-base03)") || SOL_FALLBACKS.base03;
+  let frameId = null;
+  let labelFrameId = null;
+  const pendingLabelBuilders = [];
+  const overlayLabels = [];
+  let overlayWidth = 1;
+  let overlayHeight = height;
+  targetEl.style.setProperty("min-height", `${height}px`);
+  targetEl.style.setProperty("position", "relative");
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 50);
+  camera.position.set(0, 0, 9);
+  camera.lookAt(0, 0, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setClearAlpha(0);
+  renderer.domElement.className = "w-100 d-block";
+  targetEl.appendChild(renderer.domElement);
+
+  const overlay = document.createElement("div");
+  overlay.className = "kv-puzzle-label-layer";
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.style.setProperty("position", "absolute");
+  overlay.style.setProperty("inset", "0");
+  overlay.style.setProperty("pointer-events", "none");
+  overlay.style.setProperty("overflow", "hidden");
+  targetEl.appendChild(overlay);
+
+  const hoverLabel = makeDomLabel("", {
+    color: textColor,
+    size: 10,
+    backgroundColor
+  });
+  hoverLabel.style.setProperty("display", "none");
+  overlay.appendChild(hoverLabel);
+  let hoveredNode = null;
+
+  const ambient = new THREE.AmbientLight(new THREE.Color(resolveCssValue("var(--sol-base2)") || SOL_FALLBACKS.base2), 1.45);
+  scene.add(ambient);
+  const keyLight = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3), 2.8);
+  keyLight.position.set(-2.5, 3, 7);
+  scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(new THREE.Color(resolveCssValue("var(--sol-cyan)") || SOL_FALLBACKS.cyan), 0.65);
+  rimLight.position.set(4, -3, 5);
+  scene.add(rimLight);
+
+  const board = new THREE.Group();
+  scene.add(board);
+
+  const enqueueLabel = builder => {
+    pendingLabelBuilders.push(builder);
+  };
+
+  const nodeById = new Map(data.nodes.map(node => [node.id, node]));
+  data.nodes.forEach(node => {
+    const rawPoints = generatePuzzlePieceShape(pieceSize, node.edges, node.edgeProfiles);
+    const points = simplifyOutlinePoints(rawPoints, pointStride);
+    const shape = makePuzzleShape(points);
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: pieceDepth,
+      bevelEnabled: options.bevelEnabled ?? false,
+      bevelThickness: 0.012,
+      bevelSize: 0.012,
+      bevelSegments: 1,
+      curveSegments: 1
+    });
+    geometry.center();
+    const material = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(scoreColor(node.strength)),
+      roughness: 0.72,
+      metalness: 0.05
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    const x = (node.c - (data.cols - 1) / 2) * pieceSize * 0.92 + node.gapX;
+    const y = -((node.r - (data.rows - 1) / 2) * pieceSize * 0.82 + node.gapY);
+    mesh.position.set(x, y, node.gapZ);
+    mesh.rotation.set(node.baseRx, node.baseRy, node.baseRz);
+    mesh.userData = { node, baseRotation: mesh.rotation.clone() };
+    board.add(mesh);
+    node.mesh = mesh;
+
+    if (showLabels) {
+      enqueueLabel(() => {
+        const wordLabel = makeDomLabel(node.label, {
+          color: textColor,
+          size: 12,
+          backgroundColor
+        });
+        return {
+          element: wordLabel,
+          position: new THREE.Vector3(x, y + 0.07, 0.18)
+        };
+      });
+    }
+
+  });
+
+  const labelledLinks = new Set(
+    data.links
+      .slice()
+      .sort((a, b) => b.product - a.product)
+      .slice(0, maxConnectionLabels)
+  );
+
+  if (showLines) data.links.forEach(link => {
+    const source = nodeById.get(link.source);
+    const target = nodeById.get(link.target);
+    if (!source?.mesh || !target?.mesh) return;
+    const t = (link.product - data.minScore) / data.scoreRange;
+    const color = scoreColor(t);
+    const start = source.mesh.position;
+    const end = target.mesh.position;
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(start.x, start.y, 0.24),
+      new THREE.Vector3(end.x, end.y, 0.24)
+    ]);
+    const material = new THREE.LineBasicMaterial({
+      color: new THREE.Color(color),
+      transparent: true,
+      opacity: 0.56 + Math.max(0, Math.min(1, t)) * 0.34
+    });
+    const line = new THREE.Line(geometry, material);
+    board.add(line);
+
+    if (!showLabels || !labelledLinks.has(link)) return;
+  });
+
+  function drainLabelQueue() {
+    const batchSize = options.labelBatchSize ?? 4;
+    for (let i = 0; i < batchSize && pendingLabelBuilders.length > 0; i++) {
+      const label = pendingLabelBuilders.shift()();
+      overlay.appendChild(label.element);
+      overlayLabels.push(label);
+    }
+    if (pendingLabelBuilders.length > 0) {
+      labelFrameId = requestAnimationFrame(drainLabelQueue);
+    } else {
+      labelFrameId = null;
+    }
+  }
+
+  function resize() {
+    const rect = targetEl.getBoundingClientRect();
+    const width = Math.max(1, rect.width || 860);
+    renderer.setSize(width, height);
+    overlayWidth = width;
+    overlayHeight = height;
+    const aspect = width / height;
+    const boardWidth = data.cols * pieceSize * 1.08;
+    const boardHeight = data.rows * pieceSize * 1.05;
+    const viewHeight = Math.max(boardHeight, boardWidth / aspect) * 1.25;
+    const viewWidth = viewHeight * aspect;
+    camera.left = -viewWidth / 2;
+    camera.right = viewWidth / 2;
+    camera.top = viewHeight / 2;
+    camera.bottom = -viewHeight / 2;
+    camera.updateProjectionMatrix();
+
+  }
+
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(targetEl);
+  resize();
+
+  function updateOverlayLabels() {
+    overlayLabels.forEach(label => {
+      const screen = projectToOverlay(label.position, camera, overlayWidth, overlayHeight);
+      label.element.style.setProperty("transform", `translate(${screen.x}px, ${screen.y}px) translate(-50%, -50%)`);
+      label.element.style.setProperty("display", screen.visible ? "block" : "none");
+    });
+
+    if (hoveredNode?.mesh) {
+      const screen = projectToOverlay(
+        new THREE.Vector3(hoveredNode.mesh.position.x, hoveredNode.mesh.position.y - 0.44, 0.55),
+        camera,
+        overlayWidth,
+        overlayHeight
+      );
+      hoverLabel.style.setProperty("transform", `translate(${screen.x}px, ${screen.y}px) translate(-50%, -50%)`);
+      hoverLabel.style.setProperty("display", screen.visible ? "block" : "none");
+    }
+  }
+
+  function selectHoveredNode(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const py = event.clientY - rect.top;
+    const worldX = camera.left + (px / Math.max(1, rect.width)) * (camera.right - camera.left);
+    const worldY = camera.top - (py / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+    let nearest = null;
+    let nearestDistance = Infinity;
+
+    data.nodes.forEach(node => {
+      if (!node.mesh) return;
+      const dx = node.mesh.position.x - worldX;
+      const dy = node.mesh.position.y - worldY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < nearestDistance) {
+        nearest = node;
+        nearestDistance = distance;
+      }
+    });
+
+    if (!nearest || nearestDistance > pieceSize * 0.58) {
+      hoveredNode = null;
+      hoverLabel.style.setProperty("display", "none");
+      renderer.domElement.style.setProperty("cursor", "default");
+      return;
+    }
+
+    hoveredNode = nearest;
+    hoverLabel.textContent = `q=${nearest.q}\nk=${nearest.k}\nq×k=${nearest.q * nearest.k}\nmax=${Math.round(nearest.score)}`;
+    hoverLabel.style.setProperty("color", scoreColor(nearest.strength));
+    renderer.domElement.style.setProperty("cursor", "pointer");
+
+  }
+
+  function clearHoveredNode() {
+    hoveredNode = null;
+    hoverLabel.style.setProperty("display", "none");
+    renderer.domElement.style.setProperty("cursor", "default");
+  }
+
+  renderer.domElement.addEventListener("pointermove", selectHoveredNode);
+  renderer.domElement.addEventListener("pointerleave", clearHoveredNode);
+
+  function animate(time = 0) {
+    const t = time * 0.001;
+    if (animatePieces) {
+      board.children.forEach(child => {
+        const node = child.userData?.node;
+        const baseRotation = child.userData?.baseRotation;
+        if (!node || !baseRotation) return;
+        child.rotation.x = baseRotation.x + Math.sin(t * 0.8 + node.phase) * 0.025;
+        child.rotation.y = baseRotation.y + Math.cos(t * 0.7 + node.phase) * 0.025;
+        child.rotation.z = baseRotation.z + Math.sin(t * 0.5 + node.phase) * 0.01;
+      });
+    }
+    renderer.render(scene, camera);
+    updateOverlayLabels();
+
+    frameId = requestAnimationFrame(animate);
+  }
+  frameId = requestAnimationFrame(animate);
+  labelFrameId = requestAnimationFrame(drainLabelQueue);
+
+  const api = {
+    destroy() {
+      if (frameId) cancelAnimationFrame(frameId);
+      if (labelFrameId) cancelAnimationFrame(labelFrameId);
+      pendingLabelBuilders.length = 0;
+      renderer.domElement.removeEventListener("pointermove", selectHoveredNode);
+      renderer.domElement.removeEventListener("pointerleave", clearHoveredNode);
+      resizeObserver.disconnect();
+      disposeObject(scene);
+      renderer.dispose();
+      renderer.domElement.remove();
+      overlay.remove();
+      targetEl.innerHTML = "";
+    }
+  };
+
+  if (invalidation && typeof invalidation.then === "function") {
+    invalidation.then(() => api.destroy());
+  }
+
+  return api;
+}

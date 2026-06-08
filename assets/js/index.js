@@ -4,6 +4,20 @@
 import { theme, utils } from "./core.js";
 import * as plots from "./plots.js";
 import * as networks from "./networks.js";
+import * as networks3d from "./networks3d.js";
+import { createCabling } from "./custom/cabling.js";
+import { createRamStorageGraph } from "./custom/ram-storage-graph.js";
+import { createAttentionTokenGraph } from "./custom/attention-token-graph.js";
+import { createKvPuzzleGraph } from "./custom/kv-puzzle-graph.js";
+
+const networkExports = {
+  ...networks,
+  ...networks3d,
+  createCabling,
+  createRamStorageGraph,
+  createAttentionTokenGraph,
+  createKvPuzzleGraph
+};
 
 // Top-level exports matching deeplearning dependency system
 export {
@@ -47,13 +61,17 @@ export {
 export {
   createGraph,
   createWordCloud,
-  createCabling,
-  createRamStorageGraph,
-  renderStateMachineGraph,
-  create3DPieceGraph,
-  createKvPuzzleGraph,
-  createAttentionTokenGraph
+  renderStateMachineGraph
 } from "./networks.js";
+
+export {
+  create3DPieceGraph
+} from "./networks3d.js";
+
+export { createCabling } from "./custom/cabling.js";
+export { createRamStorageGraph } from "./custom/ram-storage-graph.js";
+export { createAttentionTokenGraph } from "./custom/attention-token-graph.js";
+export { createKvPuzzleGraph } from "./custom/kv-puzzle-graph.js";
 
 export {
   createBar,
@@ -353,11 +371,11 @@ export const ui = {
   },
 
   plots,
-  networks,
+  networks: networkExports,
   
   // Alias directs à la racine
   ...plots,
-  ...networks,
+  ...networkExports,
   
   // 3. Source de vérité dynamique pour les couleurs CSS
   get colors() {
