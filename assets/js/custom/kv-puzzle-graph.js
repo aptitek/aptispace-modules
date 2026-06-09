@@ -259,8 +259,8 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   const showLabels = options.showLabels ?? true;
   const useSoftmax = options.softmax ?? false;
   const colorFn = useSoftmax ? (s) => darkenRgb(softmaxColor(s), 0.8) : scoreColor;
-  const strengthOf = (node) => useSoftmax ? (node.softmaxStrength ?? 0) : node.strength;
-  const linkStrengthOf = (link) => useSoftmax ? (link.softmaxStrength ?? 0) : (link.product - data.minScore) / data.scoreRange;
+  const strengthOf = (node) => useSoftmax ? (node.softmaxStrength ?? 0) : (node.effectiveStrength ?? node.strength);
+  const linkStrengthOf = (link) => useSoftmax ? (link.softmaxStrength ?? 0) : (link.effectiveStrength ?? (link.product - data.minScore) / data.scoreRange);
   const height = options.height ?? Math.max(targetEl.getBoundingClientRect().height || 0, 520);
   const backgroundColor = resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3;
   const textColor = resolveCssValue("var(--sol-base03)") || SOL_FALLBACKS.base03;
@@ -271,6 +271,8 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   const hoverableLinks = [];
   let overlayWidth = 1;
   let overlayHeight = height;
+  data.nodes.forEach(node => { node.userAngle = 0; });
+  let dragState = null;
   targetEl.style.setProperty("min-height", `${height}px`);
   targetEl.style.setProperty("position", "relative");
   if (useSoftmax) {
@@ -480,7 +482,7 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
       const target = nearestLink.targetNode;
       const forward = (source.q ?? 0) * (target.k ?? 0);
       const backward = (target.q ?? 0) * (source.k ?? 0);
-      const hoverStrength = useSoftmax ? (nearestLink.softmaxStrength ?? 0) : Math.max(0, Math.min(1, (Math.max(forward, backward) - data.minScore) / data.scoreRange));
+      const hoverStrength = linkStrengthOf(nearestLink);
       hoveredNode = {
         mesh: source.mesh,
         hoverPosition: nearestLinkHit.closest,
@@ -523,27 +525,130 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   function clearHoveredNode() {
     hoveredNode = null;
     hoverLabel.style.setProperty("display", "none");
+    if (!dragState) renderer.domElement.style.setProperty("cursor", "default");
+  }
+
+  function recomputeEffectiveScores() {
+    data.links.forEach(link => {
+      const source = nodeById.get(link.source);
+      const target = nodeById.get(link.target);
+      const angleDiff = (source?.userAngle ?? 0) - (target?.userAngle ?? 0);
+      link.effectiveProduct = link.product * (1 + Math.cos(angleDiff)) / 2;
+    });
+    const effProducts = data.links.map(l => l.effectiveProduct);
+    const effMin = Math.min(...effProducts);
+    const effRange = Math.max(1e-9, Math.max(...effProducts) - effMin);
+    if (useSoftmax) {
+      const mean = effProducts.reduce((a, b) => a + b, 0) / effProducts.length;
+      const variance = effProducts.reduce((a, b) => a + (b - mean) ** 2, 0) / effProducts.length;
+      const std = Math.sqrt(Math.max(1, variance));
+      const normalized = effProducts.map(p => (p - mean) / std);
+      const maxNorm = Math.max(...normalized);
+      const exps = normalized.map(p => Math.exp(p - maxNorm));
+      const expSum = exps.reduce((a, b) => a + b, 0);
+      const smValues = exps.map(e => e / expSum);
+      const smMax = Math.max(...smValues);
+      const smMin = Math.min(...smValues);
+      const smRange = Math.max(1e-9, smMax - smMin);
+      data.links.forEach((link, i) => {
+        link.softmaxValue = smValues[i];
+        link.softmaxStrength = (smValues[i] - smMin) / smRange;
+      });
+    } else {
+      data.links.forEach(link => {
+        link.effectiveStrength = (link.effectiveProduct - effMin) / effRange;
+      });
+    }
+    data.nodes.forEach(node => {
+      const rel = data.links.filter(l => l.source === node.id || l.target === node.id);
+      if (useSoftmax) {
+        node.softmaxValue = Math.max(...rel.map(l => l.softmaxValue ?? 0), 0);
+        node.softmaxStrength = Math.max(...rel.map(l => l.softmaxStrength ?? 0), 0);
+      } else {
+        node.effectiveStrength = Math.max(...rel.map(l => l.effectiveStrength ?? 0), 0);
+      }
+    });
+  }
+
+  function updateMeshColors() {
+    data.nodes.forEach(node => {
+      if (node.mesh) node.mesh.material.color.set(colorFn(strengthOf(node)));
+    });
+    hoverableLinks.forEach(link => {
+      if (!link.line) return;
+      const t = linkStrengthOf(link);
+      link.line.material.color.set(colorFn(t));
+      link.line.material.opacity = 0.56 + t * 0.34;
+    });
+  }
+
+  function handlePointerDown(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const worldX = camera.left + ((event.clientX - rect.left) / Math.max(1, rect.width)) * (camera.right - camera.left);
+    const worldY = camera.top - ((event.clientY - rect.top) / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+    let nearest = null;
+    let nearestDist = Infinity;
+    data.nodes.forEach(node => {
+      if (!node.mesh) return;
+      const d = Math.hypot(node.mesh.position.x - worldX, node.mesh.position.y - worldY);
+      if (d < nearestDist) { nearest = node; nearestDist = d; }
+    });
+    if (!nearest || nearestDist > pieceSize * 0.58) return;
+    dragState = {
+      node: nearest,
+      startUserAngle: nearest.userAngle ?? 0,
+      startPointerAngle: Math.atan2(worldY - nearest.mesh.position.y, worldX - nearest.mesh.position.x),
+      pieceX: nearest.mesh.position.x,
+      pieceY: nearest.mesh.position.y
+    };
+    renderer.domElement.setPointerCapture(event.pointerId);
+    renderer.domElement.style.setProperty("cursor", "grabbing");
+  }
+
+  function handlePointerMove(event) {
+    if (dragState) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const worldX = camera.left + ((event.clientX - rect.left) / Math.max(1, rect.width)) * (camera.right - camera.left);
+      const worldY = camera.top - ((event.clientY - rect.top) / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+      const newAngle = Math.atan2(worldY - dragState.pieceY, worldX - dragState.pieceX);
+      let delta = newAngle - dragState.startPointerAngle;
+      while (delta > Math.PI) delta -= 2 * Math.PI;
+      while (delta < -Math.PI) delta += 2 * Math.PI;
+      dragState.node.userAngle = dragState.startUserAngle + delta;
+      recomputeEffectiveScores();
+      updateMeshColors();
+      return;
+    }
+    selectHoveredNode(event);
+  }
+
+  function handlePointerUp() {
+    if (!dragState) return;
+    dragState = null;
     renderer.domElement.style.setProperty("cursor", "default");
   }
 
-  renderer.domElement.addEventListener("pointermove", selectHoveredNode);
+  recomputeEffectiveScores();
+
+  renderer.domElement.addEventListener("pointerdown", handlePointerDown);
+  renderer.domElement.addEventListener("pointermove", handlePointerMove);
+  renderer.domElement.addEventListener("pointerup", handlePointerUp);
   renderer.domElement.addEventListener("pointerleave", clearHoveredNode);
 
   function animate(time = 0) {
-    const t = time * 0.001;
-    if (animatePieces) {
-      board.children.forEach(child => {
-        const node = child.userData?.node;
-        const baseRotation = child.userData?.baseRotation;
-        if (!node || !baseRotation) return;
+    board.children.forEach(child => {
+      const node = child.userData?.node;
+      const baseRotation = child.userData?.baseRotation;
+      if (!node || !baseRotation) return;
+      if (animatePieces) {
+        const t = time * 0.001;
         child.rotation.x = baseRotation.x + Math.sin(t * 0.8 + node.phase) * 0.025;
         child.rotation.y = baseRotation.y + Math.cos(t * 0.7 + node.phase) * 0.025;
-        child.rotation.z = baseRotation.z + Math.sin(t * 0.5 + node.phase) * 0.01;
-      });
-    }
+      }
+      child.rotation.z = baseRotation.z + (node.userAngle ?? 0);
+    });
     renderer.render(scene, camera);
     updateOverlayLabels();
-
     frameId = requestAnimationFrame(animate);
   }
   frameId = requestAnimationFrame(animate);
@@ -554,7 +659,9 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
       if (frameId) cancelAnimationFrame(frameId);
       if (labelFrameId) cancelAnimationFrame(labelFrameId);
       pendingLabelBuilders.length = 0;
-      renderer.domElement.removeEventListener("pointermove", selectHoveredNode);
+      renderer.domElement.removeEventListener("pointerdown", handlePointerDown);
+      renderer.domElement.removeEventListener("pointermove", handlePointerMove);
+      renderer.domElement.removeEventListener("pointerup", handlePointerUp);
       renderer.domElement.removeEventListener("pointerleave", clearHoveredNode);
       resizeObserver.disconnect();
       disposeObject(scene);
