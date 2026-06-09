@@ -8,7 +8,7 @@ import * as networks3d from "./networks3d.js";
 import { createCabling } from "./custom/cabling.js";
 import { createRamStorageGraph } from "./custom/ram-storage-graph.js";
 import { createAttentionTokenGraph } from "./custom/attention-token-graph.js";
-import { createKvPuzzleGraph } from "./custom/kv-puzzle-graph.js";
+import { createKvPuzzleGraph, createKvValueGraph } from "./custom/kv-puzzle-graph.js";
 
 const networkExports = {
   ...networks,
@@ -16,7 +16,8 @@ const networkExports = {
   createCabling,
   createRamStorageGraph,
   createAttentionTokenGraph,
-  createKvPuzzleGraph
+  createKvPuzzleGraph,
+  createKvValueGraph
 };
 
 // Top-level exports matching deeplearning dependency system
@@ -71,7 +72,7 @@ export {
 export { createCabling } from "./custom/cabling.js";
 export { createRamStorageGraph } from "./custom/ram-storage-graph.js";
 export { createAttentionTokenGraph } from "./custom/attention-token-graph.js";
-export { createKvPuzzleGraph } from "./custom/kv-puzzle-graph.js";
+export { createKvPuzzleGraph, createKvValueGraph } from "./custom/kv-puzzle-graph.js";
 
 export {
   createBar,

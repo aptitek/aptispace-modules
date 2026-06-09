@@ -678,3 +678,188 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
 
   return api;
 }
+
+/**
+ * Value visualization — a movable lamp reveals the hidden value colors of puzzle pieces.
+ */
+export function createKvValueGraph(container, options = {}, invalidation = null) {
+  const targetEl = typeof container === "string" ? document.querySelector(container) : container;
+  if (!targetEl) {
+    console.warn("createKvValueGraph: Target container not found.", container);
+    return null;
+  }
+  targetEl.innerHTML = "";
+
+  const data        = buildKvPuzzleData(options);
+  const pieceSize   = options.pieceSize   ?? 1;
+  const pieceDepth  = options.pieceDepth  ?? 0.22;
+  const pointStride = options.pointStride ?? 8;
+  const showLabels  = options.showLabels  ?? true;
+  const height      = options.height ?? Math.max(targetEl.getBoundingClientRect().height || 0, 520);
+  const bgColor     = resolveCssValue("var(--sol-base03)") || SOL_FALLBACKS.base03;
+  const textColor   = resolveCssValue("var(--sol-base3)")  || SOL_FALLBACKS.base3;
+  const labelBg     = "rgba(0,43,54,0.55)";
+
+  targetEl.style.setProperty("min-height", `${height}px`);
+  targetEl.style.setProperty("position", "relative");
+
+  const vPalette = [
+    SOL_FALLBACKS.red, SOL_FALLBACKS.orange, SOL_FALLBACKS.yellow,
+    SOL_FALLBACKS.green, SOL_FALLBACKS.cyan, SOL_FALLBACKS.blue,
+    SOL_FALLBACKS.violet, SOL_FALLBACKS.magenta
+  ];
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 50);
+  camera.position.set(0, 0, 9);
+  camera.lookAt(0, 0, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setClearColor(new THREE.Color(bgColor));
+  renderer.domElement.className = "w-100 d-block";
+  renderer.domElement.style.setProperty("cursor", "none");
+  targetEl.appendChild(renderer.domElement);
+
+  const overlay = document.createElement("div");
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.style.setProperty("position", "absolute");
+  overlay.style.setProperty("inset", "0");
+  overlay.style.setProperty("pointer-events", "none");
+  overlay.style.setProperty("overflow", "hidden");
+  targetEl.appendChild(overlay);
+
+  // Minimal ambient — structure barely hinted
+  scene.add(new THREE.AmbientLight(0xffffff, 0.06));
+  // Subtle blue rim outlines the unlit pieces
+  const rimLight = new THREE.DirectionalLight(
+    new THREE.Color(resolveCssValue("var(--sol-blue)") || SOL_FALLBACKS.blue), 0.14
+  );
+  rimLight.position.set(-3, 4, 7);
+  scene.add(rimLight);
+
+  // Movable lamp — starts off-screen so puzzle is dark initially
+  const lampColor = new THREE.Color(resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3);
+  const lampLight = new THREE.PointLight(lampColor, 9.0, pieceSize * 4.0, 2);
+  lampLight.position.set(0, 100, 1.6);
+  scene.add(lampLight);
+
+  const lampBulb = new THREE.Mesh(
+    new THREE.SphereGeometry(pieceSize * 0.11, 16, 16),
+    new THREE.MeshBasicMaterial({ color: lampColor })
+  );
+  lampBulb.position.copy(lampLight.position);
+  scene.add(lampBulb);
+
+  const board = new THREE.Group();
+  scene.add(board);
+
+  const overlayLabels        = [];
+  const pendingLabelBuilders = [];
+  let   overlayWidth  = 1;
+  let   overlayHeight = height;
+
+  data.nodes.forEach((node, index) => {
+    const points   = simplifyOutlinePoints(generatePuzzlePieceShape(pieceSize, node.edges, node.edgeProfiles), pointStride);
+    const geometry = new THREE.ExtrudeGeometry(makePuzzleShape(points), {
+      depth: pieceDepth, bevelEnabled: false, curveSegments: 1
+    });
+    geometry.center();
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
+      color: new THREE.Color(vPalette[index % vPalette.length]),
+      roughness: 0.52,
+      metalness: 0.12
+    }));
+    const x = (node.c - (data.cols - 1) / 2) * pieceSize * 1.08 + node.gapX;
+    const y = -((node.r - (data.rows - 1) / 2) * pieceSize * 0.98 + node.gapY);
+    mesh.position.set(x, y, node.gapZ);
+    mesh.rotation.set(node.baseRx, node.baseRy, node.baseRz);
+    board.add(mesh);
+    node.mesh = mesh;
+
+    if (showLabels) {
+      pendingLabelBuilders.push(() => {
+        const lbl = makeDomLabel(node.label, { color: textColor, size: 12, backgroundColor: labelBg });
+        return { element: lbl, position: new THREE.Vector3(x, y + 0.07, 0.18) };
+      });
+    }
+  });
+
+  let labelFrameId = null;
+  function drainLabels() {
+    const batch = options.labelBatchSize ?? 4;
+    for (let i = 0; i < batch && pendingLabelBuilders.length > 0; i++) {
+      const lbl = pendingLabelBuilders.shift()();
+      overlay.appendChild(lbl.element);
+      overlayLabels.push(lbl);
+    }
+    labelFrameId = pendingLabelBuilders.length > 0 ? requestAnimationFrame(drainLabels) : null;
+  }
+
+  function updateLabels() {
+    overlayLabels.forEach(lbl => {
+      const s = projectToOverlay(lbl.position, camera, overlayWidth, overlayHeight);
+      lbl.element.style.setProperty("transform", `translate(${s.x}px, ${s.y}px) translate(-50%, -50%)`);
+      lbl.element.style.setProperty("display", s.visible ? "block" : "none");
+    });
+  }
+
+  function resize() {
+    const w = Math.max(1, targetEl.getBoundingClientRect().width || 860);
+    overlayWidth = w;
+    renderer.setSize(w, height);
+    const aspect = w / height;
+    const vH = Math.max(data.rows * pieceSize * 1.05, (data.cols * pieceSize * 1.08) / aspect) * 1.25;
+    camera.left   = -(vH * aspect) / 2;  camera.right  = (vH * aspect) / 2;
+    camera.top    =  vH / 2;             camera.bottom = -vH / 2;
+    camera.updateProjectionMatrix();
+  }
+
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(targetEl);
+  resize();
+
+  function moveLamp(event) {
+    const rect   = renderer.domElement.getBoundingClientRect();
+    const worldX = camera.left + ((event.clientX - rect.left) / Math.max(1, rect.width))  * (camera.right - camera.left);
+    const worldY = camera.top  - ((event.clientY - rect.top)  / Math.max(1, rect.height)) * (camera.top - camera.bottom);
+    lampLight.position.set(worldX, worldY, 1.6);
+    lampBulb.position.set(worldX, worldY, 1.6);
+  }
+
+  function hideLamp() {
+    lampLight.position.set(0, 100, 1.6);
+    lampBulb.position.set(0, 100, 1.6);
+  }
+
+  renderer.domElement.addEventListener("pointermove", moveLamp);
+  renderer.domElement.addEventListener("pointerleave", hideLamp);
+
+  let frameId = null;
+  function animate() {
+    renderer.render(scene, camera);
+    updateLabels();
+    frameId = requestAnimationFrame(animate);
+  }
+  frameId = requestAnimationFrame(animate);
+  labelFrameId = requestAnimationFrame(drainLabels);
+
+  const api = {
+    destroy() {
+      if (frameId)      cancelAnimationFrame(frameId);
+      if (labelFrameId) cancelAnimationFrame(labelFrameId);
+      pendingLabelBuilders.length = 0;
+      renderer.domElement.removeEventListener("pointermove", moveLamp);
+      renderer.domElement.removeEventListener("pointerleave", hideLamp);
+      resizeObserver.disconnect();
+      disposeObject(scene);
+      renderer.dispose();
+      renderer.domElement.remove();
+      overlay.remove();
+      targetEl.innerHTML = "";
+    }
+  };
+
+  if (invalidation?.then) invalidation.then(() => api.destroy());
+  return api;
+}

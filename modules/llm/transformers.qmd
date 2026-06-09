@@ -50,9 +50,16 @@ Chaque pièce porte un mot d'une phrase plus longue. Sur chaque connexion, on li
 
 #### Après softmax {.bi-funnel}
 
-Les mêmes scores passés par **softmax** : chaque valeur est exponentiée puis divisée par la somme, de sorte que l'ensemble somme à 1. Le **bleu** indique une faible attention, le **jaune** une forte attention.
+Les mêmes scores passés par **softmax** : chaque valeur est exponentiée puis divisée par la somme, de sorte que l'ensemble somme à 1. Le **bleu** indique une faible attention, le **rouge** une forte attention.
 
 ::::: {#kv-softmax-graph .chart-container-xl}
+:::::
+
+#### Valeurs {.bi-lightbulb}
+
+Chaque pièce cache une **valeur** — l'information qu'elle peut partager. Déplacez la lampe sur le puzzle pour révéler les couleurs que le modèle retient lors de l'attention.
+
+::::: {#kv-value-graph .chart-container-xl}
 :::::
 
 :::
@@ -62,6 +69,7 @@ Les mêmes scores passés par **softmax** : chaque valeur est exponentiée puis 
 //| echo: false
 kvPuzzleGraph = aptitek.createKvPuzzleGraph("#kv-puzzle-graph", {}, invalidation)
 kvSoftmaxGraph = aptitek.createKvPuzzleGraph("#kv-softmax-graph", { softmax: true }, invalidation)
+kvValueGraph = aptitek.createKvValueGraph("#kv-value-graph", {}, invalidation)
 ```
 
 ::: {.callout-note collapse="true"}
