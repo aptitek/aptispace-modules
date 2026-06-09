@@ -557,16 +557,26 @@ export function create3DPieceGraph(container, graphData, options = {}) {
 
   if (cfg.isPuzzle && (!graphData || !graphData.nodes || graphData.nodes.length === 0)) {
     const gridData = generatePuzzleGrid(cfg.rows, cfg.cols);
-    const colors = [
-      "var(--sol-blue)",
-      "var(--sol-cyan)",
-      "var(--sol-green)",
-      "var(--sol-yellow)",
-      "var(--sol-orange)",
-      "var(--sol-magenta)",
-      "var(--sol-violet)"
+    const palette = [
+      "var(--sol-blue)", "var(--sol-cyan)", "var(--sol-green)",
+      "var(--sol-yellow)", "var(--sol-orange)", "var(--sol-magenta)", "var(--sol-violet)"
     ];
-    const nodes = gridData.map(item => ({
+    const gridColors = [];
+    gridData.forEach((item, i) => {
+      const forbidden = new Set();
+      if (item.c > 0) forbidden.add(gridColors[i - 1]);
+      if (item.r > 0) forbidden.add(gridColors[i - cfg.cols]);
+      const available = palette.filter(c => !forbidden.has(c));
+      let best = available[0];
+      let maxDist = -1;
+      for (const c of available) {
+        const last = gridColors.lastIndexOf(c);
+        const dist = last === -1 ? Infinity : i - last;
+        if (dist > maxDist) { maxDist = dist; best = c; }
+      }
+      gridColors.push(best);
+    });
+    const nodes = gridData.map((item, i) => ({
       id: `p_${item.r}_${item.c}`,
       label: `${item.r + 1},${item.c + 1}`,
       r: item.r,
@@ -574,7 +584,7 @@ export function create3DPieceGraph(container, graphData, options = {}) {
       edges: item.edges,
       edgeProfiles: item.edgeProfiles,
       shape: "puzzle",
-      color: colors[(item.r * cfg.cols + item.c) % colors.length]
+      color: gridColors[i]
     }));
     const links = [];
     for (let r = 0; r < cfg.rows; r++) {
@@ -693,9 +703,20 @@ export function create3DPieceGraph(container, graphData, options = {}) {
     width = targetEl.getBoundingClientRect().width || width || 600;
     renderer.setSize(width, height);
     const aspect = width / height;
-    const cameraScale = Math.max(0.55, Math.min(1.75, cfg.cameraDistance / 180));
-    const viewHeight = cfg.nodeSize * Math.max(rows * 1.8, cols / aspect * 1.6, 5) * cameraScale;
-    const viewWidth = viewHeight * aspect;
+    let viewWidth, viewHeight;
+    if (isAssembled) {
+      const gridW = cols * cfg.nodeSize * 1.06 + cfg.nodeSize * 0.4;
+      const gridH = rows * cfg.nodeSize * 1.06 + cfg.nodeSize * 0.4;
+      if (gridW / gridH > aspect) {
+        viewWidth = gridW; viewHeight = viewWidth / aspect;
+      } else {
+        viewHeight = gridH; viewWidth = viewHeight * aspect;
+      }
+    } else {
+      const spreadRadius = cfg.nodeSize * Math.max(cols, rows) * 0.9;
+      viewHeight = (spreadRadius + cfg.nodeSize) * 2.2;
+      viewWidth = viewHeight * aspect;
+    }
     camera.left = -viewWidth / 2;
     camera.right = viewWidth / 2;
     camera.top = viewHeight / 2;
@@ -745,10 +766,12 @@ export function create3DPieceGraph(container, graphData, options = {}) {
     assemble() {
       isAssembled = true;
       layoutTargets();
+      resize();
     },
     disassemble() {
       isAssembled = false;
       layoutTargets();
+      resize();
     },
     isAssembled() {
       return isAssembled;

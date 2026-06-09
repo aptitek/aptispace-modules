@@ -17,13 +17,31 @@ function interpolateHexColor(fromHex, toHex, t) {
 
 function scoreColor(strength) {
   const t = Math.max(0, Math.min(1, strength));
-  if (t < 0.34) {
-    return interpolateHexColor(SOL_FALLBACKS.base1, SOL_FALLBACKS.cyan, t / 0.34);
-  }
-  if (t < 0.72) {
-    return interpolateHexColor(SOL_FALLBACKS.cyan, SOL_FALLBACKS.yellow, (t - 0.34) / 0.38);
-  }
-  return interpolateHexColor(SOL_FALLBACKS.yellow, SOL_FALLBACKS.orange, (t - 0.72) / 0.28);
+  const stops = [
+    SOL_FALLBACKS.blue,
+    SOL_FALLBACKS.cyan,
+    SOL_FALLBACKS.green,
+    SOL_FALLBACKS.yellow,
+    SOL_FALLBACKS.orange,
+    SOL_FALLBACKS.red,
+    SOL_FALLBACKS.magenta,
+    SOL_FALLBACKS.violet
+  ];
+  const n = stops.length - 1;
+  const scaled = t * n;
+  const i = Math.min(Math.floor(scaled), n - 1);
+  return interpolateHexColor(stops[i], stops[i + 1], scaled - i);
+}
+
+function softmaxColor(strength) {
+  const t = Math.max(0, Math.min(1, strength));
+  return interpolateHexColor(SOL_FALLBACKS.blue, SOL_FALLBACKS.red, t);
+}
+
+function darkenRgb(rgbStr, factor) {
+  const m = rgbStr.match(/\d+/g);
+  if (!m) return rgbStr;
+  return `rgb(${Math.round(+m[0] * factor)}, ${Math.round(+m[1] * factor)}, ${Math.round(+m[2] * factor)})`;
 }
 
 function makePuzzleShape(points) {
@@ -151,12 +169,33 @@ function buildKvPuzzleData(options = {}) {
   const minScore = Math.min(...products);
   const maxScore = Math.max(...products);
   const scoreRange = Math.max(1, maxScore - minScore);
+
+  if (options.softmax) {
+    const mean = products.reduce((a, b) => a + b, 0) / products.length;
+    const variance = products.reduce((a, b) => a + (b - mean) ** 2, 0) / products.length;
+    const std = Math.sqrt(Math.max(1, variance));
+    const normalized = products.map(p => (p - mean) / std);
+    const maxNorm = Math.max(...normalized);
+    const exps = normalized.map(p => Math.exp(p - maxNorm));
+    const expSum = exps.reduce((a, b) => a + b, 0);
+    const smValues = exps.map(e => e / expSum);
+    const smMax = Math.max(...smValues);
+    const smMin = Math.min(...smValues);
+    const smRange = Math.max(1e-9, smMax - smMin);
+    links.forEach((link, i) => {
+      link.softmaxValue = smValues[i];
+      link.softmaxStrength = (smValues[i] - smMin) / smRange;
+    });
+  }
+
   nodes.forEach(node => {
-    const relatedProducts = links
-      .filter(link => link.source === node.id || link.target === node.id)
-      .map(link => link.product);
-    node.score = Math.max(...relatedProducts, 0);
+    const relatedLinks = links.filter(link => link.source === node.id || link.target === node.id);
+    node.score = Math.max(...relatedLinks.map(l => l.product), 0);
     node.strength = (node.score - minScore) / scoreRange;
+    if (options.softmax) {
+      node.softmaxValue = Math.max(...relatedLinks.map(l => l.softmaxValue ?? 0), 0);
+      node.softmaxStrength = Math.max(...relatedLinks.map(l => l.softmaxStrength ?? 0), 0);
+    }
   });
 
   return { rows, cols, nodes, links, minScore, scoreRange };
@@ -218,6 +257,10 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   const animatePieces = options.animatePieces ?? false;
   const showLines = options.showLines ?? true;
   const showLabels = options.showLabels ?? true;
+  const useSoftmax = options.softmax ?? false;
+  const colorFn = useSoftmax ? (s) => darkenRgb(softmaxColor(s), 0.8) : scoreColor;
+  const strengthOf = (node) => useSoftmax ? (node.softmaxStrength ?? 0) : node.strength;
+  const linkStrengthOf = (link) => useSoftmax ? (link.softmaxStrength ?? 0) : (link.product - data.minScore) / data.scoreRange;
   const height = options.height ?? Math.max(targetEl.getBoundingClientRect().height || 0, 520);
   const backgroundColor = resolveCssValue("var(--sol-base3)") || SOL_FALLBACKS.base3;
   const textColor = resolveCssValue("var(--sol-base03)") || SOL_FALLBACKS.base03;
@@ -230,6 +273,9 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
   let overlayHeight = height;
   targetEl.style.setProperty("min-height", `${height}px`);
   targetEl.style.setProperty("position", "relative");
+  if (useSoftmax) {
+    targetEl.style.setProperty("background-color", resolveCssValue("var(--sol-base2)") || SOL_FALLBACKS.base2);
+  }
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 50);
@@ -294,7 +340,7 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
     });
     geometry.center();
     const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(scoreColor(node.strength)),
+      color: new THREE.Color(colorFn(strengthOf(node))),
       roughness: 0.72,
       metalness: 0.05
     });
@@ -327,8 +373,8 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
     const source = nodeById.get(link.source);
     const target = nodeById.get(link.target);
     if (!source?.mesh || !target?.mesh) return;
-    const t = (link.product - data.minScore) / data.scoreRange;
-    const color = scoreColor(t);
+    const t = linkStrengthOf(link);
+    const color = colorFn(t);
     const start = source.mesh.position;
     const end = target.mesh.position;
     const geometry = new THREE.BufferGeometry().setFromPoints([
@@ -434,13 +480,15 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
       const target = nearestLink.targetNode;
       const forward = (source.q ?? 0) * (target.k ?? 0);
       const backward = (target.q ?? 0) * (source.k ?? 0);
+      const hoverStrength = useSoftmax ? (nearestLink.softmaxStrength ?? 0) : Math.max(0, Math.min(1, (Math.max(forward, backward) - data.minScore) / data.scoreRange));
       hoveredNode = {
         mesh: source.mesh,
         hoverPosition: nearestLinkHit.closest,
-        strength: Math.max(0, Math.min(1, (Math.max(forward, backward) - data.minScore) / data.scoreRange))
+        strength: hoverStrength
       };
-      hoverLabel.textContent = `${source.label} → ${target.label}\nq=${source.q} k=${target.k} q×k=${forward}\n${target.label} → ${source.label}\nq=${target.q} k=${source.k} q×k=${backward}`;
-      hoverLabel.style.setProperty("color", scoreColor(hoveredNode.strength));
+      const fwdPct = useSoftmax ? ` (${((nearestLink.softmaxValue ?? 0) * 100).toFixed(1)}%)` : "";
+      hoverLabel.textContent = `${source.label} → ${target.label}\nq=${source.q} k=${target.k} q×k=${forward}${fwdPct}\n${target.label} → ${source.label}\nq=${target.q} k=${source.k} q×k=${backward}`;
+      hoverLabel.style.setProperty("color", colorFn(hoverStrength));
       renderer.domElement.style.setProperty("cursor", "pointer");
       return;
     }
@@ -464,8 +512,10 @@ export function createKvPuzzleGraph(container, options = {}, invalidation = null
     }
 
     hoveredNode = nearest;
-    hoverLabel.textContent = `${nearest.label}\nmax=${Math.round(nearest.score)}`;
-    hoverLabel.style.setProperty("color", scoreColor(nearest.strength));
+    hoverLabel.textContent = useSoftmax
+      ? `${nearest.label}\nmax ${((nearest.softmaxValue ?? 0) * 100).toFixed(1)}%`
+      : `${nearest.label}\nmax=${Math.round(nearest.score)}`;
+    hoverLabel.style.setProperty("color", colorFn(strengthOf(nearest)));
     renderer.domElement.style.setProperty("cursor", "pointer");
 
   }

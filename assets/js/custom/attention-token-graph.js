@@ -73,6 +73,27 @@ function disposeObject(object) {
   });
 }
 
+function colorLinearNodes(count) {
+  const palette = [
+    "var(--sol-blue)", "var(--sol-cyan)", "var(--sol-green)",
+    "var(--sol-yellow)", "var(--sol-orange)", "var(--sol-magenta)", "var(--sol-violet)"
+  ];
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    const forbidden = i > 0 ? new Set([result[i - 1]]) : new Set();
+    const available = palette.filter(c => !forbidden.has(c));
+    let best = available[0];
+    let maxDist = -1;
+    for (const c of available) {
+      const last = result.lastIndexOf(c);
+      const dist = last === -1 ? Infinity : i - last;
+      if (dist > maxDist) { maxDist = dist; best = c; }
+    }
+    result.push(best);
+  }
+  return result;
+}
+
 /**
  * Interactive token attention map. Click a token to show its strongest outgoing attention links.
  */
@@ -98,15 +119,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
   const pieceSize = options.pieceSize ?? 1;
   const pieceDepth = options.pieceDepth ?? 0.16;
   const height = options.height ?? Math.max(targetEl.getBoundingClientRect().height || 0, 440);
-  const colors = [
-    "var(--sol-blue)",
-    "var(--sol-cyan)",
-    "var(--sol-green)",
-    "var(--sol-yellow)",
-    "var(--sol-orange)",
-    "var(--sol-magenta)",
-    "var(--sol-violet)"
-  ];
+  const nodeColors = colorLinearNodes(tokens.length);
   let activeIndex = Math.max(0, tokens.indexOf(options.activeToken || "mange"));
   let mode = options.mode || "assembled";
   let frameId = null;
@@ -163,7 +176,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
     id: token,
     label: token,
     index,
-    color: colors[index % colors.length],
+    color: nodeColors[index],
     edges: grid[index]?.edges || [0, 1, 0, -1],
     edgeProfiles: grid[index]?.edgeProfiles || [],
     phase: Math.random() * Math.PI * 2,
@@ -204,6 +217,10 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
       .concat([{ source: nodes[activeIndex], target: nodes[activeIndex], weight: matrix[activeIndex][activeIndex], label: `${Math.round(matrix[activeIndex][activeIndex] * 100)}%`, self: true }]);
   }
 
+  function getCircleRadius() {
+    return options.radius ?? (nodes.length / (2 * Math.PI)) * pieceSize * 1.3;
+  }
+
   function applyPositions() {
     if (mode === "assembled") {
       nodes.forEach((node, index) => {
@@ -211,7 +228,7 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
       });
       return;
     }
-    const radius = options.radius ?? Math.min(width / height, 1.8) * pieceSize * 2.1;
+    const radius = getCircleRadius();
     nodes.forEach((node, index) => {
       const angle = -Math.PI / 2 + (index / nodes.length) * Math.PI * 2;
       node.target = new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
@@ -265,8 +282,16 @@ export function createAttentionTokenGraph(container, options = {}, invalidation 
     width = graphHost.getBoundingClientRect().width || width || 720;
     renderer.setSize(width, height);
     const aspect = width / height;
-    const viewHeight = mode === "assembled" ? pieceSize * 3.2 : pieceSize * 5.8;
-    const viewWidth = viewHeight * aspect;
+    let viewWidth, viewHeight;
+    if (mode === "assembled") {
+      viewWidth = nodes.length * pieceSize * 1.08 + pieceSize * 0.6;
+      viewHeight = viewWidth / aspect;
+      if (viewHeight < pieceSize * 2.4) { viewHeight = pieceSize * 2.4; viewWidth = viewHeight * aspect; }
+    } else {
+      const r = getCircleRadius();
+      viewHeight = (r + pieceSize * 0.9) * 2.3;
+      viewWidth = viewHeight * aspect;
+    }
     camera.left = -viewWidth / 2;
     camera.right = viewWidth / 2;
     camera.top = viewHeight / 2;

@@ -39,17 +39,29 @@ Quand vous cliquez sur **mange**, le modèle regarde surtout **chat**, **faim** 
 Dans un vrai Transformer, chaque token possède une **requête**, une **clé** et une **valeur**. La requête d'un token est comparée aux clés des autres tokens. Plus la comparaison est forte, plus le lien d'attention est fort.
 
 :::: {.card-window}
+::: {.panel-tabset}
+
 #### Scores QK bruts {.bi-puzzle}
 
 Chaque pièce porte un mot d'une phrase plus longue. Sur chaque connexion, on lit une valeur de **requête** `q`, une valeur de **clé** `k`, puis leur produit `q×k`. Ces scores bruts peuvent devenir très grands : c'est justement pour cela que le **softmax** arrive ensuite.
 
 ::::: {#kv-puzzle-graph .chart-container-xl}
 :::::
+
+#### Après softmax {.bi-funnel}
+
+Les mêmes scores passés par **softmax** : chaque valeur est exponentiée puis divisée par la somme, de sorte que l'ensemble somme à 1. Le **bleu** indique une faible attention, le **jaune** une forte attention.
+
+::::: {#kv-softmax-graph .chart-container-xl}
+:::::
+
+:::
 ::::
 
 ```{ojs}
 //| echo: false
 kvPuzzleGraph = aptitek.createKvPuzzleGraph("#kv-puzzle-graph", {}, invalidation)
+kvSoftmaxGraph = aptitek.createKvPuzzleGraph("#kv-softmax-graph", { softmax: true }, invalidation)
 ```
 
 ::: {.callout-note collapse="true"}
