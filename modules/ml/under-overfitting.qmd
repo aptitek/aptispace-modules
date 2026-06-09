@@ -1,0 +1,150 @@
+---
+title: "Compromis Biais-Variance"
+---
+
+Trouver le bon modèle est une affaire de compromis : soit il est trop rigide et rate les grandes tendances (**biais élevé**), soit il est trop fluide et mémorise les moindres détails inutiles (**variance élevée**). Entre les deux se trouve la zone de **généralisation optimale**.
+
+## Le Biais et le Sous-apprentissage
+
+Le **biais** est l'erreur systématique d'un modèle trop simpliste. Il "manque" les vraies tendances des données — comme un moule trop rigide incapable d'épouser la forme de la figurine. Le modèle reste grossièrement plat, incapable de capter la structure réelle : c'est le **sous-apprentissage** (*underfitting*).
+
+::: {.callout-note collapse="true"}
+## Définition formelle (Biais)
+
+$$\text{Biais}(\hat{Y}) = E[\hat{Y}] - Y$$
+
+- $\hat{Y}$ : la prédiction estimée par le modèle
+- $Y$ : la valeur réelle de référence
+- $E[\cdot]$ : l'espérance mathématique (moyenne des prédictions sur différents jeux d'entraînement)
+
+L'écart *moyen* et *systématique* entre ce que le modèle prédit et la réalité.
+:::
+
+## La Variance et le Sur-apprentissage
+
+La **variance** représente l'erreur liée à une sensibilité excessive aux fluctuations du jeu d'entraînement. Le modèle mémorise le bruit au lieu d'apprendre. Dans notre analogie, la matière est trop liquide : elle capture parfaitement la forme générale, mais s'infiltre aussi dans chaque micro-rayure et grain de poussière. Ce moule ultra-spécifique produira une erreur importante sur une nouvelle figurine légèrement différente — c'est le **sur-apprentissage** (*overfitting*).
+
+::: {.callout-note collapse="true"}
+## Définition formelle (Variance)
+
+$$\text{Variance}(\hat{Y}) = E\left[(\hat{Y} - E[\hat{Y}])^2\right]$$
+
+- $\hat{Y}$ : la prédiction du modèle
+- $E[\hat{Y}]$ : la valeur moyenne prédite sur tous les entraînements possibles
+
+La mesure de la dispersion des prédictions autour de leur moyenne pour différents jeux d'entraînement.
+:::
+
+::: {.card-window .mb-4}
+#### Biais et Variance {.bi-arrows-collapse}
+
+[Complexité du modèle]{.slider #complexity value=50 min=0 max=100}
+
+:::: {#biais-graph .chart-container-md}
+::::
+
+:::
+
+```{ojs}
+//| echo: false
+biaisGraph = {
+  const el = document.getElementById("biais-graph");
+  if (!el) return;
+
+  const H = 260, VW = 800;
+  const pad = { t: 30, r: 20, b: 30, l: 50 };
+
+  const svg = d3.create("svg")
+    .attr("width", "100%")
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${VW} ${H}`)
+    .attr("preserveAspectRatio", "none");
+
+  const xSc = d3.scaleLinear().domain([0, 100]).range([pad.l, VW - pad.r]);
+  const ySc = d3.scaleLinear().domain([0, 100]).range([H - pad.b, pad.t]);
+
+  const lineGen = d3.line().curve(d3.curveMonotoneX)
+    .x(d => xSc(d.x)).y(d => ySc(d.moldY));
+
+  const pts = d3.range(0, 100, 2).map(x => ({
+    x,
+    y: 60 + 25 * Math.sin(x / 12) + (x % 8 === 0 ? 12 : -4)
+  }));
+
+  const modelData = pts.map(d => {
+    const yRigid   = 60;
+    const yOptimal = 60 + 25 * Math.sin(d.x / 12);
+    const yOver    = d.y;
+    let moldY;
+    if (complexity <= 50) {
+      moldY = yRigid + (yOptimal - yRigid) * (complexity / 50);
+    } else {
+      moldY = yOptimal + (yOver - yOptimal) * ((complexity - 50) / 50);
+    }
+    return { x: d.x, moldY };
+  });
+
+  let lineColor, diagLabel;
+  if (complexity < 30) {
+    lineColor = "var(--sol-orange)";
+    diagLabel = "SOUS-APPRENTISSAGE (Biais élevé)";
+  } else if (complexity > 70) {
+    lineColor = "var(--sol-red)";
+    diagLabel = "SUR-APPRENTISSAGE (Variance élevée)";
+  } else {
+    lineColor = "var(--sol-green)";
+    diagLabel = "GÉNÉRALISATION OPTIMALE";
+  }
+
+  // Data points
+  svg.selectAll(".dp").data(pts).enter().append("circle")
+    .attr("cx", d => xSc(d.x)).attr("cy", d => ySc(d.y))
+    .attr("r", 4).attr("fill", "var(--sol-base01)").attr("opacity", 0.5);
+
+  // Optimal signal (dashed reference)
+  svg.append("path")
+    .datum(pts.map(d => ({ x: d.x, moldY: 60 + 25 * Math.sin(d.x / 12) })))
+    .attr("fill", "none").attr("stroke", "var(--sol-base02)")
+    .attr("stroke-width", 2).attr("stroke-dasharray", "4 4").attr("d", lineGen);
+
+  // Model curve
+  svg.append("path").datum(modelData)
+    .attr("fill", "none").attr("stroke", lineColor)
+    .attr("stroke-width", 5).attr("stroke-linecap", "round").attr("stroke-linejoin", "round")
+    .attr("d", lineGen);
+
+  // Diagnostic label
+  svg.append("text")
+    .attr("x", VW / 2).attr("y", pad.t + 12).attr("text-anchor", "middle")
+    .attr("fill", lineColor).attr("font-size", "11px")
+    .attr("font-family", "var(--font-code, monospace)").attr("font-weight", "bold")
+    .text(diagLabel);
+
+  // Legend
+  const lx = pad.l + 10;
+  svg.append("circle").attr("cx", lx).attr("cy", H - pad.b - 8).attr("r", 4).attr("fill", "var(--sol-base01)").attr("opacity", 0.5);
+  svg.append("text").attr("x", lx + 10).attr("y", H - pad.b - 4).attr("fill", "var(--sol-base01)").attr("font-size", "11px").text("Données (bruit inclus)");
+
+  svg.append("line").attr("x1", lx - 4).attr("y1", H - pad.b - 24).attr("x2", lx + 16).attr("y2", H - pad.b - 24)
+    .attr("stroke", "var(--sol-base02)").attr("stroke-width", 2).attr("stroke-dasharray", "4 4");
+  svg.append("text").attr("x", lx + 22).attr("y", H - pad.b - 20).attr("fill", "var(--sol-base01)").attr("font-size", "11px").text("Signal optimal");
+
+  el.replaceChildren(svg.node());
+  return svg.node();
+}
+```
+
+## Le Phénomène de Double Descente
+
+La courbe classique en U montre que la variance augmente avec la complexité. Cependant, le Deep Learning montre parfois une **Double Descente** : la perte diminue à nouveau pour de très grands modèles. Parfois, un très grand modèle que l'on pensait condamné au sur-apprentissage recommence mystérieusement à s'améliorer — c'est une zone où le modèle découvre des règles encore plus simples et robustes.
+
+::: {.callout-note collapse="true"}
+## Explication de la Double Descente
+
+Selon l'hypothèse de l'*unfolding*, ce phénomène est souvent un artefact lié à un *scaling* composite (variation simultanée de la taille du modèle et des données). Si l'on fait varier la complexité et les données indépendamment, le modèle réadopte des motifs classiques en U ou en L.
+:::
+
+## L'Impact Stratégique
+
+- **Diagnostic :** Une erreur d'entraînement très faible couplée à une erreur de test élevée indique une variance excessive.
+- **Ajustement :** Il faut adapter l'architecture ou régulariser le modèle plutôt que de sur-interpréter les performances sur les données d'entraînement.

@@ -97,31 +97,53 @@ function Div(el)
 
     local num_cols = #cols
     if num_cols > 0 then
-      -- Automatically map column count to standard Bootstrap classes:
+      -- Pre-scan: check whether any col uses shrink=true (col-auto).
+      -- When the row is mixed (some shrink, some not), non-shrink cols use
+      -- bare "col" so they share remaining space equally via flex-grow.
+      local has_shrink = false
+      for _, col_div in ipairs(cols) do
+        if col_div.attributes["shrink"] then
+          has_shrink = true
+          break
+        end
+      end
+
+      -- Default col class for uniform (non-mixed) rows:
       -- 1 column: col-12
       -- 2 columns: col-12 col-md-6 (50% each)
       -- 3 columns: col-12 col-md-4 (33% each)
       -- 4 columns: col-12 col-md-6 (2x2 grid is best for concept cards)
       -- >=5 columns: col-12 col-md-4 col-lg-3
-      local default_col_class = "col-12"
-      if num_cols == 2 then
-        default_col_class = "col-12 col-md-6"
-      elseif num_cols == 3 then
-        default_col_class = "col-12 col-md-4"
-      elseif num_cols == 4 then
-        default_col_class = "col-12 col-md-6"
-      elseif num_cols >= 5 then
-        default_col_class = "col-12 col-md-4 col-lg-3"
+      -- Mixed rows (has_shrink): bare "col" fills remaining space equally.
+      local default_col_class = "col"
+      if not has_shrink then
+        if num_cols == 1 then
+          default_col_class = "col-12"
+        elseif num_cols == 2 then
+          default_col_class = "col-12 col-md-6"
+        elseif num_cols == 3 then
+          default_col_class = "col-12 col-md-4"
+        elseif num_cols == 4 then
+          default_col_class = "col-12 col-md-6"
+        elseif num_cols >= 5 then
+          default_col_class = "col-12 col-md-4 col-lg-3"
+        end
       end
 
       -- Replace simple 'col' class with Bootstrap responsive class definitions.
-      -- span=N    → col-12 col-md-N  (md breakpoint asymmetric column)
-      -- span-lg=N → col-12 col-lg-N  (lg breakpoint asymmetric column)
+      -- shrink=true → col-auto  (shrinks to content width)
+      -- span=N      → col-12 col-md-N  (md breakpoint asymmetric column)
+      -- span-lg=N   → col-12 col-lg-N  (lg breakpoint asymmetric column)
+      -- (default)   → default_col_class (equal distribution or col in mixed rows)
       for _, col_div in ipairs(cols) do
+        local shrink = col_div.attributes["shrink"]
         local span = col_div.attributes["span"]
         local span_lg = col_div.attributes["span-lg"]
         local col_class
-        if span then
+        if shrink then
+          col_class = "col-auto"
+          col_div.attributes["shrink"] = nil
+        elseif span then
           col_class = "col-12 col-md-" .. span
           col_div.attributes["span"] = nil
         elseif span_lg then

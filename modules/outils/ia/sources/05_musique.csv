@@ -1,0 +1,7 @@
+Outil,Dernier Modèle / Service (2026),Éditeur,URL,Date de sortie,Statut,Inscription,Gratuit (Limites),Payant (Prix & Limites),Entrée / Sortie,Spécificité / Usage recommandé
+Suno,v4 / v3.5,Suno AI,https://suno.com,2023,Actif,Oui,"Oui (50 crédits/jour, ~10 chansons)",Pro : 10$/mois (500 chansons),"Texte, Audio / Audio",Leader grand public. Génération de chansons complètes avec voix et paroles. Qualité radio.
+Udio,v1.5,Udio,https://udio.com,Avril 2024,Actif,Oui,Oui (10 crédits/jour),Standard : 10$/mois,"Texte, Audio / Audio","Qualité audio exceptionnelle, excellente structure musicale. Très fort sur le jazz et l'electro."
+Stable Audio,v2.0,Stability AI,https://stableaudio.com,2023,Actif,Oui,"Oui (20 pistes/mois, max 3 min)",Pro : 12$/mois (500 pistes),"Texte, Audio / Audio",Génération de pistes instrumentales et sound design. Idéal pour les musiques d'ambiance.
+MusicGen,AudioCraft,Meta,https://github.com/facebookresearch/audiocraft,2023,Actif,Non,Oui (Open-source),Gratuit en local,"Texte, Mélodie / Audio","Modèle open-source (open-weights). Hébergeable en local, idéal pour les développeurs."
+AIVA,AIVA Gen,AIVA Tech.,https://aiva.ai,2016,Actif,Oui,"Oui (Utilisation non commerciale, limites d'export)",Pro : 33€/mois (Monétisation autorisée),"Paramètres, Texte / MIDI, Audio",Composition algorithmique avec export MIDI. Outil professionnel pensé pour aider les compositeurs.
+Riffusion,v1,Riffusion,https://www.riffusion.com,2022,Actif,Oui,Oui,Gratuit (pour l'instant),Texte / Audio,Génération de musique à partir de spectrogrammes. Approche technique originale.

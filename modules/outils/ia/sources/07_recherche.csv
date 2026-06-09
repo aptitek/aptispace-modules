@@ -1,0 +1,7 @@
+Outil,Dernier Modèle / Service (2026),Éditeur,URL,Date de sortie,Statut,Inscription,Gratuit (Limites),Payant (Prix & Limites),Entrée / Sortie,Spécificité / Usage recommandé
+NotebookLM,Gemini 3.1 Pro,Google,https://notebooklm.google.com,2023,Actif,Oui,Oui,Gratuit (Expérimental),"Texte, PDF, Audio, YouTube / Texte, Podcast",Synthèse multi-sources avec ancrage strict. Idéal pour compiler de la biblio ou des cours.
+SciSpace,SciSpace Copilot,SciSpace,https://typeset.io,2022,Actif,Oui,Oui (Recherche de base),Premium : ~12$/mois,"Texte, PDF / Texte","Explication détaillée de papiers scientifiques complexes (Transformers, Attention) et extraction."
+Consensus,Consensus AI,Consensus,https://consensus.app,2022,Actif,Oui,Oui (Résumés AI limités),Premium : ~9$/mois,Texte / Texte,Moteur de recherche sourçant exclusivement des études peer-reviewed. Synthèse du consensus.
+Elicit,Elicit,Ought,https://elicit.com,2021,Actif,Oui,Oui (Crédits initiaux),Plus : 12$/mois,"Texte / Texte, Tableaux",Automatisation des revues de littérature. Extrait les métriques et méthodologies d'un coup.
+Scite.ai,Scite Assistant,Scite,https://scite.ai,2018,Actif,Oui,Non (Essai 7 jours),Premium : ~20$/mois,"Texte / Texte, Data",Vérification de la fiabilité d'un article grâce aux Smart Citations (soutenu ou réfuté par ses pairs).
+Humata AI,Humata V2,Humata,https://humata.ai,2023,Actif,Oui,Oui (Max 60 pages/mois),Pro : ~15$/mois,PDF / Texte,Chat interactif et sourcé avec des documents très denses (manuels techniques).

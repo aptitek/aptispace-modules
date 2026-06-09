@@ -105,6 +105,7 @@ export {
   renderStandardDeviationGraph
 } from "./custom/statistics.js";
 export { createTerminal } from "./custom/terminal.js";
+export { createDataTable } from "./custom/datatables.js";
 export { createLabeledText } from "./custom/text.js";
 export { updateAutoencoderViz } from "./custom/autoencoder.js";
 export { renderLatentInterpolation, renderVqVaeMetrics, renderVqVaeCodebook, generateVqCodebook } from "./custom/vae.js";

@@ -1,0 +1,311 @@
+/*-- scss:rules --*/
+
+// =============================================================================
+// DATATABLE COMPONENT — apt-datatable
+// =============================================================================
+
+.apt-datatable {
+  // ── Toolbar ─────────────────────────────────────────────────────────────────
+  .apt-dt-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+
+  .apt-dt-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 160px;
+    max-width: 300px;
+  }
+
+  .apt-dt-search-icon {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sol-base1);
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  .apt-dt-search-input {
+    width: 100%;
+    padding: 0.35rem 0.65rem 0.35rem 2rem;
+    font-size: 0.85rem;
+    border: 1px solid rgba(var(--sol-base01-rgb), 0.2);
+    border-radius: 6px;
+    background: var(--sol-base3);
+    color: var(--sol-base00);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      border-color: var(--sol-cyan);
+      box-shadow: 0 0 0 2px rgba(var(--sol-cyan-rgb), 0.15);
+    }
+
+    &::placeholder {
+      color: var(--sol-base1);
+    }
+  }
+
+  .apt-dt-filter {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    border: 1px solid rgba(var(--sol-base01-rgb), 0.2);
+    border-radius: 6px;
+    background: var(--sol-base3);
+    color: var(--sol-base00);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      border-color: var(--sol-cyan);
+      box-shadow: 0 0 0 2px rgba(var(--sol-cyan-rgb), 0.12);
+    }
+  }
+
+  // ── Table wrapper ────────────────────────────────────────────────────────────
+  .apt-dt-wrapper {
+    border-radius: 8px;
+    border: 1px solid rgba(var(--sol-base01-rgb), 0.12);
+    overflow: hidden;
+  }
+
+  .apt-dt-table {
+    margin: 0;
+    font-size: 0.875rem;
+
+    thead th {
+      background: var(--sol-base2);
+      color: var(--sol-base01);
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.55rem 0.75rem;
+      border-bottom: 2px solid rgba(var(--sol-base01-rgb), 0.15);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    tbody td {
+      padding: 0.55rem 0.75rem;
+      vertical-align: middle;
+      color: var(--sol-base00);
+      border-bottom: 1px solid rgba(var(--sol-base01-rgb), 0.06);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr {
+      transition: background 0.1s;
+
+      &:hover {
+        background: rgba(var(--sol-cyan-rgb), 0.04);
+      }
+    }
+  }
+
+  &--compact .apt-dt-table {
+    font-size: 0.8rem;
+
+    thead th,
+    tbody td {
+      padding: 0.35rem 0.65rem;
+    }
+  }
+
+  // ── Sortable headers ─────────────────────────────────────────────────────────
+  .apt-dt-th-sort {
+    cursor: pointer;
+
+    &::after {
+      content: ' ↕';
+      opacity: 0.3;
+      font-size: 0.7em;
+    }
+
+    &.apt-dt-sort--asc::after {
+      content: ' ↑';
+      opacity: 1;
+      color: var(--sol-cyan);
+    }
+
+    &.apt-dt-sort--desc::after {
+      content: ' ↓';
+      opacity: 1;
+      color: var(--sol-cyan);
+    }
+
+    &:hover {
+      color: var(--sol-cyan);
+    }
+  }
+
+  // ── Cell types ───────────────────────────────────────────────────────────────
+  .apt-dt-link {
+    color: var(--sol-blue);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--sol-orange);
+    }
+  }
+
+  .apt-dt-ext-icon {
+    font-size: 0.65em;
+    opacity: 0.5;
+    margin-left: 2px;
+  }
+
+  .apt-dt-td-clip {
+    max-width: 200px;
+  }
+
+  .apt-dt-truncate {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: help;
+  }
+
+  .apt-dt-empty {
+    text-align: center;
+    color: var(--sol-base1);
+    padding: 2rem 1rem;
+    font-style: italic;
+    border: 0;
+  }
+
+  // ── Badges (statut, booléen) ─────────────────────────────────────────────────
+  .apt-dt-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2em 0.55em;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+
+    &--success {
+      background: rgba(var(--sol-green-rgb), 0.12);
+      color: var(--sol-green);
+      border-color: rgba(var(--sol-green-rgb), 0.25);
+    }
+
+    &--warning {
+      background: rgba(var(--sol-yellow-rgb), 0.12);
+      color: var(--sol-yellow);
+      border-color: rgba(var(--sol-yellow-rgb), 0.25);
+    }
+
+    &--danger {
+      background: rgba(var(--sol-red-rgb), 0.10);
+      color: var(--sol-red);
+      border-color: rgba(var(--sol-red-rgb), 0.20);
+    }
+
+    &--info {
+      background: rgba(var(--sol-cyan-rgb), 0.10);
+      color: var(--sol-cyan);
+      border-color: rgba(var(--sol-cyan-rgb), 0.22);
+    }
+
+    &--secondary {
+      background: rgba(var(--sol-base01-rgb), 0.07);
+      color: var(--sol-base01);
+      border-color: rgba(var(--sol-base01-rgb), 0.14);
+    }
+  }
+
+  // ── Pills (niveau gratuit) ───────────────────────────────────────────────────
+  .apt-dt-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.15em 0.5em;
+    border-radius: 100px;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+
+    &--yes {
+      background: rgba(var(--sol-green-rgb), 0.1);
+      color: var(--sol-green);
+    }
+
+    &--no {
+      background: rgba(var(--sol-red-rgb), 0.08);
+      color: var(--sol-red);
+    }
+
+    &--limited {
+      background: rgba(var(--sol-yellow-rgb), 0.1);
+      color: var(--sol-yellow);
+    }
+  }
+
+  // ── Footer ──────────────────────────────────────────────────────────────────
+  .apt-dt-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.15rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .apt-dt-count {
+    font-size: 0.78rem;
+    color: var(--sol-base1);
+  }
+
+  .apt-dt-pager {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .apt-dt-pager-btn {
+    background: none;
+    border: 1px solid rgba(var(--sol-base01-rgb), 0.18);
+    border-radius: 4px;
+    color: var(--sol-base0);
+    cursor: pointer;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--sol-cyan-rgb), 0.08);
+      border-color: var(--sol-cyan);
+      color: var(--sol-cyan);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
+
+  .apt-dt-pager-info {
+    font-size: 0.8rem;
+    color: var(--sol-base01);
+    padding: 0 0.3rem;
+    min-width: 3.5rem;
+    text-align: center;
+  }
+}

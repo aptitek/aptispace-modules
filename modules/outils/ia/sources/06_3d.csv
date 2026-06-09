@@ -1,0 +1,7 @@
+Outil,Dernier Modèle / Service (2026),Éditeur,URL,Date de sortie,Statut,Inscription,Gratuit (Limites),Payant (Prix & Limites),Entrée / Sortie,Spécificité / Usage recommandé
+Meshy,Meshy-4,Meshy AI,https://meshy.ai,2023,Actif,Oui,Oui (200 crédits/mois),Pro : 16$/mois,"Texte, Image / 3D (GLB, FBX, OBJ)",Génération rapide de modèles 3D avec textures PBR. Efficace pour le prototypage ou les cartes.
+Luma Genie,Genie 1.0,Luma AI,https://lumalabs.ai/genie,2023,Actif,Oui,Oui (Limité),Standard : ~20$/mois,Texte / 3D,Création de concepts 3D en quelques secondes. Idéal pour l'idéation rapide.
+Tripo3D,Tripo 2.0,Tripo AI,https://tripo3d.ai,2023,Actif,Oui,Oui (Essai gratuit basique),Basic : ~10$/mois,"Texte, Image / 3D","Très bonne topologie et précision géométrique, adapté pour des intégrations techniques."
+CSM.ai,Cube,Common Sense Machines,https://csm.ai,2022,Actif,Oui,Oui (Avec filigrane),Pro : 20$/mois,"Image, Vidéo / 3D",Spécialisé dans la conversion d'images 2D ou de vidéos réelles en assets 3D utilisables.
+Spline AI,Spline AI,Spline,https://spline.design/ai,2023,Actif,Oui,Oui (Limité aux fonctions de base),Super : 9$/mois,"Texte / 3D, Scène Web",Intégré dans l'éditeur web Spline. Parfait pour insérer de la 3D dans des interfaces React/TS.
+Rodin,Rodin Gen,Deemos,https://hyperhuman.deemos.com/rodin,2024,Actif,Oui,Oui (Crédits initiaux),Pay-as-you-go ou Abonnements,Image / 3D (Avatar),Spécialiste de la création d'avatars 3D réalistes prêts à être animés (rigging auto).

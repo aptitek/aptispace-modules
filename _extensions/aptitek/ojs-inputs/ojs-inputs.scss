@@ -704,3 +704,86 @@
     }
 }
 
+// =============================================================================
+// 14. VERTICAL SLIDER (.sim-slider-v)
+// Portage du thème deeplearning legacy — slider vertical avec label rotaté,
+// badge de valeur et indicateur de direction.
+// =============================================================================
+
+.sim-slider-v {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 8px;
+    box-sizing: border-box;
+
+    &[data-state="0"] { --current-color: var(--sol-blue); }
+    &[data-state="1"] { --current-color: var(--sol-green); }
+    &[data-state="2"] { --current-color: var(--sol-yellow); }
+    &[data-state="3"] { --current-color: var(--sol-red); }
+
+    .slider-v-input {
+        writing-mode: vertical-lr;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 20px !important;
+        height: var(--slider-v-height, 160px) !important;
+        background: var(--sol-base2, #eee8d5) !important;
+        border-radius: 5px !important;
+        accent-color: var(--current-color, var(--accent-primary)) !important;
+        transition: accent-color 0.3s ease !important;
+        cursor: pointer !important;
+        flex-shrink: 0;
+    }
+
+    // "up": scaleY(-1) → dragging up increases value (max at top)
+    &.sim-slider-v--up .slider-v-input {
+        transform: scaleY(-1) !important;
+    }
+
+    .slider-v-arrow {
+        font-size: 0.65em;
+        color: var(--current-color, var(--accent-primary));
+        line-height: 1;
+        opacity: 0.85;
+        filter: drop-shadow(0 0 3px var(--current-color, var(--accent-primary)));
+        transition: color 0.3s ease;
+    }
+
+    .slider-v-badge {
+        background-color: var(--current-color, var(--accent-primary)) !important;
+        color: var(--sol-base3, #fdf6e3) !important;
+        font-size: 0.68rem;
+        padding: 2px 5px;
+        min-width: 34px;
+        text-align: center;
+        border-radius: 4px;
+        font-family: var(--font-code, monospace);
+        transition: background-color 0.3s ease;
+    }
+
+    .slider-v-label {
+        font-family: var(--font-code, monospace);
+        font-size: 0.55em;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--sol-base1, #93a1a1);
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        white-space: nowrap;
+        max-height: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1;
+        opacity: 0.8;
+    }
+}
+
+[data-bs-theme="dark"] {
+    .sim-slider-v .slider-v-input {
+        background: var(--sol-base02, #073642) !important;
+    }
+}
+

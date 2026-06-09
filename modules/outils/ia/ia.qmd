@@ -1,0 +1,96 @@
+---
+title: "Panorama des Outils IA"
+---
+
+Référence des principaux outils d'intelligence artificielle disponibles en 2026, classés par catégorie. Cliquez sur le nom d'un outil pour ouvrir son site officiel. Utilisez la barre de recherche pour filtrer instantanément l'ensemble des colonnes.
+
+::: {.card-window}
+#### Outils IA 2026 {.bi-robot}
+
+:::: {.tabs}
+##### Généralistes {.bi-chat-text}
+::::: {#dt-generalistes}
+:::::
+
+##### Images {.bi-image}
+::::: {#dt-images}
+:::::
+
+##### Vidéo {.bi-camera-video}
+::::: {#dt-video}
+:::::
+
+##### Audio & TTS {.bi-mic}
+::::: {#dt-audio}
+:::::
+
+##### Musique {.bi-music-note-beamed}
+::::: {#dt-musique}
+:::::
+
+##### 3D {.bi-box}
+::::: {#dt-3d}
+:::::
+
+##### Recherche {.bi-search}
+::::: {#dt-recherche}
+:::::
+
+##### Code {.bi-code-slash}
+::::: {#dt-code}
+:::::
+
+##### UI & Graphisme {.bi-palette}
+::::: {#dt-ui}
+:::::
+
+##### Automatisation {.bi-robot}
+::::: {#dt-automatisation}
+:::::
+
+##### Compute & Inférence {.bi-cpu}
+::::: {#dt-compute}
+:::::
+::::
+:::
+
+```{ojs}
+//| echo: false
+iaColumns = [
+  { key: "Outil",                              label: "Outil",        type: "link",       urlKey: "URL"  },
+  { key: "Dernier Modèle / Service (2026)",    label: "Modèle"                                           },
+  { key: "Éditeur",                            label: "Éditeur"                                          },
+  { key: "Statut",                             label: "Statut",       type: "badge"                      },
+  { key: "Inscription",                        label: "Inscription",  type: "badge-bool"                 },
+  { key: "Gratuit (Limites)",                  label: "Gratuit",      type: "badge-free"                 },
+  { key: "Payant (Prix & Limites)",            label: "Payant",       type: "tooltip"                    },
+  { key: "Entrée / Sortie",                    label: "I/O"                                              },
+  { key: "Spécificité / Usage recommandé",     label: "Usage",        type: "tooltip",    sortable: false }
+]
+
+iaOpts = ({ columns: iaColumns, pageSize: 20 })
+
+data_generalistes    = FileAttachment("sources/01_generalistes.csv").csv()
+data_images          = FileAttachment("sources/02_images.csv").csv()
+data_video           = FileAttachment("sources/03_video.csv").csv()
+data_audio           = FileAttachment("sources/04_audio_tts.csv").csv()
+data_musique         = FileAttachment("sources/05_musique.csv").csv()
+data_3d              = FileAttachment("sources/06_3d.csv").csv()
+data_recherche       = FileAttachment("sources/07_recherche.csv").csv()
+data_code            = FileAttachment("sources/08_code_vibe_coding.csv").csv()
+data_ui              = FileAttachment("sources/09_ui_graphisme.csv").csv()
+data_automatisation  = FileAttachment("sources/10_automatisation.csv").csv()
+data_compute         = FileAttachment("sources/11_compute_inference.csv").csv()
+
+dt_generalistes   = aptitek.createDataTable("#dt-generalistes",   data_generalistes,   iaOpts)
+dt_images         = aptitek.createDataTable("#dt-images",         data_images,         iaOpts)
+dt_video          = aptitek.createDataTable("#dt-video",          data_video,          iaOpts)
+dt_audio          = aptitek.createDataTable("#dt-audio",          data_audio,          iaOpts)
+dt_musique        = aptitek.createDataTable("#dt-musique",        data_musique,        iaOpts)
+dt_3d             = aptitek.createDataTable("#dt-3d",             data_3d,             iaOpts)
+dt_recherche      = aptitek.createDataTable("#dt-recherche",      data_recherche,      iaOpts)
+dt_code           = aptitek.createDataTable("#dt-code",           data_code,           iaOpts)
+dt_ui             = aptitek.createDataTable("#dt-ui",             data_ui,             iaOpts)
+dt_automatisation = aptitek.createDataTable("#dt-automatisation", data_automatisation, iaOpts)
+dt_compute        = aptitek.createDataTable("#dt-compute",        data_compute,        iaOpts)
+```

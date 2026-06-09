@@ -1,0 +1,111 @@
+---
+title: "Modèles, Données et Apprentissage"
+---
+
+Pour démystifier ce qu'est réellement l'apprentissage en machine learning, une analogie physique simple : le **moulage**.
+
+- **Les Données (L'original) :** Vos données d'entraînement sont une figurine de référence — des matrices de nombres bruts représentant la réalité.
+- **Le Modèle (La matière) :** Le modèle est la matière brute qui va mouler autour de cette figurine. Il est défini par des nombres modifiables appelés *paramètres*.
+- **L'Apprentissage (Le processus) :** Apprendre consiste à presser, déformer et ajuster cette matière itérativement pour qu'elle épouse le plus parfaitement possible la forme de la figurine originale, afin de pouvoir en générer de nouvelles à l'avenir.
+
+::: {.callout-note appearance="simple" icon="false"}
+## Le Moule et l'Objet
+Imaginez que votre jeu de données est une **pièce mécanique** complexe (avec sa forme globale et ses micro-rayures). Votre modèle d'IA est un **matériau de moulage**. L'apprentissage (les *époques*) consiste à presser ce matériau sur l'objet pour en capturer la forme.
+:::
+
+::: {.card-window .mb-4}
+#### Presse en Action {.bi-tools}
+
+:::: {.row align=center}
+:::::{.col shrink=true}
+[Pression]{.slider #pression value=0 min=0 max=100 vertical=true direction=down}
+:::::
+:::::{.col}
+:::::: {#presse-graph .chart-container-md}
+::::::
+:::::
+::::
+
+:::
+
+```{ojs}
+//| echo: false
+objectData = d3.range(0, 100, 2).map(x => ({
+  x: x,
+  y: 60 + 25 * Math.sin(x / 12) + (x % 8 === 0 ? 12 : -4)
+}))
+
+presseGraph = {
+  const el = document.getElementById("presse-graph");
+  if (!el) return;
+
+  const H = 260;   // matches .chart-container-md
+  const VW = 800;  // virtual coordinate width — CSS handles actual width
+  const pad = { t: 24, r: 20, b: 20, l: 44 };
+
+  const svg = d3.create("svg")
+    .attr("width", "100%")
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${VW} ${H}`)
+    .attr("preserveAspectRatio", "none");
+
+  const xScale = d3.scaleLinear().domain([0, 100]).range([pad.l, VW - pad.r]);
+  const yScale = d3.scaleLinear().domain([0, 100]).range([H - pad.b, pad.t]);
+
+  const line = d3.line()
+    .curve(d3.curveMonotoneX)
+    .x(d => xScale(d.x))
+    .y(d => yScale(d.y));
+
+  // Données (objet de référence — en pointillé)
+  svg.append("path")
+    .datum(objectData)
+    .attr("fill", "none")
+    .attr("stroke", "var(--sol-base01)")
+    .attr("stroke-width", 3)
+    .attr("stroke-dasharray", "4 4")
+    .attr("d", line);
+
+  // Modèle (moule) — suit les données selon la pression
+  const moldData = objectData.map(d => {
+    const startY = 100;
+    const currentY = startY + (d.y - startY) * (pression / 100);
+    return { x: d.x, y: currentY };
+  });
+
+  svg.append("path")
+    .datum(moldData)
+    .attr("fill", "none")
+    .attr("stroke", "var(--sol-yellow)")
+    .attr("stroke-width", 6)
+    .attr("stroke-linecap", "round")
+    .attr("stroke-linejoin", "round")
+    .attr("d", line);
+
+  // Légende
+  const legendX = VW - pad.r - 110;
+  svg.append("line")
+    .attr("x1", legendX).attr("y1", pad.t)
+    .attr("x2", legendX + 24).attr("y2", pad.t)
+    .attr("stroke", "var(--sol-base01)").attr("stroke-width", 2)
+    .attr("stroke-dasharray", "4 4");
+  svg.append("text")
+    .attr("x", legendX + 30).attr("y", pad.t + 4)
+    .attr("fill", "var(--sol-base01)").attr("font-size", "11px")
+    .text("Données");
+
+  svg.append("line")
+    .attr("x1", legendX).attr("y1", pad.t + 18)
+    .attr("x2", legendX + 24).attr("y2", pad.t + 18)
+    .attr("stroke", "var(--sol-yellow)").attr("stroke-width", 4)
+    .attr("stroke-linecap", "round");
+  svg.append("text")
+    .attr("x", legendX + 30).attr("y", pad.t + 22)
+    .attr("fill", "var(--sol-yellow)").attr("font-size", "11px")
+    .text("Modèle");
+
+  if (el) el.replaceChildren(svg.node());
+
+  return svg.node();
+}
+```

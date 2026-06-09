@@ -64,11 +64,34 @@ local function transform_span(el)
     local label_html = ""
     local input_html = ""
     if is_vertical then
-      label_html = make_label(id, label_text, "vertical")
-      input_html = string.format(
-        '<input type="range" class="form-range slider-inline vertical" id="%s" min="%s" max="%s" step="%s" value="%s" />',
-        id, min, max, step, val
+      -- Vertical slider: full .sim-slider-v structure (label rotated, badge, arrow)
+      local direction  = get_attr(el, "direction", "down")
+      local arrow_char = direction == "up" and "&#9650;" or "&#9660;"
+      local badge_id   = "__badge__" .. id
+
+      -- Compute initial data-state (0-3) from initial value
+      local val_n = tonumber(val) or 0
+      local min_n = tonumber(min) or 0
+      local max_n = tonumber(max) or 100
+      local init_state = math.min(3, math.floor((val_n - min_n) / math.max(1, max_n - min_n) * 4))
+
+      -- Inline oninput: update badge text + data-state on the wrapper
+      local oninput = string.format(
+        "var b=document.getElementById('%s');b&&(b.textContent=this.value);" ..
+        "this.parentElement.dataset.state=Math.min(3,Math.floor((+this.value-+this.min)/(+this.max-+this.min)*4));",
+        badge_id
       )
+
+      local html = string.format(
+        '<div class="sim-slider-v sim-slider-v--%s" data-state="%d">' ..
+        '<span class="slider-v-label">%s</span>' ..
+        '<span class="slider-v-badge" id="%s">%s</span>' ..
+        '<input type="range" class="slider-v-input" id="%s" min="%s" max="%s" step="%s" value="%s" oninput="%s" />' ..
+        '<div class="slider-v-arrow">%s</div>' ..
+        '</div>',
+        direction, init_state, label_text, badge_id, val, id, min, max, step, val, oninput, arrow_char
+      )
+      return pandoc.RawInline('html', html)
     else
       label_html = make_label(id, label_text)
       input_html = string.format(
