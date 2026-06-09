@@ -73,6 +73,7 @@ export { createCabling } from "./custom/cabling.js";
 export { createRamStorageGraph } from "./custom/ram-storage-graph.js";
 export { createAttentionTokenGraph } from "./custom/attention-token-graph.js";
 export { createKvPuzzleGraph, createKvValueGraph } from "./custom/kv-puzzle-graph.js";
+export { createTransformerStackView, createResidualDemo, createLayernormIris, createFfnLens, createOutputCamera } from "./custom/transformer-block.js";
 
 export {
   createBar,

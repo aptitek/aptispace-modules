@@ -81,3 +81,59 @@ $$
 
 La division par $\sqrt{d_k}$ évite que les scores deviennent trop grands avant le softmax.
 :::
+
+## Le bloc Transformer
+
+L'attention n'est qu'une étape. Le signal traverse ensuite une série de couches qui le raffinent avant de produire la sortie. Cliquez sur une couche dans la vue d'ensemble pour naviguer vers son onglet.
+
+:::: {.card-window}
+::: {.panel-tabset}
+
+#### Vue d'ensemble {.bi-layers}
+
+La pile se lit de haut en bas. Les **connexions résiduelles** (en vert, à gauche) contournent certaines couches pour préserver le signal d'origine. Les sphères colorées représentent les tokens qui traversent le bloc.
+
+::::: {#transformer-stack .chart-container-xl}
+:::::
+
+#### Connexion résiduelle {.bi-arrow-return-left}
+
+La **connexion résiduelle** (ou *skip connection*) additionne le signal d'entrée `x` au signal transformé `attention(x)`. Sans elle, l'information originale serait écrasée à chaque couche. Le réseau apprend la *différence* plutôt que la valeur absolue.
+
+Les sphères **transparentes** représentent `x` qui bypass les couches ; les sphères **pleines** sont le signal transformé ; les sphères **plus grandes** à droite sont le résultat de l'addition.
+
+::::: {#residual-demo .chart-container-xl}
+:::::
+
+#### Normalisation {.bi-bullseye}
+
+La **normalisation de couche** (LayerNorm) centre et réduit les activations : moyenne nulle, écart-type unitaire. L'iris s'ouvre ou se ferme en fonction de l'ouverture de normalisation. **Glissez vers le haut ou le bas** sur l'iris pour ajuster l'amplitude des activations d'entrée.
+
+::::: {#layernorm-iris .chart-container-xl}
+:::::
+
+#### Feed-Forward {.bi-arrows-expand}
+
+Le **réseau feed-forward** applique deux transformations linéaires à chaque token séparément. La première *expanse* la représentation à une dimension 4× plus grande (pour y trouver des motifs), la seconde la *compresse* à nouveau. **Déplacez la lentille** horizontalement pour révéler la dimension cachée de chaque token.
+
+::::: {#ffn-lens .chart-container-xl}
+:::::
+
+#### Sortie {.bi-camera}
+
+La **couche de projection finale** transforme le vecteur caché en scores sur tout le vocabulaire — les **logits**. Un softmax les convertit en probabilités. Les cellules du capteur correspondent aux tokens du vocabulaire ; cliquez sur **Déclencher** pour voir les probabilités s'allumer.
+
+::::: {#output-camera .chart-container-xl}
+:::::
+
+:::
+::::
+
+```{ojs}
+//| echo: false
+transformerStack  = aptitek.createTransformerStackView("#transformer-stack",  {}, invalidation)
+residualDemo      = aptitek.createResidualDemo("#residual-demo",               {}, invalidation)
+layernormIris     = aptitek.createLayernormIris("#layernorm-iris",             {}, invalidation)
+ffnLens           = aptitek.createFfnLens("#ffn-lens",                         {}, invalidation)
+outputCamera      = aptitek.createOutputCamera("#output-camera",               {}, invalidation)
+```
