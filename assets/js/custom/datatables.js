@@ -1,6 +1,8 @@
 // datatables.js
 // Tableau de données générique : recherche globale, tri par colonne, filtres déroulants, pagination.
 
+const COMPLEX_TYPES = ['url-hidden', 'url', 'link', 'tooltip', 'stack', 'pricing', 'io-badges'];
+
 function resolveElement(selector) {
   return typeof selector === 'string' ? document.querySelector(selector) : selector;
 }
@@ -12,6 +14,8 @@ function esc(val) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// ── Cell type helpers ─────────────────────────────────────────────────────────
 
 function statusBadge(val) {
   const states = { Actif: 'success', Bêta: 'warning', Arrêté: 'danger', Déprécié: 'danger' };
@@ -32,6 +36,57 @@ function boolBadge(val) {
   return `<span class="apt-dt-badge apt-dt-badge--${isYes ? 'info' : 'secondary'}">${esc(val)}</span>`;
 }
 
+// ── New multi-line helpers ────────────────────────────────────────────────────
+
+function extractFreeLabel(freeStr) {
+  const lower = String(freeStr ?? '').toLowerCase();
+  if (lower.startsWith('oui'))   return { state: 'yes',     label: 'Gratuit' };
+  if (lower.startsWith('non'))   return { state: 'no',      label: 'Payant'  };
+  if (lower.startsWith('limit')) return { state: 'limited', label: 'Limité'  };
+  return { state: 'secondary', label: '—' };
+}
+
+function extractPrice(payStr) {
+  if (!payStr) return '';
+  const lower = payStr.toLowerCase();
+  if (lower.includes('gratuit en local') || lower.startsWith('gratuit')) return 'Local';
+  if (lower.includes('selon les tokens') || lower.includes('pay-as-you-go') || lower.includes('à l\'usage')) return 'À l\'usage';
+  const match = payStr.match(/[~≈]?\s*(\d+[,.]?\d*)\s*([€$])/);
+  if (match) return `dès ${match[1]}${match[2]}/mois`;
+  return '';
+}
+
+function modalityKey(mod) {
+  const m = mod.toLowerCase().trim();
+  if (m.includes('texte') || m.includes('text'))                          return 'texte';
+  if (m.includes('code') || m.includes('exécut'))                         return 'code';
+  if (m.includes('image') || m.includes('img'))                            return 'image';
+  if (m.includes('voix') || m.includes('voice') || m.includes('speech'))  return 'voix';
+  if (m.includes('vidéo') || m.includes('video') || m.includes('clip'))   return 'video';
+  if (m.includes('audio') || m.includes('tts') || m.includes('son'))      return 'audio';
+  if (m.includes('fichier') || m.includes('docs') || m.includes('pdf'))   return 'fichier';
+  if (m.includes('musique') || m.includes('music') || m.includes('midi')) return 'musique';
+  if (m.includes('commande'))                                               return 'commande';
+  if (m.includes('3d') || m.includes('mesh') || m.includes('modèle 3'))   return 'td';
+  return 'autre';
+}
+
+function ioBadges(ioStr) {
+  if (!ioStr) return '';
+  const [inputStr = '', outputStr = ''] = ioStr.split(' / ');
+  const inputs  = inputStr.split(',').map(s => s.trim()).filter(Boolean);
+  const outputs = outputStr.split(',').map(s => s.trim()).filter(Boolean);
+  const mkBadge = mod =>
+    `<span class="apt-dt-io-badge apt-dt-io--${modalityKey(mod)}" title="${esc(mod)}">${esc(mod)}</span>`;
+  const parts = [];
+  if (inputs.length)  parts.push(...inputs.map(mkBadge));
+  if (inputs.length && outputs.length) parts.push('<span class="apt-dt-io-sep">→</span>');
+  if (outputs.length) parts.push(...outputs.map(mkBadge));
+  return `<div class="apt-dt-io">${parts.join('')}</div>`;
+}
+
+// ── Cell renderer ─────────────────────────────────────────────────────────────
+
 function renderCell(col, row) {
   const val = row[col.key] ?? '';
   switch (col.type) {
@@ -40,6 +95,21 @@ function renderCell(col, row) {
       if (!href) return esc(val);
       return `<a class="apt-dt-link" href="${href}" target="_blank" rel="noopener noreferrer">${esc(val)} <i class="bi bi-box-arrow-up-right apt-dt-ext-icon" aria-hidden="true"></i></a>`;
     }
+    case 'stack': {
+      const href = esc(col.urlKey ? (row[col.urlKey] ?? '') : '');
+      const sub  = esc(row[col.subKey ?? ''] ?? '');
+      const name = href
+        ? `<a class="apt-dt-link" href="${href}" target="_blank" rel="noopener noreferrer">${esc(val)} <i class="bi bi-box-arrow-up-right apt-dt-ext-icon" aria-hidden="true"></i></a>`
+        : `<span>${esc(val)}</span>`;
+      return `<div class="apt-dt-stack">${name}${sub ? `<span class="apt-dt-sub">${sub}</span>` : ''}</div>`;
+    }
+    case 'pricing': {
+      const { state, label } = extractFreeLabel(val);
+      const price = extractPrice(row[col.payKey ?? ''] ?? '');
+      return `<div class="apt-dt-pricing"><span class="apt-dt-pill apt-dt-pill--${state}">${label}</span>${price ? `<span class="apt-dt-price">${esc(price)}</span>` : ''}</div>`;
+    }
+    case 'io-badges':
+      return ioBadges(val);
     case 'badge':
       return statusBadge(val);
     case 'badge-free':
@@ -53,17 +123,30 @@ function renderCell(col, row) {
   }
 }
 
+// Texte indexé par la recherche — inclut les champs composites (subKey, payKey)
+function rowSearchText(col, row) {
+  const parts = [String(row[col.key] ?? '')];
+  if (col.subKey)  parts.push(String(row[col.subKey]  ?? ''));
+  if (col.payKey)  parts.push(String(row[col.payKey]  ?? ''));
+  return parts.join(' ');
+}
+
+// ── Composant principal ───────────────────────────────────────────────────────
+
 /**
  * Crée un tableau de données interactif (recherche, tri, filtres, pagination).
  *
  * @param {string|Element} selectorOrElement - Conteneur cible
  * @param {Array<Object>} data - Tableau de lignes (objets plats)
  * @param {Object} [options]
- * @param {Array}   [options.columns]       - Définitions de colonnes : { key, label, type, urlKey, sortable }
- * @param {boolean} [options.searchable]    - Affiche la barre de recherche (défaut : true)
- * @param {number}  [options.pageSize]      - Lignes par page (0 = tout afficher, défaut : 15)
- * @param {Array}   [options.filterColumns] - Clés de colonnes à filtrer (auto-détecté si omis)
- * @param {boolean} [options.compact]       - Mode compact, réduire le padding
+ * @param {Array}   [options.columns]        - Définitions de colonnes
+ *   Propriétés : key, label, type, urlKey, subKey, payKey, sortable
+ *   Types disponibles : text · link · stack · pricing · io-badges ·
+ *                       badge · badge-free · badge-bool · tooltip · url-hidden
+ * @param {boolean} [options.searchable]     - Barre de recherche (défaut : true)
+ * @param {number}  [options.pageSize]       - Lignes par page, 0 = tout (défaut : 15)
+ * @param {Array}   [options.filterColumns]  - Clés à filtrer (auto si omis)
+ * @param {boolean} [options.compact]        - Padding réduit
  * @returns {{ update(data: Array), destroy() }}
  */
 export function createDataTable(selectorOrElement, data, options = {}) {
@@ -82,9 +165,9 @@ export function createDataTable(selectorOrElement, data, options = {}) {
   } = options;
 
   let rows = Array.isArray(data) ? [...data] : [];
-  let sortKey = null;
-  let sortDir = 'asc';
-  let searchQuery = '';
+  let sortKey  = null;
+  let sortDir  = 'asc';
+  let searchQuery  = '';
   let activeFilters = {};
   let page = 1;
 
@@ -105,7 +188,7 @@ export function createDataTable(selectorOrElement, data, options = {}) {
   function autoFilterCols(sampleRows, allCols) {
     if (filterColumnsProp !== null) return filterColumnsProp;
     return allCols
-      .filter(c => !['url-hidden', 'url', 'link', 'tooltip'].includes(c.type))
+      .filter(c => !COMPLEX_TYPES.includes(c.type))
       .filter(c => {
         const vals = new Set(sampleRows.map(r => r[c.key]).filter(v => v != null && v !== ''));
         return vals.size >= 2 && vals.size <= 12;
@@ -123,7 +206,7 @@ export function createDataTable(selectorOrElement, data, options = {}) {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(row =>
-        visibleCols().some(col => String(row[col.key] ?? '').toLowerCase().includes(q))
+        visibleCols().some(col => rowSearchText(col, row).toLowerCase().includes(q))
       );
     }
 
@@ -144,11 +227,11 @@ export function createDataTable(selectorOrElement, data, options = {}) {
   }
 
   function render() {
-    const filtered = getFiltered();
+    const filtered  = getFiltered();
     const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1;
     page = Math.min(page, totalPages);
     const pageRows = pageSize > 0 ? filtered.slice((page - 1) * pageSize, page * pageSize) : filtered;
-    const vcols = visibleCols();
+    const vcols    = visibleCols();
 
     container.innerHTML = '';
     container.classList.add('apt-datatable');
@@ -210,15 +293,13 @@ export function createDataTable(selectorOrElement, data, options = {}) {
     table.className = 'table apt-dt-table';
 
     const thead = document.createElement('thead');
-    const htr = document.createElement('tr');
+    const htr   = document.createElement('tr');
     vcols.forEach(col => {
       const th = document.createElement('th');
       th.textContent = col.label;
       if (col.sortable !== false) {
         th.classList.add('apt-dt-th-sort');
-        if (sortKey === col.key) {
-          th.classList.add(sortDir === 'asc' ? 'apt-dt-sort--asc' : 'apt-dt-sort--desc');
-        }
+        if (sortKey === col.key) th.classList.add(sortDir === 'asc' ? 'apt-dt-sort--asc' : 'apt-dt-sort--desc');
         th.addEventListener('click', () => {
           sortDir = sortKey === col.key && sortDir === 'asc' ? 'desc' : 'asc';
           sortKey = col.key;
@@ -281,15 +362,13 @@ export function createDataTable(selectorOrElement, data, options = {}) {
         return btn;
       };
 
-      pager.appendChild(mkBtn('bi-chevron-double-left', page === 1, () => { page = 1; render(); }));
-      pager.appendChild(mkBtn('bi-chevron-left', page === 1, () => { page--; render(); }));
-
+      pager.appendChild(mkBtn('bi-chevron-double-left',  page === 1,          () => { page = 1;          render(); }));
+      pager.appendChild(mkBtn('bi-chevron-left',         page === 1,          () => { page--;            render(); }));
       const info = document.createElement('span');
-      info.className = 'apt-dt-pager-info';
+      info.className   = 'apt-dt-pager-info';
       info.textContent = `${page} / ${totalPages}`;
       pager.appendChild(info);
-
-      pager.appendChild(mkBtn('bi-chevron-right', page === totalPages, () => { page++; render(); }));
+      pager.appendChild(mkBtn('bi-chevron-right',        page === totalPages, () => { page++;            render(); }));
       pager.appendChild(mkBtn('bi-chevron-double-right', page === totalPages, () => { page = totalPages; render(); }));
 
       footer.appendChild(pager);
@@ -304,7 +383,7 @@ export function createDataTable(selectorOrElement, data, options = {}) {
     update(newData) {
       rows = Array.isArray(newData) ? [...newData] : [];
       if (!columnsProp) {
-        cols = buildColumns(rows);
+        cols       = buildColumns(rows);
         filterCols = autoFilterCols(rows, cols);
       }
       page = 1;

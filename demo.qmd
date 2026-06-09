@@ -678,15 +678,18 @@ maTable = aptitek.createDataTable("#mon-tableau", mesData, {
 
 ### Types de colonnes
 
-| `type`        | Rendu                                                         |
-| :------------ | :------------------------------------------------------------ |
-| `text`        | Texte brut échappé (défaut)                                   |
-| `link`        | Lien `<a>` vers `urlKey` ; `urlKey` désigne la colonne URL    |
-| `badge`       | Badge coloré pour statuts (`Actif`, `Bêta`, `Arrêté`)         |
-| `badge-bool`  | Badge Oui/Non (cyan / gris)                                   |
-| `badge-free`  | Pilule colorée pour le niveau gratuit (vert / rouge / jaune)  |
-| `tooltip`     | Texte tronqué, info-bulle au survol                           |
-| `url-hidden`  | Colonne exclue de l'affichage (utile pour la colonne URL)     |
+| `type`        | Propriétés spécifiques          | Rendu                                                            |
+| :------------ | :------------------------------ | :--------------------------------------------------------------- |
+| `text`        | —                               | Texte brut échappé (défaut)                                      |
+| `link`        | `urlKey`                        | Lien `<a>` ; `urlKey` = colonne qui contient l'URL               |
+| `stack`       | `urlKey`, `subKey`              | Nom (lien) + ligne secondaire (`subKey`) en dessous              |
+| `badge`       | —                               | Badge coloré pour statuts (`Actif` → vert, `Bêta` → jaune…)     |
+| `badge-bool`  | —                               | Badge Oui/Non (cyan / gris)                                      |
+| `badge-free`  | —                               | Pilule colorée niveau gratuit (vert / rouge / jaune)             |
+| `pricing`     | `payKey`                        | Pilule Gratuit/Payant/Limité + prix extrait de `payKey`          |
+| `io-badges`   | —                               | Parse `"X, Y / A, B"` en badges colorés par modalité, avec `→`  |
+| `tooltip`     | —                               | Texte tronqué, info-bulle au survol                              |
+| `url-hidden`  | —                               | Colonne exclue de l'affichage (utile pour stocker une URL brute) |
 
 ### Options
 
@@ -713,25 +716,22 @@ table.destroy()         // Vide le conteneur et retire les classes
 ```{ojs}
 //| echo: false
 dtDemoData = [
-  { Outil: "ChatGPT",          Modèle: "GPT-5",        Éditeur: "OpenAI",       URL: "https://chatgpt.com",            Statut: "Actif",  Inscription: "Oui", Gratuit: "Oui (capé ~10 msgs/5h)",   Payant: "Plus : 20$/mois",          Usage: "Ultra-polyvalent, écosystème mature, agentivité, exécution de code." },
-  { Outil: "Claude",           Modèle: "Sonnet 4.6",   Éditeur: "Anthropic",    URL: "https://claude.ai",              Statut: "Actif",  Inscription: "Oui", Gratuit: "Oui (quotas stricts)",      Payant: "Pro : 20$/mois",           Usage: "Finesse d'écriture, fenêtre de contexte massive, idéal pour la programmation." },
-  { Outil: "Gemini",           Modèle: "3.5 Flash",    Éditeur: "Google",       URL: "https://gemini.google.com",      Statut: "Actif",  Inscription: "Oui", Gratuit: "Oui (limites dynamiques)",  Payant: "Advanced : 21,99€/mois",   Usage: "Intégration Google Docs/Drive/Gmail, performant pour la recherche web." },
-  { Outil: "Midjourney",       Modèle: "v7",           Éditeur: "Midjourney",   URL: "https://midjourney.com",         Statut: "Actif",  Inscription: "Oui", Gratuit: "Non",                       Payant: "Basic : 10$/mois",         Usage: "Qualité artistique inégalée, photoréalisme exceptionnel, très prisé par les créatifs." },
-  { Outil: "Stable Diffusion", Modèle: "SDXL 3.5",    Éditeur: "Stability AI", URL: "https://stability.ai",           Statut: "Actif",  Inscription: "Non", Gratuit: "Oui (open-source, local)",  Payant: "Gratuit en local",         Usage: "Open-source, déployable localement, contrôle total sur le pipeline." },
-  { Outil: "Sora",             Modèle: "Sora Turbo",   Éditeur: "OpenAI",       URL: "https://sora.com",               Statut: "Actif",  Inscription: "Oui", Gratuit: "Limité (via ChatGPT Plus)", Payant: "Inclus dans Plus (20$/m)", Usage: "Génération vidéo IA haute qualité jusqu'à 1080p/20s." },
-  { Outil: "Cursor",           Modèle: "Claude 3.7",   Éditeur: "Anysphere",    URL: "https://cursor.com",             Statut: "Actif",  Inscription: "Oui", Gratuit: "Oui (200 interactions/mois)", Payant: "Pro : 20$/mois",         Usage: "IDE de référence pour le développement assisté. Mode Composer multi-fichiers." },
-  { Outil: "ElevenLabs",       Modèle: "Multilingual", Éditeur: "ElevenLabs",   URL: "https://elevenlabs.io",          Statut: "Actif",  Inscription: "Oui", Gratuit: "Oui (10 000 chars/mois)",  Payant: "Starter : 5$/mois",        Usage: "Clonage de voix ultra-réaliste, synthèse vocale multilangue." }
+  { Outil: "ChatGPT",          Éditeur: "OpenAI",       URL: "https://chatgpt.com",         Statut: "Actif", Gratuit: "Oui (capé ~10 msgs/5h)",    Payant: "Plus : 20$/mois",          IO: "Texte, Voix, Image, Fichiers / Texte, Voix, Image, Code", Usage: "Ultra-polyvalent, écosystème mature, agentivité, exécution de code." },
+  { Outil: "Claude",           Éditeur: "Anthropic",    URL: "https://claude.ai",            Statut: "Actif", Gratuit: "Oui (quotas stricts)",       Payant: "Pro : 20$/mois",           IO: "Texte, Fichiers, Code / Texte, Code",                      Usage: "Finesse d'écriture, fenêtre de contexte massive, idéal pour la programmation." },
+  { Outil: "Gemini",           Éditeur: "Google",       URL: "https://gemini.google.com",    Statut: "Actif", Gratuit: "Oui (limites dynamiques)",   Payant: "Advanced : 21,99€/mois",   IO: "Texte, Image, Voix, Docs / Texte, Image, Code",            Usage: "Intégration Google Docs/Drive/Gmail, performant pour la recherche web." },
+  { Outil: "Midjourney",       Éditeur: "Midjourney",   URL: "https://midjourney.com",       Statut: "Actif", Gratuit: "Non",                        Payant: "Basic : 10$/mois",         IO: "Texte, Image / Image",                                     Usage: "Qualité artistique inégalée, photoréalisme exceptionnel, très prisé par les créatifs." },
+  { Outil: "Stable Diffusion", Éditeur: "Stability AI", URL: "https://stability.ai",         Statut: "Actif", Gratuit: "Oui (open-source, local)",   Payant: "Gratuit en local",         IO: "Texte, Image / Image",                                     Usage: "Open-source, déployable localement, contrôle total sur le pipeline." },
+  { Outil: "Sora",             Éditeur: "OpenAI",       URL: "https://sora.com",             Statut: "Actif", Gratuit: "Limité (via ChatGPT Plus)",  Payant: "Inclus dans Plus (20$/m)", IO: "Texte, Image / Vidéo",                                     Usage: "Génération vidéo IA haute qualité jusqu'à 1080p/20s." },
+  { Outil: "Cursor",           Éditeur: "Anysphere",    URL: "https://cursor.com",           Statut: "Actif", Gratuit: "Oui (200 interactions/mois)", Payant: "Pro : 20$/mois",          IO: "Code, Texte / Code, Exécution",                            Usage: "IDE de référence pour le développement assisté. Mode Composer multi-fichiers." },
+  { Outil: "ElevenLabs",       Éditeur: "ElevenLabs",   URL: "https://elevenlabs.io",        Statut: "Actif", Gratuit: "Oui (10 000 chars/mois)",    Payant: "Starter : 5$/mois",        IO: "Texte, Audio / Voix, Audio",                               Usage: "Clonage de voix ultra-réaliste, synthèse vocale multilangue." }
 ]
 
 dtDemoCols = [
-  { key: "Outil", label: "Outil", type: "link", urlKey: "URL" },
-  { key: "Modèle", label: "Modèle" },
-  { key: "Éditeur", label: "Éditeur" },
-  { key: "Statut", label: "Statut", type: "badge" },
-  { key: "Inscription", label: "Inscription", type: "badge-bool" },
-  { key: "Gratuit", label: "Gratuit", type: "badge-free" },
-  { key: "Payant", label: "Payant", type: "tooltip" },
-  { key: "Usage", label: "Usage", type: "tooltip", sortable: false }
+  { key: "Outil",   label: "Outil",     type: "stack",     urlKey: "URL", subKey: "Éditeur"          },
+  { key: "Statut",  label: "Statut",    type: "badge"                                                 },
+  { key: "Gratuit", label: "Tarif",     type: "pricing",   payKey: "Payant"                           },
+  { key: "IO",      label: "I/O",       type: "io-badges", sortable: false                            },
+  { key: "Usage",   label: "Point fort", type: "tooltip",  sortable: false                            }
 ]
 
 dtDemo = aptitek.createDataTable("#dt-demo-container", dtDemoData, { columns: dtDemoCols, pageSize: 5 })

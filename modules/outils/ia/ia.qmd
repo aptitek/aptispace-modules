@@ -57,15 +57,11 @@ Référence des principaux outils d'intelligence artificielle disponibles en 202
 ```{ojs}
 //| echo: false
 iaColumns = [
-  { key: "Outil",                              label: "Outil",        type: "link",       urlKey: "URL"  },
-  { key: "Dernier Modèle / Service (2026)",    label: "Modèle"                                           },
-  { key: "Éditeur",                            label: "Éditeur"                                          },
-  { key: "Statut",                             label: "Statut",       type: "badge"                      },
-  { key: "Inscription",                        label: "Inscription",  type: "badge-bool"                 },
-  { key: "Gratuit (Limites)",                  label: "Gratuit",      type: "badge-free"                 },
-  { key: "Payant (Prix & Limites)",            label: "Payant",       type: "tooltip"                    },
-  { key: "Entrée / Sortie",                    label: "I/O"                                              },
-  { key: "Spécificité / Usage recommandé",     label: "Usage",        type: "tooltip",    sortable: false }
+  { key: "Outil",                          label: "Outil",     type: "stack",     urlKey: "URL", subKey: "Éditeur"                              },
+  { key: "Statut",                         label: "Statut",    type: "badge"                                                                    },
+  { key: "Gratuit (Limites)",              label: "Tarif",     type: "pricing",   payKey: "Payant (Prix & Limites)"                             },
+  { key: "Entrée / Sortie",               label: "I/O",       type: "io-badges", sortable: false                                               },
+  { key: "Spécificité / Usage recommandé", label: "Point fort", type: "tooltip",  sortable: false                                               }
 ]
 
 iaOpts = ({ columns: iaColumns, pageSize: 20 })
