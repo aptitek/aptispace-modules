@@ -86,6 +86,11 @@ body {
     font-family: $font-family-base;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+html, #quarto-content, .page-columns {
+    overflow-x: hidden !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

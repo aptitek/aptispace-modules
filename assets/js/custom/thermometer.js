@@ -53,6 +53,7 @@ export function createThermometer({ label, value = 0.7, min = 0, max = 2, step =
   const input = document.createElement('input');
   input.type = 'range';
   input.className = 'slider-input';
+  input.setAttribute('orient', 'vertical');
   input.min = min;
   input.max = max;
   input.step = step;

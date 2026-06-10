@@ -88,7 +88,7 @@ optParam = optType === "momentum" ? momentumParam
          : adamParam
 
 _gradSim = {
-  const { createGradientSurface } = await import("../../assets/js/custom/gradient-surface.js");
+  const { createGradientSurface } = await import("/assets/js/custom/gradient-surface.js");
   const sim = createGradientSurface("grad-graph", {
     lossF: (t1, t2) => t1 ** 4 / 4 - t1 ** 2 / 2 + t2 ** 2 / 2 + 0.1 * t1,
     gradF: (t1, t2) => [t1 ** 3 - t1 + 0.1, t2],

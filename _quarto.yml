@@ -2,10 +2,9 @@ project:
   type: website
   output-dir: _site
   render:
-    - "*.qmd"
-    - "modules/**/*.qmd"
+    - "**/*.qmd"
     - "!legacy/**"
-    - "!modules/tests/**"
+    - "!tests/**"
   resources:
     - "assets/**"
 
@@ -24,10 +23,7 @@ filters:
 website:
   title: "Aptispace"
   search: false
-  sidebar:
-    style: "docked"
-    search: false
-    contents: auto
+  sidebar: false
 
 format:
   html:

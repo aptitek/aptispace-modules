@@ -31,3 +31,11 @@
 .word-cloud-container .tagcloud {
     margin: auto;
 }
+
+// Rendre les graphiques Plotly pleinement réactifs et sans débordement
+.js-plotly-plot,
+.plot-container,
+.main-svg {
+    max-width: 100% !important;
+}
+

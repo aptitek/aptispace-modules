@@ -6,10 +6,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     height: 100%;
     min-height: 200px;
-    padding: 15px;
+    padding: 10px;
     background: $sol-base2;
     border: 1px solid rgba(0, 0, 0, 0.05);
     border-radius: 16px;
@@ -52,6 +52,7 @@
         left: 0;
         width: 100%;
         height: 100%;
+        max-width: 32px;
         opacity: 0;
         cursor: pointer;
         z-index: 10;
@@ -78,9 +79,9 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    min-width: 100px;
-    max-width: 130px;
-    padding: 15px;
+    min-width: 80px;
+    max-width: 110px;
+    padding: 10px;
     background: $sol-base2;
     border: 1px solid rgba(0, 0, 0, 0.05);
     border-radius: 16px;
@@ -156,12 +157,12 @@
 
 .thermometer-slider {
     @extend .slider-vertical;
-    min-width: 100px;
+    min-width: 80px;
 
     .slider-track-container {
-        width: 32px;
+        width: 24px;
         background: rgba(0, 0, 0, 0.1);
-        border-radius: 16px 16px 0 0;
+        border-radius: 12px 12px 0 0;
         box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
@@ -171,8 +172,8 @@
         bottom: 5px;
         left: 50%;
         transform: translateX(-50%);
-        width: 50px;
-        height: 50px;
+        width: 38px;
+        height: 38px;
         background: var(--current-color, $sol-blue);
         border-radius: 50%;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -187,7 +188,7 @@
         position: absolute;
         top: 20px;
         bottom: 20px;
-        left: 5px;
+        left: 2px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -196,7 +197,7 @@
 
         .tick {
             height: 1.5px;
-            width: 6px;
+            width: 4px;
             background: rgba(255, 255, 255, 0.3);
         }
     }
@@ -226,12 +227,12 @@
 
 .blade-slider {
     @extend .slider-vertical;
-    min-width: 100px;
+    min-width: 80px;
 
     .slider-track-container {
-        width: 32px;
+        width: 24px;
         background: rgba(0, 0, 0, 0.1);
-        border-radius: 16px;
+        border-radius: 12px;
         box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.1);
         border: none;
         overflow: visible; // To allow blade overflow
@@ -269,8 +270,8 @@
 
     .blade-handle {
         position: absolute;
-        left: -10px;
-        right: -10px;
+        left: -6px;
+        right: -6px;
         height: 4px;
         background: $sol-red;
         border-radius: 2px;
@@ -282,10 +283,17 @@
         &::after {
             content: "🔪";
             position: absolute;
-            right: -18px;
+            right: -14px;
             top: -16px;
             font-size: 1.2em;
             filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
         }
     }
 }
+
+// Empêcher l'apparition de barres de défilement (scrollbars/sliders) indésirables autour des widgets
+.card-window .ojs-cell,
+.card-window .observablehq {
+    overflow: visible !important;
+}
+

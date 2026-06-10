@@ -48,6 +48,7 @@ export function createBladeSlider({ label, value = 8, min = 1, max = 8, height =
   const input = document.createElement('input');
   input.type = 'range';
   input.className = 'slider-input';
+  input.setAttribute('orient', 'vertical');
   input.min = min;
   input.max = max;
   input.step = 1;

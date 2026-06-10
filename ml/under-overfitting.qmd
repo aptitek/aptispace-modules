@@ -38,11 +38,11 @@ La mesure de la dispersion des prédictions autour de leur moyenne pour différe
 ::: {.card-window .mb-4}
 #### Biais et Variance {.bi-arrows-collapse}
 
-::::{.row}
+:::: {.row}
 [Complexité du modèle]{.slider #complexity value=50 min=0 max=100 vertical=true}
 
-:::: {#biais-graph .chart-container-md}
-::::
+::::: {#biais-graph .chart-container-md}
+:::::
 
 ::::
 :::
