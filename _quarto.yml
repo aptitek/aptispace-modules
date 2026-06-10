@@ -1,3 +1,5 @@
+cloudflare-project: "aptispace-modules"
+
 project:
   type: website
   output-dir: _site

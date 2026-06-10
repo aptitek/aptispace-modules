@@ -1,0 +1,50 @@
+name: Deploy Quarto Site to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.6.39
+
+      - name: Install Google Chrome Native
+        run: |
+          sudo apt-get update
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+
+      - name: Render Quarto Website & PDFs
+        run: quarto render
+        timeout-minutes: 5 
+        env:
+          QUARTO_CHROMIUM_EXTRA_ARGS: "--no-sandbox --disable-dev-shm-usage --disable-gpu"
+          QUARTO_PRINT_STACK: true
+          QUARTO_LOG_LEVEL: debug
+          
+      - name: Extract Project Name from _quarto.yml
+        id: extract_project
+        run: |
+          PROJECT_NAME=$(grep "cloudflare-project:" _quarto.yml | awk '{print $2}' | tr -d '"' | tr -d "'")
+          echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3 
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name=${{ env.PROJECT_NAME }}
