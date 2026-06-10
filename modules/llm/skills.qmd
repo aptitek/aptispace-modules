@@ -1,0 +1,179 @@
+---
+title: "⚡ Skills de Codage"
+---
+
+Dans le Vibe Coding, le développeur ne tape plus de code ligne par ligne — il transmet une *intention* et l'agent exécute. Mais déléguer sans contraintes produit un code fonctionnel... et architecturalement chaotique. La clé : deux couches complémentaires.
+
+Le **MCP** donne à l'agent les **mains** — l'accès aux fichiers, aux APIs, aux bases de données. Les **Skills** lui donnent les **règles** — comment architecturer, nommer, tester et décomposer le code. Les deux sont indispensables, mais ils opèrent à des niveaux radicalement différents.
+
+## 🛠️ MCP vs Skills : Deux Couches Orthogonales
+
+Ce ne sont pas des alternatives — c'est un empilement :
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### MCP — Le Tournevis {.bi-tools}
+Donne à l'agent des **capacités d'action**. Il peut lire un fichier, interroger une base de données, appeler une API météo, pousser du code sur GitHub.
+
+*Le MCP répond à : "Que peut faire l'agent ?"*
+
+Sans MCP, l'agent est brillant mais aveugle au monde réel.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Skills — Le Manuel de Montage {.bi-journal-code}
+Injecte des **règles comportementales** dans le contexte de l'agent. Il sait qu'il doit suivre l'Atomic Design, nommer les fichiers en `kebab-case`, éviter les styles inline, et vérifier l'existence d'un composant avant d'en créer un nouveau.
+
+*Les Skills répondent à : "Comment l'agent doit-il coder ?"*
+
+Sans Skills, l'agent produit du code qui fonctionne mais qui viole toutes vos conventions.
+:::::
+::::
+:::
+
+::: {.card-window}
+#### Architecture du Vibe Coding {.bi-diagram-3}
+
+:::: {#vibe-arch-diagram .chart-container-md}
+::::
+
+:::
+
+```{ojs}
+//| echo: false
+vibeCodingGraph = {
+  const nodes = [
+    { id: "D", label: "Développeur", shape: "circle", status: "entry" },
+    { id: "S", label: "Filtre Skills\n(règles, persona)", shape: "rounded rect", status: "current" },
+    { id: "A", label: "Agent IA\n(ReAct)", shape: "rounded rect", status: "default" },
+    { id: "M", label: "Couche MCP\n(protocole)", shape: "pill", status: "default" },
+    { id: "T", label: "Outils & APIs", shape: "oval", status: "past" }
+  ];
+  const links = [
+    { source: "D", target: "S", label: "intention" },
+    { source: "S", target: "A", label: "contexte filtré" },
+    { source: "A", target: "M", label: "appel outil" },
+    { source: "M", target: "T", label: "exécution" },
+    { source: "T", target: "A", label: "observation" },
+    { source: "A", target: "D", label: "résultat" }
+  ];
+  const graph = renderStateMachineGraph("#vibe-arch-diagram", { nodes, links }, {
+    height: 320,
+    nodeRadius: 24,
+    fontSize: 9,
+    enableZoom: false,
+    zoomToFit: true,
+    zoomToFitPadding: 40
+  });
+  invalidation.then(() => graph?.destroy?.());
+  return graph;
+}
+```
+
+## 📋 Skills vs System Prompts : La Persistance
+
+Un System Prompt est une instruction de session, donnée à la volée dans la conversation. Un Skill est une **règle de projet**, stockée dans un fichier, versionnée avec le code, partagée avec toute l'équipe.
+
+::: {.row gap=4 mb=3}
+:::: {.col span=6}
+
+| Caractéristique | System Prompt | Skill |
+| :--- | :---: | :---: |
+| **Portée** | Session | Projet |
+| **Stockage** | En mémoire | Fichier (`CLAUDE.md`, `.cursor/rules`) |
+| **Versionné (Git)** | ✗ | ✓ |
+| **Partagé en équipe** | ✗ | ✓ |
+| **Spécificité** | Générale | Architecturale |
+
+::::
+:::: {.col span=6}
+
+Un Skill fonctionne exactement comme un System Prompt étendu — il est injecté dans le contexte de l'agent **à chaque démarrage** de session IDE. La différence est opérationnelle : le fichier de Skills est **committé dans le dépôt** et s'applique automatiquement à tous les membres de l'équipe, sans configuration manuelle.
+
+::::
+:::
+
+::: {.terminal}
+#### Exemple — `.cursor/rules` pour un projet React {.bi-terminal}
+
+**ARCHITECTURE :**
+Atomic Design obligatoire : `atoms/` → `molecules/` → `organisms/`
+Aucune logique de données dans les composants UI — extraire dans des *hooks* ou *services*
+
+**STYLE :**
+Zéro styles inline — classes CSS et variables de design uniquement
+Nommer les fichiers en `kebab-case`, les composants en `PascalCase`
+
+**QUALITÉ :**
+Vérifier l'existence d'un composant avant d'en créer un nouveau
+Chaque composant exporté doit être accompagné d'un test unitaire
+
+**COMPORTEMENT :**
+Si une tâche semble ambiguë, demander une clarification avant d'agir
+Ne jamais supprimer du code sans proposer une alternative
+
+:::
+
+## 🗂️ Trois Familles de Skills
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### Skills Architecturaux {.bi-building}
+Des règles d'IDE qui encodent les **principes de votre architecture** : DRY, KISS, SRP, Atomic Design, conventions de nommage. Le modèle de référence est [cursor.directory](https://cursor.directory) — un annuaire communautaire de règles prêtes à l'emploi, classées par langage et framework.
+
+[Cas d'usage]{.section-label}
+Imposer des standards de qualité cohérents à tous les membres de l'équipe, y compris l'agent IA.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Skills Programmatiques {.bi-plugin}
+Des **outils encapsulés** prêts à être injectés dans un agent (Python, TypeScript). [LlamaHub](https://llamahub.ai) liste des centaines de composants LlamaIndex — analyseurs de données, lecteurs d'APIs, connecteurs de bases. [LangChain Tools](https://python.langchain.com/docs/integrations/tools/) fait de même pour l'écosystème LangChain.
+
+[Cas d'usage]{.section-label}
+Doter un agent sur mesure de capacités précises sans réécrire l'intégration from scratch.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Skills de Persona {.bi-person-badge-fill}
+Des **rôles d'expertise** qui transforment un modèle généraliste en spécialiste. La [Bibliothèque de Prompts Anthropic](https://docs.anthropic.com/fr/prompt-library/library) propose des configurations pour "React Expert", "Security Reviewer" ou "Data Analyst". Le dépôt [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) offre des personas pour architecte réseau, testeur QA, et bien d'autres.
+
+[Cas d'usage]{.section-label}
+Obtenir des réponses avec le niveau de rigueur et le vocabulaire d'un expert du domaine.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### Ce projet utilise lui-même des Skills
+Le fichier `.agents/rules/code-guidelines.md` de ce dépôt EST un Skill architectural — il est chargé automatiquement par les agents IDE et encode toutes les conventions du projet (séparation des responsabilités QMD/JS/SCSS, Atomic Design, tokens de design, filtres Lua). Le fichier `CLAUDE.md` que Claude Code génère joue le même rôle pour l'assistant IA.
+:::
+
+## ⚙️ Composer son Stack Vibe Coding
+
+Un environnement de Vibe Coding complet combine les trois couches :
+
+::: {.row gap=4}
+:::: {.col span=4}
+::::: {.card}
+#### 1. Définir les Skills {.bi-list-check}
+Choisissez un **Skill de persona** (ex: "Expert React strict") et un ou plusieurs **Skills architecturaux** (ex: Atomic Design, tests obligatoires). Committez-les dans `.cursor/rules` ou `CLAUDE.md`.
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
+#### 2. Configurer les Outils {.bi-wrench-adjustable}
+Connectez les **Serveurs MCP** utiles au projet : lecture de fichiers, accès GitHub, interrogation de base de données. L'agent peut maintenant agir sur l'environnement réel.
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
+#### 3. Transmettre l'Intention {.bi-chat-square-text}
+Rédigez un brief de haut niveau — pas du code, mais une **intention architecturale**. L'agent filtre cette intention à travers vos Skills, choisit ses outils via MCP, et livre un résultat conforme à vos standards.
+:::::
+::::
+:::

@@ -1,0 +1,203 @@
+---
+title: "🧠 Mémoire & Contexte"
+---
+
+Un LLM n'a pas de mémoire persistante entre deux conversations. **Tout ce qu'il "sait" au cours d'un échange vit dans une zone tampon de taille fixe** : la fenêtre de contexte. Comprendre ses limites et ses stratégies d'extension, c'est comprendre l'architecture profonde de ces modèles.
+
+## 🪟 La Fenêtre de Contexte
+
+La **Context Window** est le nombre maximum de tokens qu'un modèle peut ingérer et traiter en une seule passe. Passé cette limite, le modèle ne "voit" plus les tokens précédents — ils sont simplement perdus.
+
+La raison de cette limite est mathématique : la complexité du mécanisme d'attention est **quadratique** ($O(N^2)$). Doubler la longueur du texte quadruple les besoins en mémoire. Pour une séquence de 100 000 tokens, la matrice d'attention seule nécessiterait environ **1,2 Téraoctet** de mémoire GPU.
+
+::: {.card-window}
+#### Évolution de la Context Window {.bi-bar-chart-steps}
+
+:::: {#plot-context-sizes .chart-container-sm}
+::::
+
+:::
+
+```{ojs}
+//| echo: false
+renderContextSizes = {
+  createBar("plot-context-sizes", {
+    x: ["GPT-2\n(2019)", "GPT-3\n(2020)", "GPT-4 Turbo\n(2023)", "Claude 3\n(2024)", "Gemini 1.5\n(2024)"],
+    y: [1, 4, 128, 200, 1000]
+  }, "Fenêtre de contexte (en milliers de tokens, échelle log)", {
+    marker: {
+      color: [
+        getThemeColor("--sol-base01", "#586e75"),
+        getThemeColor("--sol-base01", "#586e75"),
+        getThemeColor("--sol-blue", "#268bd2"),
+        getThemeColor("--sol-cyan", "#2aa198"),
+        getThemeColor("--sol-green", "#859900")
+      ]
+    },
+    layout: {
+      margin: { t: 50, b: 60, l: 50, r: 20 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      yaxis: { type: "log", ticksuffix: "K" }
+    }
+  })
+}
+```
+
+::: {.callout-note collapse="true"}
+#### Comment les fenêtres ont-elles pu grandir ?
+L'encodage positionnel classique (sinusoïdal ou appris) plante catégoriquement au-delà de sa longueur d'entraînement. Deux innovations ont levé ce plafond :
+
+- **RoPE (Rotary Positional Embeddings)** — standard actuel (LLaMA, Mistral) : fait pivoter les vecteurs Q et K d'un angle proportionnel à leur position. Imaginez une montre : l'angle relatif entre aiguilles encode la distance entre deux mots. Cela extrapole bien au-delà des longueurs vues à l'entraînement.
+- **ALiBi** — applique directement une pénalité linéaire sur les scores d'attention en fonction de la distance, favorisant naturellement le contexte récent.
+:::
+
+## 🗂️ Le Cache K/V
+
+À chaque nouveau token généré, le modèle devrait recalculer l'attention sur toute la séquence depuis le début. Ce serait prohibitif. L'astuce est le **Cache K/V** : les matrices *Keys* et *Values* de chaque token passé sont mémorisées en VRAM. Le nouveau token n'a plus qu'à lire le cache — pas à tout recalculer.
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### L'Avantage {.bi-lightning-charge}
+Chaque nouveau token est généré en $O(N)$ au lieu de $O(N^2)$. La génération reste fluide même pour de longues conversations, car les calculs d'attention passés ne sont jamais répétés.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Le Coût {.bi-gpu-card}
+Le cache croît **linéairement** avec la longueur du contexte. Pour un modèle 70B avec 200 000 tokens de contexte, le cache K/V peut exiger ~40 Go de VRAM — parfois plus que les poids du modèle eux-mêmes.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### FlashAttention : le goulot d'étranglement n'est pas le calcul
+
+En 2022, les ingénieurs ont réalisé que la vraie limite n'était pas le nombre d'opérations, mais les **allers-retours de données** entre la mémoire vive du GPU (HBM) et la puce. FlashAttention calcule l'attention par blocs directement dans la mémoire cache ultra-rapide (SRAM), réduisant les transferts d'un facteur 10 et accélérant l'entraînement de ~300 %.
+:::
+
+## 📜 Compression de l'Historique
+
+À mesure qu'une conversation avance, l'historique des échanges s'accumule et **consomme progressivement la fenêtre de contexte**. Système prompt, tours précédents, requête courante et réponse attendue se disputent un espace limité.
+
+::: {.card-window}
+#### Simulation d'Occupation du Contexte {.bi-layout-three-columns}
+
+:::: {.row gap=4}
+::::: {.col}
+[Nombre de tours]{.slider #conv-turns value=1 min=1 max=30 step=1}
+:::::
+::::
+
+:::: {#plot-context-fill .chart-container-sm}
+::::
+
+:::
+
+```{ojs}
+//| echo: false
+renderContextFill = {
+  const LIMIT = 8192;
+  const SYSTEM = 512;
+  const TURN = 128;
+  const PER_TURN = 280;
+  const history = conv_turns * PER_TURN;
+  const histCapped = Math.min(history, Math.max(0, LIMIT - SYSTEM - TURN));
+  const available = Math.max(0, LIMIT - SYSTEM - histCapped - TURN);
+  const overflow = (SYSTEM + history + TURN) > LIMIT;
+
+  const dataStack = [
+    {
+      label: "System Prompt",
+      x: ["Contexte"],
+      y: [SYSTEM],
+      color: getThemeColor("--sol-blue", "#268bd2")
+    },
+    {
+      label: "Historique",
+      x: ["Contexte"],
+      y: [histCapped],
+      color: overflow
+        ? getThemeColor("--sol-red", "#dc322f")
+        : getThemeColor("--sol-orange", "#cb4b16")
+    },
+    {
+      label: "Tour actuel",
+      x: ["Contexte"],
+      y: [TURN],
+      color: getThemeColor("--sol-green", "#859900")
+    },
+    {
+      label: "Disponible",
+      x: ["Contexte"],
+      y: [available],
+      color: getThemeColor("--sol-base02", "#073642")
+    }
+  ];
+
+  createStackedBar("plot-context-fill", dataStack,
+    `Occupation sur ${LIMIT.toLocaleString()} tokens`, {
+    layout: {
+      margin: { t: 45, b: 40, l: 40, r: 20 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      yaxis: { range: [0, LIMIT] }
+    }
+  });
+}
+```
+
+Quatre stratégies permettent d'éviter la saturation :
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### Fenêtre Glissante {.bi-arrow-left-right}
+Ne conserver que les **N derniers tours**. Simple à implémenter, mais le modèle "oublie" mécaniquement les débuts de conversation.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Résumé Automatique {.bi-text-paragraph}
+Quand l'historique dépasse un seuil, demander au LLM de le **résumer** en un bloc compact. Le résumé remplace les tours bruts — l'essentiel est préservé, le volume réduit.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Sélection Sémantique {.bi-search}
+Utiliser un **RAG sur l'historique** : vectoriser les tours passés et ne récupérer que ceux qui sont pertinents pour la question courante. La mémoire devient sélective plutôt que chronologique.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Mémoire Externe {.bi-database}
+Externaliser les faits importants dans un **store vectoriel** (LangMem, Zep). Le contexte ne contient plus les échanges bruts — uniquement les faits extraits et pertinents.
+:::::
+::::
+:::
+
+## 🧠 Les Couches de Mémoire
+
+Un agent IA complet combine plusieurs types de mémoire, à l'image des systèmes cognitifs humains.
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### Mémoire à Court Terme {.bi-hourglass-split}
+La **fenêtre de contexte active**. Rapide, précise, mais éphémère : disparaît à la fin de la session. Contient le system prompt, l'historique récent et la requête courante.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Mémoire à Long Terme {.bi-archive}
+Un **store vectoriel externe** (Pinecone, ChromaDB) persistant entre les sessions. L'agent y stocke les faits importants et y effectue des recherches sémantiques pour enrichir son contexte à la demande.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Mémoire Épisodique {.bi-journal-text}
+Des **résumés de conversations passées** conservés sous forme structurée. L'agent peut "se souvenir" qu'un utilisateur préfère les réponses en JSON, ou qu'un projet a été abandonné il y a deux semaines.
+:::::
+::::
+:::

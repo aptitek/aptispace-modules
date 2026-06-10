@@ -1,0 +1,191 @@
+---
+title: "✍️ Prompt Engineering"
+---
+
+Un LLM ne cherche pas la "vraie" réponse dans une base de données. À chaque token généré, il **tire au sort** dans une distribution de probabilité sur tout son vocabulaire. Le Prompt Engineering consiste à orienter cette distribution vers la zone de réponse souhaitée — c'est de la physique probabiliste, pas de la magie.
+
+## 🎲 Les Paramètres d'Échantillonnage
+
+Trois leviers contrôlent comment le modèle "tire au sort" son prochain token. Ajustez-les pour observer leur impact sur la distribution Softmax.
+
+::: {.card-window}
+#### Simulateur de Distribution Softmax {.bi-sliders}
+
+:::: {.row gap=4}
+::::: {.col}
+[Température (T)]{.slider #temp-val value=0.7 min=0.01 max=2 step=0.05}
+:::::
+::::: {.col}
+[Top-K]{.slider #top-k-val value=8 min=1 max=8 step=1}
+:::::
+::::: {.col}
+[Top-P (Nucleus)]{.slider #top-p-val value=1 min=0.1 max=1 step=0.05}
+:::::
+::::
+
+:::: {#plot-distrib .chart-container}
+::::
+
+:::
+
+::: {.row gap=4 mt=3}
+:::: {.col}
+::::: {.card}
+#### Température {.bi-thermometer-half}
+Modifie la "pente" de la fonction Softmax :
+
+**T → 0** — Distribution pincée, modèle **déterministe**. Idéal pour le code et l'extraction de faits.
+
+**T > 1** — Distribution aplatie, illusion de **créativité**, mais risque d'incohérence.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Top-K {.bi-filter}
+Ne conserve que les **K tokens** les plus probables. Tous les autres sont exclus avant le tirage — ils apparaissent en gris dans le simulateur.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Top-P (Nucleus) {.bi-pie-chart}
+Additionne les probabilités en descendant dans la liste. Dès que la somme dépasse **P**, on coupe. Plus dynamique que Top-K : la "fenêtre" s'adapte au contexte.
+:::::
+::::
+:::
+
+```{ojs}
+//| echo: false
+renderDistrib = {
+  const vocab = [
+    { word: "Intelligence", logit: 8.0 },
+    { word: "Chat", logit: 7.5 },
+    { word: "Code", logit: 6.0 },
+    { word: "Robot", logit: 5.0 },
+    { word: "Erreur", logit: 4.0 },
+    { word: "Pizza", logit: 1.0 },
+    { word: "Soleil", logit: 0.5 },
+    { word: "Arbre", logit: 0.1 }
+  ];
+  const maxL = Math.max(...vocab.map(d => d.logit));
+  let items = vocab.map(d => ({ ...d, score: Math.exp((d.logit - maxL) / temp_val) }));
+  const sumS = items.reduce((s, d) => s + d.score, 0);
+  items.forEach(d => d.prob = d.score / sumS);
+  items.sort((a, b) => b.prob - a.prob);
+  items.forEach((d, i) => { if (i >= top_k_val) d.prob = 0; });
+  let cum = 0, cut = false;
+  items.forEach(d => {
+    if (cut || d.prob <= 0) { d.prob = 0; }
+    else { cum += d.prob; if (cum >= top_p_val) cut = true; }
+  });
+  const finalS = items.reduce((s, d) => s + d.prob, 0);
+  items.forEach(d => d.prob = finalS > 0 ? d.prob / finalS : 0);
+  createBar("plot-distrib", {
+    x: items.map(d => d.word),
+    y: items.map(d => +(d.prob * 100).toFixed(1))
+  }, "", {
+    marker: {
+      color: items.map(d =>
+        d.prob > 0.5 ? getThemeColor("--sol-green", "#859900")
+        : d.prob > 0  ? getThemeColor("--sol-blue", "#268bd2")
+        : getThemeColor("--sol-base02", "#073642")
+      )
+    },
+    layout: {
+      margin: { t: 10, b: 40, l: 40, r: 10 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      yaxis: { ticksuffix: "%" }
+    }
+  })
+}
+```
+
+## ✍️ Les Techniques de Prompting
+
+La qualité du **contexte fourni** détermine quelle zone de la distribution sera explorée. Trois niveaux, du plus simple au plus puissant :
+
+::: {.row gap=4}
+:::: {.col}
+::::: {.card}
+#### Zero-Shot {.bi-dash-circle}
+Aucun exemple. Le modèle s'appuie uniquement sur ses connaissances d'entraînement.
+
+```
+Traduis en anglais :
+"L'IA est une discipline fascinante."
+```
+
+[Cas d'usage]{.section-label}
+Tâches courantes bien représentées dans les données d'entraînement.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Few-Shot {.bi-collection}
+**2 à 5 exemples** *entrée → sortie* avant la question. Ancre le format attendu dans la fenêtre d'attention.
+
+```
+"Il as mangé" → "Il a mangé"
+"Les chien aboie" → "Les chiens aboient"
+"Elle coure vite" → ???
+```
+
+[Cas d'usage]{.section-label}
+Tâches avec une structure de sortie précise à respecter.
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Chain-of-Thought {.bi-signpost-split}
+Forcer le modèle à **verbaliser son raisonnement** avant de conclure. Les tokens intermédiaires guident mathématiquement la prédiction finale.
+
+```
+Résous étape par étape :
+"3 paniers × 4 pommes,
+ j'en mange 5. Combien reste-t-il ?"
+```
+
+[Cas d'usage]{.section-label}
+Raisonnement mathématique, logique, multi-étapes.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### Pourquoi le Chain-of-Thought fonctionne-t-il ?
+L'attention d'un LLM se nourrit des tokens qu'il vient de générer. En le forçant à produire des étapes intermédiaires (*"3 × 4 = 12, puis 12 − 5 = 7"*), chaque étape re-contextualise la fenêtre d'attention et oriente la prédiction suivante vers une conclusion logique — plutôt qu'une association statistique hâtive.
+:::
+
+## 🧠 Le System Prompt
+
+Le System Prompt est lu **avant toute interaction utilisateur**. Il cadre l'espace de probabilité du modèle pour toute la conversation. Ce n'est pas une simple consigne — c'est une **architecture rhétorique**.
+
+::: {.terminal}
+#### Anatomie d'un System Prompt {.bi-terminal}
+
+**RÔLE :** Tu es Léo, pédagogue expert en informatique.
+Style : direct, précis, sans condescendance.
+
+**CONTEXTE :** L'utilisateur est un développeur junior qui découvre le cloud.
+
+**FORMAT :** Toujours répondre avec ce schéma JSON :
+`{ "concept": "...", "analogie": "...", "exemple_code": "..." }`
+
+**CONTRAINTE :** Vérifier ton raisonnement avant de produire la réponse.
+
+:::
+
+::: {.row gap=4 mt=3}
+:::: {.col}
+::::: {.card}
+#### Persona Design {.bi-person-badge}
+Définir une "parallaxe conceptuelle" pour saturer le modèle de priorités spécifiques. "Agis comme un expert en cybersécurité *doublé d'un pédagogue stoïcien*" évite les réponses génériques et le **sycophantisme** (l'IA qui acquiesce à tout pour plaire).
+:::::
+::::
+:::: {.col}
+::::: {.card}
+#### Framing Block {.bi-layout-text-window}
+Forcer le modèle à **verbaliser son interprétation** de la tâche dans un bloc de raisonnement obligatoire *avant* de répondre. Ancre la réponse dans une analyse logique plutôt qu'une réaction statistique immédiate.
+:::::
+::::
+:::
