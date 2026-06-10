@@ -111,6 +111,10 @@ export { updateAutoencoderViz } from "./custom/autoencoder.js";
 export { renderLatentInterpolation, renderVqVaeMetrics, renderVqVaeCodebook, generateVqCodebook } from "./custom/vae.js";
 export { updateKLViz } from "./custom/kl-divergence.js";
 export { createReparamViz } from "./custom/reparam.js";
+export { createThermometer } from "./custom/thermometer.js";
+export { createBladeSlider } from "./custom/blade-slider.js";
+export { createSliderRadial } from "./custom/slider-radial.js";
+
 
 
 //TODO: Delete ui entirely and use the new system with default quarto tags and such in the qmd files

@@ -413,10 +413,10 @@ Les attributs contrôlent les options de l'input (`value`, `min`, `max`, etc.).
 
 **Slider vertical** — ajouter `vertical=true`. L'attribut `direction` (défaut `down`) contrôle le sens : `down` = glisser vers le bas augmente la valeur, `up` = glisser vers le haut augmente la valeur.
 
-::: {.d-flex .gap-4 .align-items-start .my-2}
+:::: {.d-flex .gap-4 .align-items-start .my-2}
 [Gauche]{.slider #inp-vert-g value=30 vertical=true}
 [Droite]{.slider #inp-vert-d value=70 vertical=true direction=up}
-:::
+::::
 
 **Nombre** — `.number` avec `min`, `max`, `step` :
 
@@ -678,28 +678,28 @@ maTable = aptitek.createDataTable("#mon-tableau", mesData, {
 
 ### Types de colonnes
 
-| `type`        | Propriétés spécifiques          | Rendu                                                            |
-| :------------ | :------------------------------ | :--------------------------------------------------------------- |
-| `text`        | —                               | Texte brut échappé (défaut)                                      |
-| `link`        | `urlKey`                        | Lien `<a>` ; `urlKey` = colonne qui contient l'URL               |
-| `stack`       | `urlKey`, `subKey`              | Nom (lien) + ligne secondaire (`subKey`) en dessous              |
-| `badge`       | —                               | Badge coloré pour statuts (`Actif` → vert, `Bêta` → jaune…)     |
-| `badge-bool`  | —                               | Badge Oui/Non (cyan / gris)                                      |
-| `badge-free`  | —                               | Pilule colorée niveau gratuit (vert / rouge / jaune)             |
-| `pricing`     | `payKey`                        | Pilule Gratuit/Payant/Limité + prix extrait de `payKey`          |
-| `io-badges`   | —                               | Parse `"X, Y / A, B"` en badges colorés par modalité, avec `→`  |
-| `tooltip`     | —                               | Texte tronqué, info-bulle au survol                              |
-| `url-hidden`  | —                               | Colonne exclue de l'affichage (utile pour stocker une URL brute) |
+| `type`       | Propriétés spécifiques | Rendu                                                            |
+| :----------- | :--------------------- | :--------------------------------------------------------------- |
+| `text`       | —                      | Texte brut échappé (défaut)                                      |
+| `link`       | `urlKey`               | Lien `<a>` ; `urlKey` = colonne qui contient l'URL               |
+| `stack`      | `urlKey`, `subKey`     | Nom (lien) + ligne secondaire (`subKey`) en dessous              |
+| `badge`      | —                      | Badge coloré pour statuts (`Actif` → vert, `Bêta` → jaune…)      |
+| `badge-bool` | —                      | Badge Oui/Non (cyan / gris)                                      |
+| `badge-free` | —                      | Pilule colorée niveau gratuit (vert / rouge / jaune)             |
+| `pricing`    | `payKey`               | Pilule Gratuit/Payant/Limité + prix extrait de `payKey`          |
+| `io-badges`  | —                      | Parse `"X, Y / A, B"` en badges colorés par modalité, avec `→`   |
+| `tooltip`    | —                      | Texte tronqué, info-bulle au survol                              |
+| `url-hidden` | —                      | Colonne exclue de l'affichage (utile pour stocker une URL brute) |
 
 ### Options
 
-| Option          | Type      | Défaut | Description                                    |
-| :-------------- | :-------- | :----- | :--------------------------------------------- |
-| `columns`       | `Array`   | auto   | Définitions de colonnes (auto si omis)         |
-| `searchable`    | `boolean` | `true` | Barre de recherche globale                     |
-| `pageSize`      | `number`  | `15`   | Lignes par page (0 = tout afficher)            |
-| `filterColumns` | `Array`   | auto   | Clés à filtrer (auto-détecté : 2–12 valeurs)   |
-| `compact`       | `boolean` | `false`| Réduire le padding des cellules                |
+| Option          | Type      | Défaut  | Description                                  |
+| :-------------- | :-------- | :------ | :------------------------------------------- |
+| `columns`       | `Array`   | auto    | Définitions de colonnes (auto si omis)       |
+| `searchable`    | `boolean` | `true`  | Barre de recherche globale                   |
+| `pageSize`      | `number`  | `15`    | Lignes par page (0 = tout afficher)          |
+| `filterColumns` | `Array`   | auto    | Clés à filtrer (auto-détecté : 2–12 valeurs) |
+| `compact`       | `boolean` | `false` | Réduire le padding des cellules              |
 
 ### API retournée
 
@@ -1088,12 +1088,12 @@ Ajustez la taille du puzzle, la vitesse de rotation et l'éclairage. Cliquez sur
 
 :::: {.tabs}
 ##### Puzzle Procédural {.bi-puzzle-fill}
-:::::: {#puzzle-graph-container .chart-container-xl}
-::::::
+::::: {#puzzle-graph-container .chart-container-xl}
+:::::
 
 ##### Formes SVG {.bi-heart-fill}
-:::::: {#svg-graph-container .chart-container-xl}
-::::::
+::::: {#svg-graph-container .chart-container-xl}
+:::::
 
 ##### Paramètres {.bi-sliders}
 

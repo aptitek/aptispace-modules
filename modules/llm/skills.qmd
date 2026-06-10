@@ -79,13 +79,13 @@ Un System Prompt est une instruction de session, donnée à la volée dans la co
 ::: {.row gap=4 mb=3}
 :::: {.col span=6}
 
-| Caractéristique | System Prompt | Skill |
-| :--- | :---: | :---: |
-| **Portée** | Session | Projet |
-| **Stockage** | En mémoire | Fichier (`CLAUDE.md`, `.cursor/rules`) |
-| **Versionné (Git)** | ✗ | ✓ |
-| **Partagé en équipe** | ✗ | ✓ |
-| **Spécificité** | Générale | Architecturale |
+| Caractéristique       | System Prompt |                 Skill                  |
+| :-------------------- | :-----------: | :------------------------------------: |
+| **Portée**            |    Session    |                 Projet                 |
+| **Stockage**          |   En mémoire  | Fichier (`CLAUDE.md`, `.cursor/rules`) |
+| **Versionné (Git)**   |       ✗       |                   ✓                    |
+| **Partagé en équipe** |       ✗       |                   ✓                    |
+| **Spécificité**       |    Générale   |             Architecturale             |
 
 ::::
 :::: {.col span=6}
@@ -160,19 +160,19 @@ Un environnement de Vibe Coding complet combine les trois couches :
 ::: {.row gap=4}
 :::: {.col span=4}
 ::::: {.card}
-#### 1. Définir les Skills {.bi-list-check}
+#### 4.0.1. Définir les Skills {.bi-list-check}
 Choisissez un **Skill de persona** (ex: "Expert React strict") et un ou plusieurs **Skills architecturaux** (ex: Atomic Design, tests obligatoires). Committez-les dans `.cursor/rules` ou `CLAUDE.md`.
 :::::
 ::::
 :::: {.col span=4}
 ::::: {.card}
-#### 2. Configurer les Outils {.bi-wrench-adjustable}
+#### 4.0.2. Configurer les Outils {.bi-wrench-adjustable}
 Connectez les **Serveurs MCP** utiles au projet : lecture de fichiers, accès GitHub, interrogation de base de données. L'agent peut maintenant agir sur l'environnement réel.
 :::::
 ::::
 :::: {.col span=4}
 ::::: {.card}
-#### 3. Transmettre l'Intention {.bi-chat-square-text}
+#### 4.0.3. Transmettre l'Intention {.bi-chat-square-text}
 Rédigez un brief de haut niveau — pas du code, mais une **intention architecturale**. L'agent filtre cette intention à travers vos Skills, choisit ses outils via MCP, et livre un résultat conforme à vos standards.
 :::::
 ::::

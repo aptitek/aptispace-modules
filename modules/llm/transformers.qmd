@@ -38,8 +38,8 @@ Quand vous cliquez sur **mange**, le modèle regarde surtout **chat**, **faim** 
 
 Dans un vrai Transformer, chaque token possède une **requête**, une **clé** et une **valeur**. La requête d'un token est comparée aux clés des autres tokens. Plus la comparaison est forte, plus le lien d'attention est fort.
 
-:::: {.card-window}
-::: {.panel-tabset}
+::: {.card-window}
+:::: {.panel-tabset}
 
 #### Scores QK bruts {.bi-puzzle}
 
@@ -62,8 +62,8 @@ Chaque pièce cache une **valeur** — l'information qu'elle peut partager. Dép
 ::::: {#kv-value-graph .chart-container-xl}
 :::::
 
-:::
 ::::
+:::
 
 ```{ojs}
 //| echo: false
@@ -86,8 +86,8 @@ La division par $\sqrt{d_k}$ évite que les scores deviennent trop grands avant 
 
 L'attention n'est qu'une étape. Le signal traverse ensuite une série de couches qui le raffinent avant de produire la sortie. Cliquez sur une couche dans la vue d'ensemble pour naviguer vers son onglet.
 
-:::: {.card-window}
-::: {.panel-tabset}
+::: {.card-window}
+:::: {.panel-tabset}
 
 #### Vue d'ensemble {.bi-layers}
 
@@ -126,8 +126,8 @@ La **couche de projection finale** transforme le vecteur caché en scores sur to
 ::::: {#output-camera .chart-container-xl}
 :::::
 
-:::
 ::::
+:::
 
 ```{ojs}
 //| echo: false

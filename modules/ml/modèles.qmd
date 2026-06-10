@@ -17,10 +17,10 @@ Imaginez que votre jeu de données est une **pièce mécanique** complexe (avec 
 #### Presse en Action {.bi-tools}
 
 :::: {.row align=center}
-:::::{.col shrink=true}
+::::: {.col shrink=true}
 [Pression]{.slider #pression value=0 min=0 max=100 vertical=true direction=down}
 :::::
-:::::{.col}
+::::: {.col}
 :::::: {#presse-graph .chart-container-md}
 ::::::
 :::::
@@ -45,9 +45,8 @@ presseGraph = {
 
   const svg = d3.create("svg")
     .attr("width", "100%")
-    .attr("height", H)
-    .attr("viewBox", `0 0 ${VW} ${H}`)
-    .attr("preserveAspectRatio", "none");
+    .attr("height", "100%")
+    .attr("viewBox", `0 0 ${VW} ${H}`);
 
   const xScale = d3.scaleLinear().domain([0, 100]).range([pad.l, VW - pad.r]);
   const yScale = d3.scaleLinear().domain([0, 100]).range([H - pad.b, pad.t]);

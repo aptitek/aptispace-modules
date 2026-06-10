@@ -23,14 +23,14 @@ où $x$ est l'entrée, $w$ le poids (importance), $b$ le biais (décalage). Le b
 #### Poids et Biais {.bi-sliders}
 
 :::: {.row align=center}
-:::::{.col shrink=true}
+::::: {.col shrink=true}
 [Biais (b)]{.slider #bias value=0 min=-40 max=40 vertical=true direction=down}
 :::::
-:::::{.col}
+::::: {.col}
 :::::: {#poids-graph .chart-container-md}
 ::::::
 :::::
-:::::{.col shrink=true}
+::::: {.col shrink=true}
 [Poids (w)]{.slider #weight value=0.2 min=0 max=1.5 step=0.1 vertical=true direction=down}
 :::::
 ::::
@@ -53,9 +53,8 @@ poidsGraph = {
 
   const svg = d3.create("svg")
     .attr("width", "100%")
-    .attr("height", H)
-    .attr("viewBox", `0 0 ${VW} ${H}`)
-    .attr("preserveAspectRatio", "none");
+    .attr("height", "100%")
+    .attr("viewBox", `0 0 ${VW} ${H}`);
 
   const defs = svg.append("defs");
   defs.append("marker")
@@ -138,11 +137,11 @@ $$\frac{\partial \mathcal{L}}{\partial w}$$
 #### Perte et Gradient {.bi-compass}
 
 :::: {.row align=center}
-:::::{.col}
+::::: {.col}
 :::::: {#perte-graph .chart-container-xl}
 ::::::
 :::::
-:::::{.col shrink=true}
+::::: {.col shrink=true}
 [Époques]{.slider #epochG value=0 min=0 max=100 vertical=true direction=down}
 :::::
 ::::
@@ -160,9 +159,8 @@ perteGraph = {
 
   const svg = d3.create("svg")
     .attr("width", "100%")
-    .attr("height", H)
-    .attr("viewBox", `0 0 ${VW} ${H}`)
-    .attr("preserveAspectRatio", "none");
+    .attr("height", "100%")
+    .attr("viewBox", `0 0 ${VW} ${H}`);
 
   const defs = svg.append("defs");
   defs.append("marker")

@@ -67,97 +67,205 @@ JSON-RPC est un protocole d'appel de procédure à distance (*Remote Procedure C
 Pour qu'un LLM utilise des outils sans se perdre, on lui impose un cadre de raisonnement : **ReAct (Reasoning + Acting)**. Contrairement à la simple "Chain-of-Thought", ReAct force l'agent à *alterner* entre réflexion et réalité — après chaque action, il *observe* le résultat avant de décider de la suite.
 
 ::: {.card-window}
-#### Simulateur ReAct {.bi-arrow-repeat}
+#### Le Cerveau de l'Agent : Simulateur ReAct {.bi-cpu}
 
 :::: {.tabs .react-tabset}
-##### Boucle {.bi-diagram-3}
-::::: {#react-loop .chart-container-md}
+##### Configuration {.bi-sliders}
+
+[Mission de l'Agent :]{.select #mission-select options="Mathématiques : sqrt(841) * 12,Multi-Outils : Turing + LeCun" value="Multi-Outils : Turing + LeCun"}
+
+##### []{#react-ctrl .simulation-control .control} {.tab-right .no-pane}
+::::
+
+:::: {.row gap=4}
+::::: {.col span=6}
+##### Cycle de Raisonnement {.bi-arrow-repeat}
+
+:::::: {#react-loop .chart-container-md}
+::::::
 :::::
+::::: {.col span=6}
+##### Console de l'Agent {.bi-terminal}
 
-##### [Animer]{#btn-react .bi-play-fill .btn} {.tab-right .no-pane}
+:::::: {#react-terminal .terminal}
+::::::
+:::::
 ::::
 
-:::
-
-::: {.row gap=3 mt=3}
-:::: {.col}
-**💭 Pensée**
-
-*"Je dois trouver la météo à Paris. Je vais utiliser `weather_api`."*
-::::
-:::: {.col}
-**⚡ Action**
-
-L'agent appelle `get_weather("Paris")` via le Client MCP.
-::::
-:::: {.col}
-**👁️ Observation**
-
-Le serveur renvoie `{"temp": 15, "condition": "Pluie"}`.
-::::
-:::: {.col}
-**💭 Pensée**
-
-*"Il pleut à Paris. Je peux formuler ma réponse finale."*
-::::
 :::
 
 ```{ojs}
 //| echo: false
 reactSim = {
-  const nodes = [
-    { id: "T", label: "Pensée", status: "entry", shape: "rounded rect" },
-    { id: "A", label: "Action", status: "default", shape: "rounded rect" },
-    { id: "O", label: "Observation", status: "default", shape: "rounded rect" }
-  ];
-  const links = [
-    { source: "T", target: "A", label: "choisit un outil" },
-    { source: "A", target: "O", label: "appel MCP" },
-    { source: "O", target: "T", label: "apprend & ajuste" }
-  ];
-  const graph = renderStateMachineGraph("#react-loop", { nodes, links }, {
-    height: 280,
-    nodeRadius: 28,
-    fontSize: 11,
-    enableZoom: false,
-    zoomToFit: true,
-    zoomToFitPadding: 60
-  });
-  const steps = [
-    { activeNode: "T", activeLink: null, pastNodes: [], pastLinks: [] },
-    { activeNode: "A", activeLink: "T-A", pastNodes: ["T"], pastLinks: [] },
-    { activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A"], pastLinks: ["T-A"] },
-    { activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O"] }
-  ];
-  const sm = new StateMachine({
-    states: steps,
-    interval: 1400,
-    loop: true,
-    onStateChange: (step) => {
-      nodes.forEach(n => {
-        n.status = n.id === step.activeNode ? "current" : step.pastNodes.includes(n.id) ? "past" : "default";
-      });
-      links.forEach(l => {
-        const srcId = typeof l.source === "object" ? l.source.id : l.source;
-        const tgtId = typeof l.target === "object" ? l.target.id : l.target;
-        const lid = `${srcId}-${tgtId}`;
-        l.status = lid === step.activeLink ? "current" : step.pastLinks.includes(lid) ? "past" : "default";
-      });
-      graph.graphData({ nodes, links });
-    }
-  });
-  invalidation.then(() => { sm.stop(); graph?.destroy?.(); });
-  return { graph, sm };
-}
-```
+  // Dépendance réactive par rapport au choix de la mission
+  mission_select;
 
-```{ojs}
-//| echo: false
-_toggleReact = {
-  if (btn_react === 0) return;
-  const { sm } = reactSim;
-  if (sm.isPlaying) { sm.stop(); sm.currentIndex = 0; }
-  else sm.start();
+  const isMission1 = mission_select.includes("Mathématiques");
+
+  const steps = isMission1 ? [
+    { type: "thought", activeNode: "T", activeLink: null, pastNodes: [], pastLinks: [], text: "Je dois d'abord calculer la racine carrée de 841.", delay: 1800 },
+    { type: "action", activeNode: "A", activeLink: "T-A", pastNodes: ["T"], pastLinks: [], tool: "Calculatrice", input: "sqrt(841)", delay: 1500 },
+    { type: "obs", activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A"], pastLinks: ["T-A"], text: "29", delay: 1500 },
+    { type: "thought", activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O"], text: "Maintenant, je dois multiplier le résultat (29) par 12.", delay: 1800 },
+    { type: "action", activeNode: "A", activeLink: "T-A", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T"], tool: "Calculatrice", input: "29 * 12", delay: 1500 },
+    { type: "obs", activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A"], text: "348", delay: 1500 },
+    { type: "thought", activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O"], text: "J'ai la réponse finale.", delay: 1200 },
+    { type: "final", activeNode: "F", activeLink: "T-F", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O", "O-T"], text: "La racine carrée de 841 multipliée par 12 est 348.", delay: 1800 }
+  ] : [
+    { type: "thought", activeNode: "T", activeLink: null, pastNodes: [], pastLinks: [], text: "Je dois trouver l'année de naissance d'Alan Turing.", delay: 1800 },
+    { type: "action", activeNode: "A", activeLink: "T-A", pastNodes: ["T"], pastLinks: [], tool: "Recherche_Web", input: "Alan Turing année naissance", delay: 1800 },
+    { type: "obs", activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A"], pastLinks: ["T-A"], text: "Alan Mathison Turing est né le 23 juin 1912 à Londres.", delay: 1500 },
+    { type: "thought", activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O"], text: "Turing est né en 1912. Je dois maintenant trouver l'année de naissance de Yann LeCun.", delay: 2000 },
+    { type: "action", activeNode: "A", activeLink: "T-A", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T"], tool: "Recherche_Web", input: "Yann LeCun année naissance", delay: 1800 },
+    { type: "obs", activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A"], text: "Yann LeCun est un chercheur né le 8 juillet 1960 en France.", delay: 1500 },
+    { type: "thought", activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O"], text: "LeCun est né en 1960. Je dois additionner 1912 et 1960.", delay: 1800 },
+    { type: "action", activeNode: "A", activeLink: "T-A", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O", "O-T"], tool: "Calculatrice", input: "1912 + 1960", delay: 1500 },
+    { type: "obs", activeNode: "O", activeLink: "A-O", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O", "O-T", "T-A"], text: "3872", delay: 1500 },
+    { type: "thought", activeNode: "T", activeLink: "O-T", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O", "O-T", "T-A", "A-O"], text: "Le calcul est terminé, j'ai la réponse finale.", delay: 1200 },
+    { type: "final", activeNode: "F", activeLink: "T-F", pastNodes: ["T", "A", "O"], pastLinks: ["T-A", "A-O", "O-T", "T-A", "A-O", "O-T", "T-A", "A-O", "O-T"], text: "Le résultat de l'addition de leurs années de naissance (1912 + 1960) est 3872.", delay: 1800 }
+  ];
+
+  const graphNodes = [
+    { id: "T", label: "🧠 Pensée", shape: "rounded rect", fx: 250, fy: 60 },
+    { id: "A", label: "🛠️ Action", shape: "rounded rect", fx: 380, fy: 160 },
+    { id: "O", label: "👁️ Obs", shape: "rounded rect", fx: 250, fy: 260 },
+    { id: "F", label: "✅ Réponse", shape: "pill", fx: 120, fy: 160 }
+  ];
+
+  const graphLinks = [
+    { source: "T", target: "A", label: "Outil" },
+    { source: "A", target: "O", label: "Résultat" },
+    { source: "O", target: "T", label: "Raisonner" },
+    { source: "T", target: "F", label: "Synthèse" }
+  ];
+
+  const graph = aptitek.renderStateMachineGraph("#react-loop", { nodes: graphNodes, links: graphLinks }, {
+    nodeRadius: 26,
+    fontSize: 10,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 45,
+    height: 320
+  });
+
+  const terminal = aptitek.createTerminal("#react-terminal", { defaultPrompt: false, showCursor: false });
+  terminal.writeLine("En attente de démarrage...", { type: "muted" });
+
+  let currentIndex = 0;
+  let timeoutId = null;
+  let simCtrl = null;
+
+  function updateVisuals(index) {
+    const step = steps[index];
+
+    // Met à jour l'état des nœuds
+    graphNodes.forEach(n => {
+      if (n.id === step.activeNode) n.status = "current";
+      else if (step.pastNodes.includes(n.id)) n.status = "past";
+      else n.status = "default";
+    });
+
+    // Met à jour l'état des liens
+    graphLinks.forEach(l => {
+      const srcId = typeof l.source === "object" ? l.source.id : l.source;
+      const tgtId = typeof l.target === "object" ? l.target.id : l.target;
+      const lid = `${srcId}-${tgtId}`;
+      if (lid === step.activeLink) l.status = "current";
+      else if (step.pastLinks.includes(lid)) l.status = "past";
+      else l.status = "default";
+    });
+
+    graph.graphData({ nodes: graphNodes, links: graphLinks });
+    try {
+      graph.zoomToFit(200, 45);
+    } catch (e) {}
+
+    // Print to terminal
+    if (step.type === "thought") {
+      terminal.writeLine(`> PENSÉE : ${step.text}`, { type: "info" });
+    } else if (step.type === "action") {
+      terminal.writeLine(`> ACTION : Appel de l'outil "${step.tool}" avec arguments :`, { type: "warning" });
+      terminal.writeLine(`  └─ input: "${step.input}"`, { type: "muted" });
+    } else if (step.type === "obs") {
+      terminal.writeLine(`> OBSERVATION : ${step.text}`, { type: "success" });
+    } else if (step.type === "final") {
+      terminal.writeLine("");
+      terminal.writeLine(`[ RÉPONSE FINALE ]`, { type: "success", class: "fw-bold" });
+      terminal.writeLine(step.text, { type: "success" });
+    }
+  }
+
+  function playNext() {
+    if (currentIndex >= steps.length) {
+      if (simCtrl) {
+        simCtrl.setState("idle");
+      }
+      return;
+    }
+
+    updateVisuals(currentIndex);
+    const step = steps[currentIndex];
+    currentIndex++;
+
+    timeoutId = setTimeout(playNext, step.delay);
+  }
+
+  simCtrl = aptitek.createSimulationControl("#react-ctrl", {
+    onStart: () => {
+      if (currentIndex === 0) {
+        terminal.clear();
+        terminal.writeLine(`[SYSTEM] Initialisation de l'Agent avec 2 outils.`, { type: "muted" });
+        terminal.writeLine(`[SYSTEM] Mission : "${mission_select}"`, { type: "muted" });
+        terminal.writeLine("");
+      }
+      playNext();
+    },
+    onPause: () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      terminal.writeLine("[PAUSE]", { type: "warning" });
+    },
+    onStop: () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      currentIndex = 0;
+      terminal.clear();
+      terminal.writeLine("Simulation arrêtée. En attente de démarrage...", { type: "muted" });
+
+      // Réinitialiser les états du graphe
+      graphNodes.forEach(n => n.status = "default");
+      graphLinks.forEach(l => l.status = "default");
+      graph.graphData({ nodes: graphNodes, links: graphLinks });
+      try {
+        graph.zoomToFit(200, 45);
+      } catch (e) {}
+    },
+    onRestart: () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      currentIndex = 0;
+      terminal.clear();
+      terminal.writeLine(`[SYSTEM] Redémarrage...`, { type: "muted" });
+      terminal.writeLine(`[SYSTEM] Mission : "${mission_select}"`, { type: "muted" });
+      terminal.writeLine("");
+      playNext();
+    }
+  }, invalidation);
+
+  invalidation.then(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+    graph?.destroy?.();
+    terminal?.destroy?.();
+  });
+
+  return { graph, simCtrl };
 }
 ```
 
@@ -173,9 +281,9 @@ La **Divulgation Progressive** (*Progressive Disclosure*) résout ce problème :
 :::: {#plot-tokens .chart-container-sm}
 ::::
 
-::: {.callout-tip}
+:::: {.callout-tip}
 En pratique, un agent avec 1 000 outils disponibles n'en charge en moyenne que **~13 par tâche** — soit une réduction de **98,7 % des tokens** consommés par les définitions d'outils.
-:::
+::::
 
 :::
 
@@ -200,25 +308,6 @@ renderTokens = {
   })
 }
 ```
-
-## 🔒 Sécurité Intégrée
-
-Le Client MCP ne se contente pas de relayer des données : il agit comme un **pare-feu actif** entre les systèmes d'entreprise et le LLM hébergé dans le Cloud.
-
-::: {.row gap=4}
-:::: {.col}
-::::: {.card}
-#### Interception des PII {.bi-shield-check}
-Avant d'envoyer les données au LLM, le Client peut **tokeniser** les informations personnelles (numéros de sécurité sociale, IBAN, adresses). Le LLM reçoit un jeton opaque `PII_2847` au lieu de la vraie valeur — les données sensibles ne quittent jamais le périmètre de confiance de l'entreprise.
-:::::
-::::
-:::: {.col}
-::::: {.card}
-#### Conformité sans Friction {.bi-check2-square}
-L'architecture garantit la **conformité RGPD** sans modifier les systèmes métier existants. C'est le principe du **Zero-Trust by Design** : le modèle tiers n'a jamais accès aux données brutes.
-:::::
-::::
-:::
 
 ## 🐝 Multi-Agents
 

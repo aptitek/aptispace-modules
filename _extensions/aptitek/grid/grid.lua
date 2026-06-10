@@ -115,7 +115,7 @@ function Div(el)
       -- 4 columns: col-12 col-md-6 (2x2 grid is best for concept cards)
       -- >=5 columns: col-12 col-md-4 col-lg-3
       -- Mixed rows (has_shrink): bare "col" fills remaining space equally.
-      local default_col_class = "col"
+      local default_col_class = "col-12 col-md"
       if not has_shrink then
         if num_cols == 1 then
           default_col_class = "col-12"
@@ -141,7 +141,7 @@ function Div(el)
         local span_lg = col_div.attributes["span-lg"]
         local col_class
         if shrink then
-          col_class = "col-auto"
+          col_class = "col-12 col-md-auto"
           col_div.attributes["shrink"] = nil
         elseif span then
           col_class = "col-12 col-md-" .. span

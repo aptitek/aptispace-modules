@@ -62,8 +62,6 @@ Adam combine Momentum et RMSprop en maintenant à la fois une moyenne des gradie
 ##### []{#grad-sim-ctrl .simulation-control .control} {.tab-right .no-pane}
 ::::
 
-[Nombre de pas]{.slider #gradSteps value=20 min=1 max=100}
-
 :::: {#grad-graph .chart-container-xxl}
 ::::
 
@@ -110,7 +108,7 @@ _gradSim = {
 // Stop animation whenever optimizer / parameters / step count change
 _gradStop = {
   const sim = _gradSim;
-  optType; optParam; gradSteps;
+  optType; optParam;
   if (sim) sim.stop();
   return null;
 }
@@ -124,12 +122,12 @@ _gradCtrl = {
       if (sim.isPaused) {
         sim.resume(200, () => ctrl.setState("idle"));
       } else {
-        sim.play(optType, optParam, gradSteps, 200, () => ctrl.setState("idle"));
+        sim.play(optType, optParam, 200, () => ctrl.setState("idle"));
       }
     },
     onPause:   () => sim && sim.pause(),
     onStop:    () => sim && sim.stop(),
-    onRestart: () => sim && sim.play(optType, optParam, gradSteps, 200, () => ctrl.setState("idle"))
+    onRestart: () => sim && sim.play(optType, optParam, 200, () => ctrl.setState("idle"))
   }, invalidation);
   return ctrl;
 }

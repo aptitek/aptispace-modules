@@ -38,11 +38,13 @@ La mesure de la dispersion des prédictions autour de leur moyenne pour différe
 ::: {.card-window .mb-4}
 #### Biais et Variance {.bi-arrows-collapse}
 
-[Complexité du modèle]{.slider #complexity value=50 min=0 max=100}
+::::{.row}
+[Complexité du modèle]{.slider #complexity value=50 min=0 max=100 vertical=true}
 
 :::: {#biais-graph .chart-container-md}
 ::::
 
+::::
 :::
 
 ```{ojs}
@@ -56,9 +58,8 @@ biaisGraph = {
 
   const svg = d3.create("svg")
     .attr("width", "100%")
-    .attr("height", H)
-    .attr("viewBox", `0 0 ${VW} ${H}`)
-    .attr("preserveAspectRatio", "none");
+    .attr("height", "100%")
+    .attr("viewBox", `0 0 ${VW} ${H}`);
 
   const xSc = d3.scaleLinear().domain([0, 100]).range([pad.l, VW - pad.r]);
   const ySc = d3.scaleLinear().domain([0, 100]).range([H - pad.b, pad.t]);

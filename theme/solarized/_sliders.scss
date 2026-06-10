@@ -1,0 +1,291 @@
+// ==========================================
+// VERTICAL & RADIAL SLIDERS
+// ==========================================
+
+.slider-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+    min-height: 200px;
+    padding: 15px;
+    background: $sol-base2;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    position: relative;
+    user-select: none;
+
+    .slider-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+    }
+
+    .slider-track-container {
+        flex: 1;
+        width: 40px;
+        position: relative;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .slider-fill {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--current-color, $sol-blue);
+        border-radius: 20px;
+        transition: height 0.1s ease-out, background-color 0.3s ease;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .slider-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+        margin: 0;
+        writing-mode: bt-lr;
+        /* Vertical range support */
+        appearance: slider-vertical;
+    }
+
+    .slider-value {
+        font-family: $font-family-code;
+        font-weight: 800;
+        font-size: 0.9em;
+        background: $sol-base3;
+        padding: 2px 8px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.slider-radial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 100px;
+    max-width: 130px;
+    padding: 15px;
+    background: $sol-base2;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+    .radial-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .radial-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .radial-track {
+        fill: none;
+        stroke: rgba(0, 0, 0, 0.05);
+        stroke-width: 8;
+    }
+
+    .radial-progress {
+        fill: none;
+        stroke: var(--current-color, $sol-yellow);
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.1s ease-out, stroke 0.3s ease;
+    }
+
+    .radial-center {
+        width: 60%;
+        height: 60%;
+        background: $sol-base3;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+    }
+
+    .radial-value {
+        font-family: $font-family-code;
+        font-weight: 800;
+        font-size: 1em;
+        color: var(--current-color, $sol-yellow);
+    }
+
+    .radial-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 5;
+    }
+}
+
+// ==========================================
+// THERMOMETER SPECIALIZATION
+// ==========================================
+
+.thermometer-slider {
+    @extend .slider-vertical;
+    min-width: 100px;
+
+    .slider-track-container {
+        width: 32px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 16px 16px 0 0;
+        box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .thermometer-bulb {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        background: var(--current-color, $sol-blue);
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        z-index: 3;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .thermometer-ticks {
+        position: absolute;
+        top: 20px;
+        bottom: 20px;
+        left: 5px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        pointer-events: none;
+        z-index: 2;
+
+        .tick {
+            height: 1.5px;
+            width: 6px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    .frost-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0);
+        backdrop-filter: blur(0px);
+        pointer-events: none;
+        z-index: 4;
+        transition: all 0.5s ease;
+        border-radius: inherit;
+    }
+
+    &.is-cold .frost-overlay {
+        background: rgba(147, 161, 161, 0.1);
+    }
+}
+
+// ==========================================
+// BLADE SLIDER SPECIALIZATION
+// ==========================================
+
+.blade-slider {
+    @extend .slider-vertical;
+    min-width: 100px;
+
+    .slider-track-container {
+        width: 32px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.1);
+        border: none;
+        overflow: visible; // To allow blade overflow
+    }
+
+    .blade-segments {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column; // Best token at the top
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .slider-input {
+        transform: rotate(180deg);
+    }
+
+    .segment {
+        flex: 1;
+        background: $sol-cyan;
+        border-radius: 12px;
+        opacity: 0.2;
+        transition: all 0.2s ease;
+        box-shadow: 0 0 5px rgba($sol-cyan, 0.1);
+
+        &.is-active {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba($sol-cyan, 0.4);
+        }
+    }
+
+    .blade-handle {
+        position: absolute;
+        left: -10px;
+        right: -10px;
+        height: 4px;
+        background: $sol-red;
+        border-radius: 2px;
+        z-index: 5;
+        box-shadow: 0 0 10px rgba($sol-red, 0.6);
+        pointer-events: none;
+        transition: top 0.1s ease-out;
+
+        &::after {
+            content: "🔪";
+            position: absolute;
+            right: -18px;
+            top: -16px;
+            font-size: 1.2em;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+        }
+    }
+}

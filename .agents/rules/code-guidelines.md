@@ -91,23 +91,24 @@ Your primary directive is to act as a strict guardian of the project's architect
 
    The following patterns are **banned** in `.qmd` files. Each has a project-defined semantic equivalent:
 
-   | Banned pattern | Semantic replacement |
-   | :--- | :--- |
-   | `.h-100` on `.card`/`.card-window` inside `.row` | *Automatic* — CSS rule `.col > .card, .col > .card-window { height: 100% }` |
-   | `.mb-4` on `.card-window` | Remove — cards do not need bottom margin |
-   | `.g-4` on `.row` | `gap=4` attribute on `.row` |
-   | `.align-items-center` on `.row` | `align=center` attribute on `.row` |
-   | `.col-md-N` / `.col-lg-N` | `span=N` / `span-lg=N` attribute on `.col` |
-   | `.d-flex .flex-column .gap-3` in a col | `.col-stack` |
-   | `.text-center` in a col | `.col-centered` |
-   | `.badge .bg-info/.bg-success .ms-auto/.float-end` (heading badge) | `.concept-badge .tag-info/.tag-success/.tag-warning/.tag-primary/.tag-danger` |
-   | `.progress-bar .bg-*` | `.progressbar color='*'` (ojs-inputs Lua filter) |
-   | `.text-warning/.text-success/.text-danger .fw-bold .mb-3` on feedback lines | `.feedback-card .feedback-incomplete/.feedback-validated/.feedback-error` |
-   | `.fw-bold .font-monospace .fs-5 .text-info/.text-success/.text-muted` (metrics) | `.metric-value .metric-info/.metric-success/.metric-muted` |
-   | `.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider` (section label) | `.section-label` |
-   | `.d-flex .flex-column .align-items-center .m-1` (RAM byte item) | `.ram-byte-item` |
-   | `.fw-bold` on injection/label marker | `.injection-label` |
-   | `.mt-3 .mt-lg-0` on a stacked-to-side-by-side col | `.col-mt-mobile` |
+| Banned pattern                                                                  | Semantic replacement                                                          |
+| :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- |
+| `.h-100` on `.card`/`.card-window` inside `.row`                                | *Automatic* — CSS rule `.col > .card, .col > .card-window { height: 100% }`   |
+| `.mb-4` on `.card-window`                                                       | Remove — cards do not need bottom margin                                      |
+| `.g-4` on `.row`                                                                | `gap=4` attribute on `.row`                                                   |
+| `.align-items-center` on `.row`                                                 | `align=center` attribute on `.row`                                            |
+| `.col-md-N` / `.col-lg-N`                                                       | `span=N` / `span-lg=N` attribute on `.col`                                    |
+| `.d-flex .flex-column .gap-3` in a col                                          | `.col-stack`                                                                  |
+| `.text-center` in a col                                                         | `.col-centered`                                                               |
+| `.badge .bg-info/.bg-success .ms-auto/.float-end` (heading badge)               | `.concept-badge .tag-info/.tag-success/.tag-warning/.tag-primary/.tag-danger` |
+| `.progress-bar .bg-*`                                                           | `.progressbar color='*'` (ojs-inputs Lua filter)                              |
+| `.text-warning/.text-success/.text-danger .fw-bold .mb-3` on feedback lines     | `.feedback-card .feedback-incomplete/.feedback-validated/.feedback-error`     |
+| `.fw-bold .font-monospace .fs-5 .text-info/.text-success/.text-muted` (metrics) | `.metric-value .metric-info/.metric-success/.metric-muted`                    |
+| `.fw-bold .mb-2 .text-muted .small .uppercase .tracking-wider` (section label)  | `.section-label`                                                              |
+| `.d-flex .flex-column .align-items-center .m-1` (RAM byte item)                 | `.ram-byte-item`                                                              |
+| `.fw-bold` on injection/label marker                                            | `.injection-label`                                                            |
+| `.mt-3 .mt-lg-0` on a stacked-to-side-by-side col                               | `.col-mt-mobile`                                                              |
+
     * **Dark Theme:** Overrides belong in the SCSS mixin, not duplicated in `.dark` and `@media (prefers-color-scheme: dark)` separately.
     * **Design Tokens Source:** `theme/solarized/variables.scss` defines the full Solarized palette (`$sol-base03` → `$sol-base3`, accent colors) and Bootstrap semantic mappings (`$primary`, `$success`, etc.). All SCSS rules in `theme/solarized/base.scss` consume these variables.
 

@@ -261,8 +261,8 @@ Déplacez le vecteur continu de sortie d'encodeur (cercle bleu) pour observer co
 :::::
 ::::: {.col}
 :::::: {#vq-metrics-target .metrics}
-| Vecteur continu                                                     | Code VQ (k*)                                                         | Distance Euclidienne                                                   |
-| :------------------------------------------------------------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------- |
+| Vecteur continu                                      | Code VQ (k*)                                          | Distance Euclidienne                                    |
+| :--------------------------------------------------- | :---------------------------------------------------- | :------------------------------------------------------ |
 | [—]{data-metric="vector" .metric-value .metric-info} | [—]{data-metric="code" .metric-value .metric-success} | [—]{data-metric="distance" .metric-value .metric-muted} |
 ::::::
 :::::: {.small .text-muted}
