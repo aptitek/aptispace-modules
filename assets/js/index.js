@@ -98,6 +98,7 @@ export { createSimulationControl } from "./custom/simulation-control.js";
 export { createSparsitySimulator } from "./custom/sparsity.js";
 export { createSvgDistanceHandle } from "./custom/svg-distance-handle.js";
 export { createColorWheel, createIttenWheel } from "./custom/color-wheel.js";
+export { createSpacingVisualizer, createSpacingScaleVisualizer } from "./custom/spacing.js";
 export { createVectorDemo } from "./custom/vector-demo.js";
 export {
   renderMeanGraph,
@@ -117,6 +118,8 @@ export { createBladeSlider } from "./custom/blade-slider.js";
 export { createSliderRadial } from "./custom/slider-radial.js";
 export { createCielabSphere, createCielabSlider } from "./custom/cielab.js";
 export { createRecursiveFontSampler } from "./custom/recursive-font.js";
+export { createSvgInspector, createTouchTargetVisualizer } from "./custom/iconography.js";
+
 
 
 

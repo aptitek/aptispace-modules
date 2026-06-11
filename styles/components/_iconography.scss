@@ -1,0 +1,132 @@
+/*-- scss:rules --*/
+
+// ==========================================
+// WIDGETS INTERACTIFS D'ICONOGRAPHIE
+// ==========================================
+
+.svg-inspector-wrapper,
+.touch-target-visualizer-wrapper {
+  background: $sol-base3;
+  border: 1px solid rgba($sol-base1, 0.12);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  margin-bottom: 1.5rem;
+  user-select: none;
+
+  .control-group {
+    background: $sol-base2;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba($sol-base1, 0.06);
+    margin-bottom: 0.85rem;
+    
+    .section-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: $sol-base01;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-select {
+      background-color: $sol-base3;
+      color: $sol-base00;
+      border: 1px solid rgba($sol-base1, 0.25);
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        border-color: $sol-blue;
+        box-shadow: 0 0 0 3px rgba($sol-blue, 0.15);
+        outline: none;
+      }
+    }
+
+    .form-range {
+      &:focus {
+        box-shadow: none;
+        outline: none;
+        &::-webkit-slider-thumb {
+          box-shadow: 0 0 0 3px rgba($sol-blue, 0.25);
+        }
+      }
+      &::-webkit-slider-thumb {
+        background: $sol-blue;
+      }
+    }
+  }
+
+  .svg-preview-frame {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $sol-base2;
+    border: 1px solid rgba($sol-base1, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+    
+    svg {
+      transition: all 0.1s ease-out;
+    }
+  }
+
+  .svg-code-frame {
+    pre {
+      background: $sol-base03;
+      color: $sol-base1;
+      border: 1px solid $sol-base02;
+      font-family: var(--font-code, monospace);
+      font-size: 0.82rem;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    
+    .window-header {
+      background: $sol-base02;
+      border: 1px solid $sol-base02;
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+      padding: 0.5rem 1rem;
+      
+      .code-tabs {
+        display: flex;
+        align-items: center;
+      }
+      
+      .code-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: $sol-base1;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.touch-visualizer-render-area {
+  background: $sol-base2;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .btn-touch-target {
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    &:hover {
+      background-color: $sol-base1 !important;
+      color: $sol-base3 !important;
+    }
+  }
+  
+  .touch-target-overlay {
+    transition: all 0.15s ease-out;
+  }
+}

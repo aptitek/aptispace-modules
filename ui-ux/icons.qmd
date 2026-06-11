@@ -1,0 +1,132 @@
+---
+title: "L'Iconographie dans le Design System"
+---
+
+L'iconographie est le langage visuel universel de votre interface. En traduisant des concepts complexes en métaphores visuelles immédiates, les icônes guident l'utilisateur, structurent la navigation et accélèrent la prise de décision. Une intégration cohérence et normée au sein d'un Design System garantit une expérience utilisateur fluide et accessible sur tous les supports.
+
+---
+
+## Le Rôle des Icônes et les Bibliothèques Standards
+
+Les icônes ne sont pas de simples éléments décoratifs. Elles agissent comme des **accélérateurs cognitifs** : l'œil humain décode une forme graphique familière bien plus rapidement qu'il ne lit un mot. Elles occupent également moins d'espace, ce qui est crucial pour le design mobile.
+
+### Les grands standards du marché
+Deux grandes philosophies dominent le web moderne :
+
+* **Material Design Icons** (l'approche de Google) : Basée sur des formes géométriques pures, une grille de construction stricte et des variantes de style bien définies (rempli, contour, arrondi, aigu).
+* **Font Awesome** (le pionnier) : Connu pour son catalogue immense et son histoire comme police typographique d'icônes (*Icon Font*).
+
+### Le choix pratique : Bootstrap Icons
+Pour ce projet, notre Design System intègre **Bootstrap Icons**. Ce choix répond à plusieurs impératifs :
+1. **Intégration directe** : Légère, elle s'intègre harmonieusement avec notre framework CSS (Bootstrap).
+2. **Poids optimisé** : Possibilité de charger uniquement les icônes nécessaires sous forme de fichiers SVG individuels.
+3. **Consistance esthétique** : Des tracés équilibrés, modernes et très lisibles, conçus pour s'accorder avec la typographie de labeur.
+
+::: {.callout-note collapse="true"}
+##### 💡 Comment les icônes accélèrent la lecture
+Selon la loi de double codage d'Allan Paivio, notre cerveau traite les informations visuelles et verbales par des canaux distincts. Associer une icône pertinente à un texte (par exemple, un bouton [Enregistrer]{.bi-check-lg}) permet à l'utilisateur d'identifier l'action par reconnaissance visuelle instantanée avant même d'avoir lu l'intitulé.
+:::
+
+---
+
+## Implémentation : Comment ça s'utilise en pratique ?
+
+En développement web, deux techniques principales s'affrontent pour afficher des icônes :
+
+### Polices d'icônes (Icon Fonts) vs SVG
+* **Icon Fonts** : Les icônes sont stockées comme des caractères dans un fichier de police (`.woff` ou `.ttf`). Bien que simples à utiliser (style via `font-size` et `color`), elles souffrent de problèmes d'accessibilité (non lues par les lecteurs d'écran), de bugs de chargement réseau, et de flou de rendu sur certains écrans.
+* **SVG (Scalable Vector Graphics)** : Le format vectoriel natif du web. **C'est le standard de notre Design System.** Ses avantages sont majeurs :
+  - **Netteté absolue** à toutes les échelles (pas de pixellisation).
+  - **Stylisation CSS précise** (contrôle indépendant du fond, des contours et des animations).
+  - **Performance** et fiabilité de chargement (pas de dépendance à un fichier de police externe).
+  - **Accessibilité native** via l'utilisation de balises sémantiques et d'attributs `aria-hidden`.
+
+### Anatomie d'une icône SVG
+Pour maîtriser l'intégration des icônes, il faut comprendre les attributs clés du code SVG :
+- `viewBox` : Définit le système de coordonnées interne et le ratio de l'icône (ex: `0 0 16 16`).
+- `fill` : Définit la couleur de remplissage des formes fermées.
+- `stroke` : Définit la couleur du contour des lignes.
+- `stroke-width` : Règle l'épaisseur des contours.
+
+---
+
+## Atelier Interactif : Inspecteur SVG
+
+Expérimentez avec les attributs d'une icône SVG. Utilisez les curseurs pour modifier la taille du canevas interne (`viewBox`) et l'épaisseur du contour (`stroke-width`). Modifiez les sélecteurs de couleur pour voir comment les Design Tokens de couleur s'appliquent dynamiquement au code XML.
+
+::: {.card-window}
+#### Éditeur & Analyseur Anatomique SVG {.bi-code-square}
+
+::: {#svg-inspector-container}
+:::
+
+:::
+
+```{ojs}
+viewof inspector = aptitek.createSvgInspector("#svg-inspector-container", {
+  iconName: "house",
+  viewBoxWidth: 16,
+  viewBoxHeight: 16,
+  strokeWidth: 1.5,
+  fillColor: "primary",
+  strokeColor: "none"
+}, invalidation)
+```
+
+---
+
+## Les Classiques : Le Tableau de Référence
+
+Certaines métaphores visuelles sont si ancrées dans la mémoire collective qu'elles constituent des **modèles mentaux**. Les réinventer déstabilise l'utilisateur. Voici le guide de référence de notre Design System :
+
+| Catégorie | Exemple d'icône | Sens attendu (Modèle mental) |
+| --- | :---: | --- |
+| **Navigation** | [Accueil]{.bi-house-door} <br> [Menu]{.bi-list} <br> [Retour]{.bi-arrow-left} | Retour à la page d'accueil principale, déploiement du menu de navigation, retour à l'écran précédent. |
+| **Actions** | [Rechercher]{.bi-search} <br> [Modifier]{.bi-pencil} <br> [Supprimer]{.bi-trash} | Ouvrir un champ de recherche, éditer ou modifier le contenu ciblé, supprimer définitivement une ressource. |
+| **Système** | [Configuration]{.bi-gear} <br> [Profil]{.bi-person} <br> [Déconnexion]{.bi-box-arrow-right} | Accéder aux options et préférences, voir/éditer les données utilisateur, fermer la session active. |
+| **Feedback** | [Succès]{.bi-check-circle-fill} <br> [Alerte]{.bi-exclamation-triangle-fill} <br> [Fermer]{.bi-x-circle-fill} | Indiquer la validation d'une étape, avertir d'un risque, annuler ou fermer un panneau/fenêtre modale. |
+
+---
+
+## Dimensions et Alignement
+
+La gestion des tailles d'icônes répond à des règles géométriques et ergonomiques strictes.
+
+### La zone de dessin (Bounding Box)
+Une icône SVG s'inscrit toujours dans un carré invisible appelé **boîte d'encombrement** (*bounding box*). Même si le dessin lui-même est asymétrique ou plus petit, c'est ce carré qui définit l'espace occupé par l'icône dans le flux de la page. Cela garantit un alignement parfait au sein des listes et des boutons.
+
+### Les puissances de 2 (Grille de Base 8)
+Pour assurer un rendu net (sans flou de demi-pixels dû à des redimensionnements fractionnaires), les tailles d'icônes sont des multiples de la grille de **base 8** :
+- **16 px** : Petites icônes intégrées au texte (badges, métadonnées).
+- **24 px** : Taille standard pour les boutons d'action et barres de navigation.
+- **32 px** : Boutons proéminents et listes complexes.
+- **64 px** : En-têtes de page ou illustrations de statuts (panneaux d'erreur, succès).
+
+### La zone de clic (Touch Target)
+En conception mobile ou tactile, le principal piège est de calquer la taille cliquable sur la taille physique de l'icône. Même si une icône ne fait que `24x24px`, sa **zone de clic active doit être considérablement plus grande** pour compenser l'imprécision du doigt humain.
+- **Règle d'accessibilité (Apple iOS)** : Minimum **44 × 44 px** pour toute cible tactile.
+- **Règle d'accessibilité (Google Android & W3C)** : Minimum **48 × 48 px** pour garantir le respect des normes WCAG.
+
+---
+
+## Atelier Interactif : Zone de Clic & Accessibilité
+
+Manipulez la taille physique de l'icône et la taille réelle du bouton qui la contient. Cochez les aides visuelles pour afficher la boîte d'encombrement de l'icône (en rose) et la zone de clic active (en surimpression circulaire colorée). Observez comment le score d'accessibilité mobile réagit.
+
+::: {.card-window}
+#### Simulateur de Zone Tactile {.bi-phone}
+
+::: {#touch-target-container}
+:::
+
+:::
+
+```{ojs}
+viewof targetSim = aptitek.createTouchTargetVisualizer("#touch-target-container", {
+  iconSize: 24,
+  targetSize: 32,
+  showBoundingBox: true,
+  showTouchTarget: true,
+  iconName: "search"
+}, invalidation)
+```

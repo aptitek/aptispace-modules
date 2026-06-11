@@ -1,0 +1,188 @@
+---
+title: "Grille et Systèmes d'Espacement"
+---
+
+Dans une interface utilisateur, l'espacement n'est pas un simple vide : c'est la structure invisible qui donne du rythme et de la respiration à votre design. Un système d'espacement rigoureux lie les mathématiques de l'affichage à la psychologie de la perception visuelle. Il permet de guider l'œil, de regrouper les informations logiques et d'assurer une lisibilité optimale.
+
+---
+
+## Les Fondations Mathématiques : Le système de base 8
+
+En design d'interface, on ne choisit pas les marges ou les paddings au hasard. On utilise une **échelle d'espacement** (*spacing scale*) stricte, construite autour d'un multiplicateur universel. Dans la majorité des Design Systems modernes (comme Material Design ou TailwindCSS), ce multiplicateur est de **8 pixels**.
+
+### Pourquoi la base 8 ?
+
+L'utilisation du chiffre 8 répond à deux impératifs majeurs :
+
+1. **La logique de mise à l'échelle des écrans (Scaling) :** Les terminaux modernes possèdent des densités de pixels très différentes (écrans Retina, $1.5\times$, $2\times$, $3\times$). En choisissant des dimensions multiples de 8, la division et la multiplication par ces facteurs d'échelle produisent toujours des nombres entiers. Cela élimine le flou lié au rendu de demi-pixels.
+2. **Une cohérence cognitive :** Limiter les choix de conception accélère le travail du designer et garantit que deux composants conçus séparément s'assembleront de manière harmonieuse.
+
+### L'échelle d'espacement type
+
+Voici les valeurs autorisées et leurs cas d'usage typiques dans notre Design System :
+
+| Valeur (px) | Multiplicateur | Rôle UX & Ergonomique | Exemple d'utilisation |
+|:---:|:---:|:---|:---|
+| **4 px** | $0.5\times$ | Micro-ajustements et étanchéité | Espace entre une icône et son label dans un bouton |
+| **8 px** | $1\times$ | Unité de base (Petits paddings) | Marge interne d'une cellule de tableau ou petit badge |
+| **16 px** | $2\times$ | Espacement standard | Padding interne des cartes et des champs de saisie |
+| **24 px** | $3\times$ | Espacement moyen | Distance entre le titre d'une carte et sa description |
+| **32 px** | $4\times$ | Espacement large | Espace séparant deux cartes dans une même liste |
+| **48 px** | $6\times$ | Espacement très large | Marge entre des groupes de composants logiques |
+| **64 px** | $8\times$ | Limite de section | Transition entre deux blocs majeurs de la page |
+
+### Le multiplicateur de 4 pixels (Le demi-pas)
+
+Bien que la base 8 soit la règle, l'espacement de **4px** est toléré pour les micro-ajustements. Il est utilisé à l'intérieur des composants très denses (comme pour lier une icône à un texte ou pour le padding interne d'un très petit bouton).
+
+::: {.callout-note collapse="true"}
+##### 💡 Le flou des sous-pixels (Sub-pixel rendering)
+Lorsque vous appliquez un espacement impair (par exemple `9px` ou `13px`) sur un écran avec une mise à l'échelle fractionnaire (comme $150\%$ sur Windows), le moteur de rendu du navigateur tente de diviser cette valeur. Ne pouvant pas allumer physiquement un "demi-pixel", il réalise un fondu de couleur (anticrénelage) sur les pixels adjacents, ce qui donne une impression désagréable de flou. Travailler en base 8 protège vos tracés.
+:::
+
+---
+
+## La Psychologie Visuelle : Le "Friendship System" (Loi de Proximité)
+
+La disposition des éléments sur un écran s'appuie sur la **loi de proximité**, l'un des piliers de la psychologie de la **Gestalt**. Cette loi stipule que notre cerveau associe automatiquement des éléments proches les uns des autres et perçoit comme distincts des éléments éloignés.
+
+Pour simplifier cette règle d'or, nous utilisons la métaphore des relations sociales (le **Friendship System**) :
+
+* **Best Friends (4px à 8px) :** Éléments indissociables. S'ils sont trop éloignés, le cerveau ne comprend pas leur lien.
+  * *Exemples :* Une icône et son texte, un titre de champ de saisie et sa zone d'écriture.
+* **Friends (16px à 24px) :** Éléments liés formant un même bloc.
+  * *Exemples :* Le titre d'une carte et son texte descriptif, une liste d'éléments de menu.
+* **Acquaintances (32px à 48px) :** Éléments distincts appartenant au même ensemble global.
+  * *Exemples :* Deux cartes différentes au sein d'un même tableau de bord.
+* **Strangers (64px et +) :** Éléments sans aucun rapport logique direct.
+  * *Exemples :* L'espace entre le pied de page et le contenu principal, ou entre deux grandes sections thématiques.
+
+---
+
+## L'Espacement Relatif et Dynamique : La constante *x*
+
+L'échelle d'espacement standard que nous avons vue repose sur une taille de police de référence de 16 pixels. Cependant, comment adapter nos espacements si l'on conçoit une section avec de très grands titres (comme l'en-tête d'un site), ou au contraire, une interface ultra-dense (comme un outil d'administration réseau) ?
+
+C'est ici qu'intervient le concept de **multiplicateur dynamique** basé sur une constante $x$ (notre unité de base, ou *base unit*). Cette constante doit être égale à la taille de votre plus petit élément (généralement le texte de corps).
+
+* **Interface Standard (Desktop) :** $x = 16\text{px}$ (Rapport $1.0\times$).
+* **Interface Dense (Mobile/Dashboard) :** $x = 12\text{px}$ (Rapport $0.75\times$).
+* **Section Aérée (Hero Section) :** $x = 20\text{px}$ ou $24\text{px}$ (Rapport $1.25\times$ à $1.5\times$).
+
+### L'Échelle Finale (Cheat Sheet de l'Espacement)
+
+En appliquant les multiplicateurs mathématiques de la base 8 à notre unité de base $x$, nous obtenons les relations et ressentis psychologiques suivants. Ajustez l'unité de base pour voir l'échelle s'adapter dynamiquement :
+
+::: {.card-window}
+#### Échelle de Proximité et Multiplicateurs {.bi-rulers}
+
+::: {#scale-sampler-container}
+:::
+
+:::
+
+```{ojs}
+viewof scaleSim = aptitek.createSpacingScaleVisualizer("#scale-sampler-container", {
+  baseUnit: 16
+}, invalidation)
+```
+
+---
+
+## Atelier Interactif : Expérimenter la Loi de Proximité
+
+Utilisez les curseurs ci-dessous pour modifier les différents espacements de la fausse interface. Activez les repères visuels pour inspecter la taille réelle des marges et observez comment une mauvaise hiérarchie d'espacement peut complètement casser la compréhension logique de la page.
+
+::: {.card-window}
+#### Éditeur de Proximité et de Gestalt {.bi-arrows-expand}
+
+::: {#proximity-sampler-container}
+:::
+
+:::
+
+```{ojs}
+viewof spacingSim = aptitek.createSpacingVisualizer("#proximity-sampler-container", {
+  bestFriends: 8,
+  friends: 16,
+  acquaintances: 32,
+  strangers: 64,
+  showOverlays: true
+}, invalidation)
+```
+
+---
+
+## La Grille de Mise en Page (Layout Grid)
+
+Une fois les espacements internes maîtrisés, on passe à l'architecture macroscopique de l'interface : la **grille de mise en page**.
+
+### Anatomie d'une grille de conception
+
+Une grille se compose de trois éléments structurels fondamentaux :
+
+1. **Les Colonnes (Columns) :** Les bandes verticales sur lesquelles s'alignent les composants. Dans le design web standard, on utilise presque exclusivement une grille à **12 colonnes**, car le nombre 12 est hautement divisible (par 2, 3, 4 et 6), offrant une immense flexibilité de mise en page.
+2. **Les Gouttières (Gutters) :** Les espaces vides situés entre chaque colonne. Ils empêchent les contenus de se chevaucher et doivent impérativement respecter notre échelle d'espacement (généralement 16px ou 24px).
+3. **Les Marges (Margins) :** L'espace extérieur entre les colonnes extérieures de la grille et les bords physiques de l'écran.
+
+::: {.row gap=3}
+:::: {.col span=4}
+::: {.card}
+##### Colonnes (Columns)
+*Les rails de structure*
+
+* Largeurs fluides ou fixes.
+* Reçoivent le contenu principal.
+* Traditionnellement au nombre de 12 sur desktop.
+:::
+::::
+:::: {.col span=4}
+::: {.card}
+##### Gouttières (Gutters)
+*La respiration latérale*
+
+* Multiples stricts de 8px (ex: 24px).
+* Espacent les composants adjacents.
+* Gardent l'information compartimentée.
+:::
+::::
+:::: {.col span=4}
+::: {.card}
+##### Marges (Margins)
+*Le cadre de l'écran*
+
+* Définissent le confort visuel global.
+* S'adaptent en responsive.
+* Plus petites sur mobile, plus généreuses sur grand écran.
+:::
+::::
+:::
+
+### Conception Responsive (Responsive Design)
+
+La grille doit être réactive pour s'adapter à la variété des terminaux :
+
+* **Desktop (Écrans larges) :** Grille de **12 colonnes**. Permet des structures riches (ex: 3 colonnes de 4 slots, 2 colonnes asymétriques de 8 et 4 slots).
+* **Tablette (Moyenne taille) :** Grille réduite à **8 colonnes** pour éviter le tassement des textes.
+* **Mobile (Écrans étroits) :** Grille simplifiée à **4 colonnes** (ou colonne unique empilée). Le contenu s'organise alors verticalement.
+
+### L'implémentation dans le code
+
+Pour coder ces structures, nous utilisons le système de grille de **Bootstrap** (basé sur CSS Flexbox). Notre Design System intègre un filtre de compilation Quarto (`aptitek/grid`) qui traduit une syntaxe simple et sémantique en classes Bootstrap sous-jacentes :
+
+* Une ligne `.row` regroupe des colonnes `.col`.
+* L'attribut `span=N` définit la largeur sur écran de bureau (sur 12).
+* L'attribut `gap=N` définit la taille de la gouttière à partir de l'échelle d'espacement.
+
+```markdown
+::: {.row gap=3}
+  :::: {.col span=8}
+    <!-- Ce bloc occupera 8 colonnes sur 12 (les 2/3 de l'écran) -->
+  ::::
+  :::: {.col span=4}
+    <!-- Ce bloc occupera 4 colonnes sur 12 (le tiers restant) -->
+  ::::
+:::
+```
+
+En respectant ces règles de grille et d'espacement, vous offrez à vos utilisateurs des interfaces aérées, prévisibles et esthétiquement valorisantes.
