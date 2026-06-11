@@ -1,0 +1,251 @@
+/*-- scss:rules --*/
+
+// ==========================================
+// DECLARED OFFLINE FONTS
+// ==========================================
+
+@font-face {
+    font-family: "EB Garamond Custom";
+    src: url("/assets/fonts/EBGaramond.ttf") format("truetype-variations");
+    font-weight: 100 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter Custom";
+    src: url("/assets/fonts/Inter.ttf") format("truetype-variations");
+    font-weight: 100 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Arvo Custom";
+    src: url("/assets/fonts/Arvo.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Pacifico Custom";
+    src: url("/assets/fonts/Pacifico.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Fira Code Custom";
+    src: url("/assets/fonts/FiraCode.ttf") format("truetype-variations");
+    font-weight: 300 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Press Start Custom";
+    src: url("/assets/fonts/PressStart2P.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+// ==========================================
+// FONT EXEMPLARS
+// ==========================================
+
+.font-example-serif {
+    font-family: "EB Garamond Custom", serif;
+    font-size: 1.25rem;
+    color: $sol-base00;
+}
+
+.font-example-sans {
+    font-family: "Inter Custom", sans-serif;
+    font-size: 1.05rem;
+    color: $sol-base00;
+}
+
+.font-example-slab {
+    font-family: "Arvo Custom", serif;
+    font-size: 1.05rem;
+    color: $sol-base00;
+}
+
+.font-example-cursive {
+    font-family: "Pacifico Custom", cursive;
+    font-size: 1.15rem;
+    color: $sol-base00;
+}
+
+.font-example-mono {
+    font-family: "Fira Code Custom", monospace;
+    font-size: 0.95rem;
+    color: $sol-base00;
+}
+
+.font-example-display {
+    font-family: "Press Start Custom", sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: $sol-base00;
+}
+
+// ==========================================
+// RECURSIVE SAMPLER WIDGET
+// ==========================================
+
+.recursive-sampler-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: stretch;
+    padding: 1.5rem;
+    background: $sol-base3;
+    border: 1px solid rgba($sol-base1, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    user-select: none;
+
+    @media (max-width: 768px) {
+        flex-direction: column-reverse;
+    }
+}
+
+.recursive-sliders-container {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    min-height: 250px;
+    width: 380px;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        min-height: 220px;
+    }
+}
+
+.recursive-slider {
+    @extend .slider-vertical;
+    flex: 1;
+    min-width: 60px;
+    padding: 8px 6px;
+    background: $sol-base2;
+
+    .slider-header {
+        .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: $sol-base01;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+    }
+
+    .slider-track-container {
+        width: 14px;
+        box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.12);
+        overflow: visible;
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    .slider-thumb {
+        position: absolute;
+        left: 50%;
+        width: 22px;
+        height: 16px;
+        margin-left: -11px;
+        background: $sol-base3;
+        border: 2px solid var(--current-color, $sol-blue);
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+        pointer-events: none;
+        z-index: 5;
+        transition: border-color 0.2s ease;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 1.5px;
+            background: var(--current-color, $sol-blue);
+            transform: translate(-50%, -50%);
+            transition: background-color 0.2s ease;
+        }
+    }
+
+    .slider-input {
+        max-width: 22px;
+    }
+
+    .slider-value {
+        font-size: 0.8rem;
+        padding: 1px 5px;
+        font-weight: 700;
+        background: $sol-base3;
+        color: $sol-base00;
+        border: 1px solid rgba($sol-base1, 0.1);
+    }
+}
+
+.recursive-preview-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: $sol-base2;
+    border: 1px solid rgba($sol-base1, 0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 250px;
+}
+
+.recursive-text-input {
+    width: 100%;
+    background: $sol-base3;
+    border: 1px solid rgba($sol-base1, 0.25);
+    color: $sol-base00;
+    font-family: $font-family-base;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+
+    &:focus {
+        outline: none;
+        border-color: $sol-blue;
+        background: $sol-base3;
+        box-shadow: 0 0 0 3px rgba($sol-blue, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+}
+
+.recursive-preview-display {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    gap: 1.5rem;
+}
+
+.recursive-preview-large {
+    font-family: "Recursive", monospace;
+    font-size: 2.75rem;
+    line-height: 1.15;
+    color: $sol-base02;
+    word-break: break-word;
+    transition: font-variation-settings 0.1s ease-out;
+}
+
+.recursive-preview-small {
+    font-family: "Recursive", monospace;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: $sol-base01;
+    border-top: 1px dashed rgba($sol-base1, 0.15);
+    padding-top: 1rem;
+    word-break: break-word;
+    transition: font-variation-settings 0.1s ease-out;
+}
