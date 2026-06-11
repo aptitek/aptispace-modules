@@ -189,3 +189,6 @@ renderVectorDemo = {
   createVectorDemo("#vector-demo-container")
 }
 ```
+
+<!-- TODO: RoPE -->
+<!-- TODO: Positional encoding -->

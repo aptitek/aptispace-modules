@@ -1,0 +1,288 @@
+---
+title: "Mes Principes de Design"
+---
+
+Cinq convictions sur ce que devrait être une interface bien conçue, illustrées par des situations concrètes.
+
+## Bienveillance & Aversion à la Perte
+
+L'utilisateur ne gagne pas seulement de nouvelles fonctionnalités — il *perd* aussi ses repères. Respecter ses habitudes, c'est respecter son intelligence.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🏚️ Le deuil de l'ancienne interface
+
+Vous lancez un nouveau tableau de bord flambant neuf. Pour l'utilisateur, ce n'est pas une mise à jour géniale : c'est la **perte brutale de ses repères quotidiens**.
+
+:::::: {.callout-note collapse="true" title="Solution : la transition douce (Sunset phase)"}
+Conserver l'ancienne interface via un bouton **"Retour à l'ancienne version"** pendant plusieurs mois. L'utilisateur teste la nouveauté quand il est **psychologiquement prêt**, pas sous la contrainte.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 😰 La peur de la page blanche
+
+Un outil vide génère de l'anxiété immédiate. *"Par où je commence ? Je vais faire une bêtise."*
+
+:::::: {.callout-note collapse="true" title="Solution : les Empty States utiles (Sandbox)"}
+Au lieu d'un gros bouton autoritaire **"CRÉER UN PROJET"**, le système propose un bac à sable avec un projet fictif pré-rempli. L'utilisateur explore, clique partout, comprend la mécanique — sans aucun risque.
+::::::
+:::::
+::::
+:::
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 📚 Le tutoriel obligatoire de 10 pages
+
+De peur que l'utilisateur ne comprenne pas, l'application lui impose un interminable tutoriel dès la première connexion.
+
+:::::: {.callout-note collapse="true" title="Solution : l'onboarding contextuel (Just-in-Time)"}
+On fait confiance à l'utilisateur. L'interface ne propose une infobulle d'aide que lorsqu'il interagit *pour la première fois* avec un élément précis. Pas d'explication globale — juste un accompagnement là où il s'aventure.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🗑️ La suppression d'une fonctionnalité chérie
+
+Un vieil export ou un ancien algorithme est retiré au profit d'un système plus puissant. L'utilisateur perd une habitude bien ancrée.
+
+:::::: {.callout-note collapse="true" title="Solution : le Grandfathering visuel"}
+L'ancienne option reste à sa place habituelle. La nouvelle apparaît juste au-dessus, avec un badge discret **"Recommandé"**. La date de disparition est annoncée longtemps à l'avance pour laisser le temps d'accepter le changement.
+::::::
+:::::
+::::
+:::
+
+## Inclusivité
+
+Concevoir pour les marges profite au centre. Les adaptations pour les situations extrêmes rendent l'expérience meilleure pour tout le monde — c'est l'effet trottoir abaissé.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🔆 Le tableau de bord illisible en plein soleil
+
+Typographies grises fines sur fond blanc : parfaites en bureau, illisibles sur mobile dehors, inaccessibles aux malvoyants.
+
+:::::: {.callout-note collapse="true" title="Solution : les contrastes WCAG et l'indicateur double"}
+Ne jamais utiliser la **couleur seule** pour transmettre une information. On ajoute toujours une forme ou un texte court. Résultat : une interface lisible pour tous, dans toutes les conditions d'éclairage.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🪪 Le formulaire qui exclut sans le savoir
+
+Un champ "Civilité" avec seulement "M." et "Mme" exclut silencieusement une partie des utilisateurs. Un prénom avec des caractères spéciaux fait planter la validation.
+
+:::::: {.callout-note collapse="true" title="Solution : des modèles de données inclusifs"}
+Ne demander la civilité **que si c'est strictement nécessaire**. Si oui : offrir "Autre" et "Préfère ne pas répondre". Accepter tous les caractères Unicode. L'application s'adapte à la réalité humaine — pas l'inverse.
+::::::
+:::::
+::::
+:::
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🖱️ L'étiquetage de 1000 images à la souris
+
+Un data scientist doit tagger des centaines d'images pour entraîner un modèle. Chaque aller-retour clavier-souris est une friction de trop.
+
+:::::: {.callout-note collapse="true" title="Solution : la navigation 100% clavier"}
+Concevoir l'interface entièrement utilisable au clavier (Tab, flèches, Espace). Indispensable pour les personnes avec un handicap moteur — et gain de temps **monumental** pour les power users qui ne lèvent jamais les mains du clavier.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 💫 Le dashboard qui clignote dans tous les sens
+
+Animations partout, chiffres qui clignotent, graphiques qui défilent en continu. Source d'anxiété, de nausées vestibulaires et de déconcentration.
+
+:::::: {.callout-note collapse="true" title="Solution : prefers-reduced-motion et le bouton Pause"}
+L'interface détecte si l'utilisateur a désactivé les animations dans son OS et coupe automatiquement les mouvements non essentiels. On offre toujours un bouton pour **figer le flux de données** et l'analyser à son propre rythme.
+::::::
+:::::
+::::
+:::
+
+## Communication Universelle
+
+Un langage familier, direct et ancré dans ce que l'utilisateur connaît déjà. La clarté n'est pas une concession — c'est un acte de respect.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 💀 L'erreur technique brute
+
+```
+NullPointerException at DataParser.java:42
+```
+L'utilisateur ne comprend pas, s'affole, et n'a aucune marche à suivre.
+
+:::::: {.callout-note collapse="true" title="Solution : la traduction FALC"}
+L'interface intercepte l'erreur (disponible sous un bouton "Détails techniques" pour les développeurs) et affiche : **"Il manque des informations dans certaines colonnes. Vérifiez votre fichier et réessayez."** Problème simple, solution claire, zéro jargon.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🕳️ L'icône "trou noir" pour supprimer
+
+Pour paraître original, le designer remplace la corbeille par un trou noir et la disquette par un coffre-fort. L'utilisateur perd ses repères mentaux forgés sur des années.
+
+:::::: {.callout-note collapse="true" title="Solution : respecter la Loi de Jakob"}
+Les utilisateurs passent plus de temps sur *d'autres* interfaces que la vôtre. Corbeille = supprimer. Coche = valider. Entonnoir = filtrer. Ne pas obliger l'utilisateur à **réapprendre un langage visuel** pour flatter l'ego du designer.
+::::::
+:::::
+::::
+:::
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🪄 La baguette magique ambiguë
+
+Une barre d'outils d'icônes uniquement pour "gagner de la place". La baguette magique fait-elle de l'auto-complétion ou embellit-elle le graphique ?
+
+:::::: {.callout-note collapse="true" title="Solution : l'ancrage textuel"}
+Une icône n'est universelle que jusqu'à un certain point. Règle d'or : **toujours associer un label textuel** à une icône, ou afficher une infobulle instantanée au survol. Le gain de place ne vaut pas le grain de confusion.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🌡️ La "Température" de 0.0 à 1.0
+
+Un curseur pour régler la température d'un LLM. Les valeurs numériques brutes ne parlent à personne en dehors des initiés.
+
+:::::: {.callout-note collapse="true" title="Solution : les métaphores du quotidien"}
+Le 0.0 devient **"Précis et factuel"**, le 1.0 devient **"Créatif et aléatoire"**. On relie le concept technique à une réalité humaine. Le système traduit le langage machine en langage humain — pas l'inverse.
+::::::
+:::::
+::::
+:::
+
+## Efficacité & Respect du Temps
+
+Ne jamais gaspiller le temps de l'utilisateur. Ni les secondes d'attente, ni sa mémoire de travail.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### ⏳ La page blanche avec un spinner
+
+L'utilisateur lance une requête complexe. Un petit cercle tourne au milieu d'un écran vide. Le temps paraît infini. L'app a-t-elle planté ?
+
+:::::: {.callout-note collapse="true" title="Solution : Skeleton Screens et barre de progression honnête"}
+Afficher immédiatement la **structure visuelle** (blocs gris animés). Pour les longues tâches, afficher les étapes réelles : *"Nettoyage des données... Calcul des poids... Finalisation..."* On patiente bien mieux quand on comprend ce qui se passe.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🏭 L'écran "usine à gaz"
+
+Tous les filtres, toutes les variables, toutes les options avancées sur un seul écran. L'utilisateur est paralysé par la surcharge cognitive.
+
+:::::: {.callout-note collapse="true" title="Solution : la Divulgation Progressive (Progressive Disclosure)"}
+Par défaut, on affiche seulement les **3 ou 4 options vitales et courantes**. Les options de niche se cachent derrière un bouton discret "Filtres avancés". On ne charge la mémoire de l'utilisateur que s'il en fait explicitement la demande.
+::::::
+:::::
+::::
+:::
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🔁 La configuration à retaper à chaque fois
+
+Un data scientist applique régulièrement les mêmes filtres ou les mêmes prompts. À chaque ouverture de l'outil, il doit tout retaper à la main.
+
+:::::: {.callout-note collapse="true" title="Solution : Smart Defaults et Templates (le DRY de l'UX)"}
+L'interface pré-remplit avec les dernières valeurs utilisées. Elle permet d'enregistrer la configuration comme un **modèle réutilisable** en un clic. Le principe DRY appliqué à l'interaction humaine.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🐌 Le micro-blocage à chaque clic
+
+Pour valider chaque ligne dans une liste de milliers, l'interface fige une demi-seconde pour interroger la base de données. Le rythme est haché, la tâche laborieuse.
+
+:::::: {.callout-note collapse="true" title="Solution : l'Interface Optimiste (Optimistic UI)"}
+On part du principe que la requête va réussir. L'encoche verte apparaît **instantanément** — l'enregistrement se fait en arrière-plan. Si (et seulement si) la requête échoue, l'interface annule et affiche une erreur.
+::::::
+:::::
+::::
+:::
+
+## Transparence & Contrôle
+
+L'utilisateur doit toujours se sentir aux commandes. Il doit comprendre ce qui se passe et pouvoir réparer ses erreurs sans friction.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 💸 La suppression accidentelle
+
+L'utilisateur supprime par accident un jeu de données important. Une fenêtre "Êtes-vous sûr ?" aurait pu l'éviter... mais elle ralentit aussi chaque action normale.
+
+:::::: {.callout-note collapse="true" title="Solution : le Toast 'Annuler' (Undo)"}
+On exécute l'action **immédiatement**, puis on affiche une notification discrète (toast) pendant 5 secondes avec un bouton "Annuler". Le flux de travail n'est jamais interrompu — l'erreur reste réparable. Principe de la corbeille ou de l'envoi d'e-mail.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 🤖 Le score IA sans explication
+
+Le tableau de bord affiche "Risque de désabonnement : 85%". L'utilisateur ne sait pas comment la machine est arrivée à ce chiffre. Il n'y a pas confiance — il n'utilisera pas l'outil.
+
+:::::: {.callout-note collapse="true" title="Solution : la transparence des décisions (Explainable AI)"}
+Ne jamais livrer un chiffre brut sans contexte. Un lien **"Pourquoi ce résultat ?"** ouvre un panneau listant les 3 variables les plus influentes. L'utilisateur garde le **contrôle intellectuel** sur la donnée.
+::::::
+:::::
+::::
+:::
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🔍 Le cul-de-sac des 15 filtres
+
+L'utilisateur empile des filtres pour creuser dans ses données. Il aboutit à "Aucun résultat" et ne sait plus comment il en est arrivé là.
+
+:::::: {.callout-note collapse="true" title="Solution : le fil d'Ariane visuel et le bouton Reset"}
+Les filtres actifs s'affichent sous forme d'**étiquettes (chips)** avec une croix pour les retirer un par un. Un bouton bien visible **"Effacer tous les filtres"** offre la sortie de secours immédiate.
+::::::
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+### 👻 L'action fantôme sans feedback
+
+L'utilisateur lance l'entraînement d'un modèle. Rien ne change à l'écran. Son clic a-t-il été pris en compte ? Il clique à nouveau, plusieurs fois, au risque de tout casser.
+
+:::::: {.callout-note collapse="true" title="Solution : le feedback immédiat et le bouton Stop"}
+Dès le clic, le bouton change d'état (grisé ou spinner). On propose un bouton rouge **"Stopper le traitement"**. Même si l'utilisateur ne s'en sert pas, savoir qu'il *peut* arrêter le rassure immédiatement.
+::::::
+:::::
+::::
+:::

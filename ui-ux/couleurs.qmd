@@ -1,0 +1,331 @@
+---
+title: "Création de Palette Graphique"
+---
+
+Le design d'une interface commence par le choix de ses teintes. Une palette de couleurs cohérente n'est pas qu'un choix artistique : c'est un outil ergonomique majeur qui hiérarchise l'information, guide le regard et renforce l'identité visuelle de votre application.
+
+## Le Cercle de Johannes Itten
+
+Le peintre suisse Johannes Itten (1888-1967), enseignant au célèbre Bauhaus, a conçu un cercle chromatique pour modéliser la création et la relation des couleurs. Sa structure géométrique montre de manière limpide comment les 12 teintes fondamentales sont construites :
+
+### 1. Les Couleurs Primaires (Le Triangle)
+Au centre se trouve un triangle équilatéral contenant les trois teintes fondamentales : le **Jaune**, le **Rouge**, et le **Bleu**. Elles sont dites *primaires* car elles sont pures et ne peuvent être obtenues par aucun mélange.
+
+### 2. Les Couleurs Secondaires (L'Hexagone)
+En joignant les pointes du triangle central, on forme trois nouveaux triangles qui dessinent un hexagone. Ils accueillent les teintes obtenues par le mélange à parts égales de deux primaires :
+* Jaune + Rouge = **Orange**
+* Rouge + Bleu = **Violet**
+* Bleu + Jaune = **Vert**
+
+### 3. Les Couleurs Tertiaires (La Couronne)
+La couronne externe est divisée en 12 secteurs alignés. Elle réunit les primaires, les secondaires et les teintes dites *tertiaires*, obtenues en combinant une primaire avec une secondaire adjacente (ex: *Bleu-Vert*, *Jaune-Orange*).
+
+::::::: {.row}
+:::::::: {.col .col-centered}
+::::::::: {.section-label}
+Modèle RYB de Johannes Itten
+:::::::::
+
+::::::::: {#itten-wheel-container}
+:::::::::
+::::::::
+:::::::
+
+---
+
+## Théorie des Harmonies de Couleurs
+
+Pour assembler des couleurs de manière harmonieuse dans une interface, les designers s'appuient sur des règles géométriques précises en traçant des formes (lignes, triangles, rectangles) à l'intérieur du cercle chromatique :
+
+* **Teinte de Base** : Le point d'ancrage de votre palette, qui incarne souvent l'identité de marque.
+* **Harmonie Complémentaire** : Utilise la couleur directement opposée (à 180°). Elle crée un fort contraste visuel, idéal pour mettre en valeur des appels à l'action.
+* **Harmonie en Triade** : Associe trois couleurs réparties uniformément à 120°. Elle produit un équilibre dynamique et vivant.
+* **Harmonie en Tétrade** : Combine quatre teintes formant un rectangle (deux paires de complémentaires). Idéal pour les interfaces complexes qui nécessitent de différencier plusieurs types d'informations.
+
+::: {.callout-note collapse="true"}
+##### 💡 L'importance du contraste et de l'accessibilité (WCAG)
+
+En UI/UX, le choix des couleurs doit être inclusif. La norme internationale WCAG (*Web Content Accessibility Guidelines*) recommande un rapport de contraste minimal de **4.5:1** pour le texte normal et **3:1** pour les gros textes ou éléments graphiques. Ne vous fiez pas uniquement à votre perception visuelle : mesurez mathématiquement la luminance de vos couleurs !
+:::
+
+---
+
+
+## Atelier Interactif : Créez vos Harmonies
+
+Choisissez une teinte de base sur le cercle chromatique, puis explorez les différentes harmonies géométriques en changeant d'onglet. Vous verrez instantanément s'afficher la palette générée et sa mise en situation sur une fausse interface logicielle.
+
+::: {.card-window}
+#### Atelier de Colorimétrie {.bi-palette}
+
+:::: {.tabs .couleur-tabset}
+###### Complémentaire {.bi-arrow-left-right}
+
+*L'harmonie complémentaire utilise deux teintes opposées. Elle offre un contraste maximal et un dynamisme immédiat.*
+
+::::::: {.row}
+:::::::: {.col span=5}
+::::::::: {.section-label}
+Cercle Chromatique Discret
+:::::::::
+
+::::::::: {#placeholder-comp .color-wheel-placeholder}
+:::::::::: {#shared-color-wheel}
+::::::::::
+:::::::::
+::::::::
+
+:::::::: {.col span=7}
+::::::::: {.palette-swatches}
+:::::::::: {.palette-swatch-item .is-base #swatch-comp-0}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Base]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-comp-1}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Complément]{.swatch-label}
+::::::::::
+:::::::::
+
+::::::::: {.palette-mockup-ui #mockup-comp}
+:::::::::: {.mockup-header}
+Interface Complémentaire
+::::::::::
+
+:::::::::: {.mockup-badge}
+Action requise
+::::::::::
+
+:::::::::: {.mockup-body}
+Le contraste élevé attire instantanément l'œil sur le [bouton principal]{.mockup-highlight}. Utilisez la couleur complémentaire avec parcimonie pour maximiser son effet.
+::::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::::
+::::::::
+:::::::
+
+###### Triade {.bi-triangle}
+
+*L'harmonie en triade (ternaire) répartit trois teintes à 120° l'une de l'autre. Elle propose un équilibre vivant et coloré.*
+
+::::::: {.row}
+:::::::: {.col span=5}
+::::::::: {.section-label}
+Cercle Chromatique Discret
+:::::::::
+
+::::::::: {#placeholder-tri .color-wheel-placeholder}
+:::::::::
+::::::::
+
+:::::::: {.col span=7}
+::::::::: {.palette-swatches}
+:::::::::: {.palette-swatch-item .is-base #swatch-tri-0}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Base]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-tri-1}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Triade 1]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-tri-2}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Triade 2]{.swatch-label}
+::::::::::
+:::::::::
+
+::::::::: {.palette-mockup-ui #mockup-tri}
+:::::::::: {.mockup-header}
+Interface en Triade
+::::::::::
+
+:::::::::: {.mockup-badge}
+Info système
+::::::::::
+
+:::::::::: {.mockup-body}
+Trois teintes permettent de [mieux segmenter]{.mockup-highlight} votre design : une couleur pour la structure principale, une pour les textes, et une pour les composants d'interaction.
+::::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::::
+::::::::
+:::::::
+
+###### Tétrade {.bi-grid-1x2}
+
+*L'harmonie en tétrade (quaternaire) associe quatre teintes à 90° d'écart. C'est la configuration la plus riche en variations.*
+
+::::::: {.row}
+:::::::: {.col span=5}
+::::::::: {.section-label}
+Cercle Chromatique Discret
+:::::::::
+
+::::::::: {#placeholder-tet .color-wheel-placeholder}
+:::::::::
+::::::::
+
+:::::::: {.col span=7}
+::::::::: {.palette-swatches}
+:::::::::: {.palette-swatch-item .is-base #swatch-tet-0}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Base]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-tet-1}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Tétrade 1]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-tet-2}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Tétrade 2]{.swatch-label}
+::::::::::
+
+:::::::::: {.palette-swatch-item #swatch-tet-3}
+::::::::::: {.swatch-color-box}
+:::::::::::
+[#000000]{.swatch-hex}
+[Tétrade 3]{.swatch-label}
+::::::::::
+:::::::::
+
+::::::::: {.palette-mockup-ui #mockup-tet}
+:::::::::: {.mockup-header}
+Interface en Tétrade
+::::::::::
+
+:::::::::: {.mockup-badge}
+Dashboard complexe
+::::::::::
+
+:::::::::: {.mockup-secondary-badge}
+Filtre actif
+::::::::::
+
+:::::::::: {.mockup-body}
+Avec quatre teintes de caractères différents, assurez-vous d'avoir une nuance [ultra-dominante]{.mockup-highlight} et réservez les trois autres pour différencier des catégories de données distinctes.
+::::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::::
+::::::::
+:::::::
+::::
+:::
+
+```{ojs}
+mutable mode = "complementary"
+
+_tabWatcher = {
+  const w = aptitek.createTabsetWatcher(
+    ".couleur-tabset",
+    { "Complémentaire": "complementary", "Triade": "triadic", "Tétrade": "tetradic" },
+    (val) => { mutable mode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+```
+
+```{ojs}
+viewof colorWheel = {
+  const container = document.getElementById("shared-color-wheel");
+  const wheel = aptitek.createColorWheel(container, {
+    mode: "complementary",
+    baseHue: 0
+  }, invalidation);
+  return wheel;
+}
+```
+
+```{ojs}
+updateWheelPosition = {
+  // Dépend de `mode` pour s'exécuter à chaque changement d'onglet
+  const activeMode = mode;
+  const wheel = document.getElementById("shared-color-wheel");
+  if (!wheel) return;
+
+  let placeholderId = "";
+  if (activeMode === "complementary") placeholderId = "placeholder-comp";
+  else if (activeMode === "triadic") placeholderId = "placeholder-tri";
+  else if (activeMode === "tetradic") placeholderId = "placeholder-tet";
+
+  const placeholder = document.getElementById(placeholderId);
+  if (placeholder && wheel.parentNode !== placeholder) {
+    placeholder.appendChild(wheel);
+  }
+}
+```
+
+```{ojs}
+updateWheelMode = {
+  if (viewof colorWheel) {
+    (viewof colorWheel).update({ mode });
+  }
+}
+```
+
+```{ojs}
+updateUIElements = {
+  const data = colorWheel;
+  if (!data || !data.palette) return;
+
+  const updateTabElements = (swatchIds, mockupId) => {
+    swatchIds.forEach((id, index) => {
+      const item = document.getElementById(id);
+      if (!item) return;
+      const colorInfo = data.palette[index];
+      if (colorInfo) {
+        const box = item.querySelector(".swatch-color-box");
+        const label = item.querySelector(".swatch-hex");
+        if (box) box.style.setProperty("--swatch-color", colorInfo.hex);
+        if (label) label.textContent = colorInfo.hex;
+      }
+    });
+
+    const mockup = document.getElementById(mockupId);
+    if (mockup) {
+      mockup.style.setProperty("--palette-color-0", data.colors[0]);
+      mockup.style.setProperty("--palette-color-1", data.colors[1] || data.colors[0]);
+      mockup.style.setProperty("--palette-color-2", data.colors[2] || data.colors[0]);
+      mockup.style.setProperty("--palette-color-3", data.colors[3] || data.colors[0]);
+    }
+  };
+
+  if (mode === "complementary") {
+    updateTabElements(["swatch-comp-0", "swatch-comp-1"], "mockup-comp");
+  } else if (mode === "triadic") {
+    updateTabElements(["swatch-tri-0", "swatch-tri-1", "swatch-tri-2"], "mockup-tri");
+  } else if (mode === "tetradic") {
+    updateTabElements(["swatch-tet-0", "swatch-tet-1", "swatch-tet-2", "swatch-tet-3"], "mockup-tet");
+  }
+}
+```
+
+```{ojs}
+_ittenWheel = {
+  aptitek.createIttenWheel("#itten-wheel-container");
+}
+```

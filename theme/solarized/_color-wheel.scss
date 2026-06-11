@@ -1,0 +1,336 @@
+// =====================================================================
+// _color-wheel.scss — Cercle chromatique et prévisualisations sémantiques
+// =====================================================================
+
+:root {
+    // Teintes unifiées du cercle chromatique (Johannes Itten RYB)
+    --wheel-color-0: #FFDF00;  // Jaune
+    --wheel-color-1: #FF9F00;  // Jaune-Orange
+    --wheel-color-2: #FF6F00;  // Orange
+    --wheel-color-3: #FF3F00;  // Rouge-Orange
+    --wheel-color-4: #E30613;  // Rouge
+    --wheel-color-5: #9A004F;  // Rouge-Violet
+    --wheel-color-6: #4A0072;  // Violet
+    --wheel-color-7: #1A237E;  // Bleu-Violet
+    --wheel-color-8: #005F9E;  // Bleu
+    --wheel-color-9: #008B8B;  // Bleu-Vert
+    --wheel-color-10: #008F39; // Vert
+    --wheel-color-11: #A3D900; // Jaune-Vert
+}
+
+
+.color-wheel-widget {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 280px;
+    margin: 0 auto;
+    position: relative;
+    user-select: none;
+}
+
+.color-wheel-svg {
+    overflow: visible;
+}
+
+.color-wheel-sector {
+    fill: var(--sector-color);
+    stroke: $sol-base3;
+    stroke-width: 2.5px;
+    stroke-linejoin: round;
+    cursor: pointer;
+    transition: 
+        opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        stroke 0.25s ease,
+        stroke-width 0.25s ease;
+    transform-origin: 150px 150px;
+
+    &.is-inactive {
+        opacity: 0.22;
+    }
+
+    &.is-active {
+        opacity: 1;
+        stroke: $sol-base01;
+        stroke-width: 3px;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    &:hover {
+        opacity: 1 !important;
+        stroke: $sol-base00;
+        stroke-width: 3.5px;
+        transform: scale(1.03);
+        z-index: 10;
+    }
+}
+
+.color-wheel-center-circle {
+    fill: var(--center-color, $sol-base3);
+    stroke: $sol-base01;
+    stroke-width: 3px;
+    transition: fill 0.35s ease;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.08));
+}
+
+// Lignes et polygones de connexion d'harmonie
+.harmony-connector-line {
+    stroke: $sol-base01;
+    stroke-width: 2.5px;
+    stroke-dasharray: 4 4;
+    stroke-linecap: round;
+    animation: harmonyLinePulse 2s infinite ease-in-out;
+}
+
+.harmony-connector-polygon {
+    stroke: $sol-base01;
+    stroke-width: 2.5px;
+    stroke-dasharray: 4 4;
+    fill: rgba(0, 43, 54, 0.04);
+    animation: harmonyPolygonPulse 3s infinite ease-in-out;
+}
+
+.harmony-connector-node {
+    fill: $sol-base3;
+    stroke: $sol-base01;
+    stroke-width: 2.5px;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.12));
+    transition: cx 0.35s cubic-bezier(0.4, 0, 0.2, 1), cy 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes harmonyLinePulse {
+    0%, 100% { stroke-width: 2.5px; opacity: 0.85; }
+    50% { stroke-width: 3.2px; opacity: 1; }
+}
+
+@keyframes harmonyPolygonPulse {
+    0%, 100% { fill: rgba(0, 43, 54, 0.03); }
+    50% { fill: rgba(0, 43, 54, 0.07); }
+}
+
+// Swatches et prévisualisations de palette
+.palette-swatches {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin: 1.25rem 0;
+}
+
+.palette-swatch-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: $sol-base3;
+    border: 1px solid rgba($sol-base1, 0.15);
+    border-radius: 10px;
+    padding: 0.5rem;
+    min-width: 75px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    .swatch-color-box {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 6px;
+        background-color: var(--swatch-color);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0.4rem;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    .swatch-hex {
+        font-family: $font-family-code;
+        font-weight: 700;
+        font-size: 0.7rem;
+        color: $sol-base01;
+        user-select: all;
+    }
+    
+    .swatch-label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: $sol-base1;
+        font-weight: 600;
+        margin-top: 0.1rem;
+    }
+
+    &.is-base {
+        min-width: 110px;
+        padding: 0.75rem;
+        border: 1.5px solid rgba($sol-base01, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        
+        .swatch-color-box {
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .swatch-hex {
+            font-size: 0.85rem;
+            color: $sol-base02;
+        }
+
+        .swatch-label {
+            font-size: 0.7rem;
+            color: $sol-base01;
+            font-weight: 700;
+        }
+    }
+}
+
+// Mockup UI réactif utilisant les variables CSS de la palette
+.palette-mockup-ui {
+    background-color: var(--sol-base3);
+    color: var(--sol-base02);
+    border: 1px solid rgba($sol-base1, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: border-color 0.35s ease;
+
+    .mockup-header {
+        font-family: $font-family-base;
+        font-weight: 800;
+        font-size: 1.15rem;
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        color: var(--palette-color-0, $sol-blue);
+        transition: color 0.35s ease;
+    }
+
+    .mockup-badge {
+        background-color: var(--palette-color-1, $sol-cyan);
+        color: #ffffff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        margin-bottom: 0.75rem;
+        transition: background-color 0.35s ease;
+    }
+
+    .mockup-secondary-badge {
+        border: 1.5px solid var(--palette-color-3, var(--palette-color-1));
+        color: var(--palette-color-3, var(--palette-color-1));
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        margin-left: 0.5rem;
+        margin-bottom: 0.75rem;
+        transition: border-color 0.35s ease, color 0.35s ease;
+    }
+
+    .mockup-body {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        
+        .mockup-highlight {
+            color: var(--palette-color-2, var(--palette-color-0));
+            font-weight: 700;
+            transition: color 0.35s ease;
+        }
+    }
+
+    .mockup-button {
+        background-color: var(--palette-color-0, $sol-yellow);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.35s ease, transform 0.1s ease;
+
+        &:hover {
+            opacity: 0.9;
+            transform: translateY(-0.5px);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+// Cercle chromatique de Johannes Itten statique
+.itten-wheel-widget {
+    width: 80%;
+    max-width: 600px;
+    margin: 2rem auto;
+    background: $sol-base3;
+    border: 1px solid rgba($sol-base1, 0.12);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.itten-wheel-svg {
+    overflow: visible;
+    
+    .itten-sector {
+        fill: var(--sector-color);
+        stroke: $sol-base3;
+        stroke-width: 1.5px;
+    }
+    
+    .itten-kite {
+        fill: var(--kite-color);
+        stroke: $sol-base3;
+        stroke-width: 1.5px;
+    }
+    
+    .itten-triangle {
+        fill: var(--triangle-color);
+        stroke: $sol-base3;
+        stroke-width: 1.5px;
+    }
+    
+    .itten-label-sector {
+        font-family: $font-family-base;
+        font-weight: 700;
+        font-size: 8px;
+        fill: $sol-base3;
+        text-anchor: middle;
+        dominant-baseline: middle;
+    }
+    
+    .itten-label-category {
+        font-family: $font-family-base;
+        font-weight: 800;
+        font-size: 8.5px;
+        fill: $sol-base01;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        
+        &.cat-primary {
+            fill: $sol-base03;
+            font-size: 9.5px;
+        }
+        
+        &.cat-secondary {
+            fill: $sol-base02;
+            font-size: 9px;
+        }
+    }
+}
+

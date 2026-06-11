@@ -97,6 +97,7 @@ export { getRamData, renderRam } from "./custom/ram.js";
 export { createSimulationControl } from "./custom/simulation-control.js";
 export { createSparsitySimulator } from "./custom/sparsity.js";
 export { createSvgDistanceHandle } from "./custom/svg-distance-handle.js";
+export { createColorWheel, createIttenWheel } from "./custom/color-wheel.js";
 export { createVectorDemo } from "./custom/vector-demo.js";
 export {
   renderMeanGraph,
