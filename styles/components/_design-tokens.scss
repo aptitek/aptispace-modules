@@ -1,0 +1,166 @@
+/* =============================================================================
+   DESIGN TOKENS SIMULATOR STYLES
+   ============================================================================= */
+
+.tokens-simulator-wrapper {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+
+  .control-group {
+    background: var(--sol-base2);
+    border: 1px solid rgba(88, 110, 117, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 1rem;
+  }
+
+  .slider-row {
+    input[type="range"] {
+      height: 6px;
+      border-radius: 3px;
+    }
+  }
+
+  .color-selectors {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .color-dot-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &.active {
+      border-color: var(--sol-base00);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.tokens-preview-frame {
+  background: var(--sol-base3);
+  border: 1px solid rgba(88, 110, 117, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -----------------------------------------------------------------------------
+   MOCKUP INTERFACE POUR TOKENS
+   ----------------------------------------------------------------------------- */
+.tokens-mockup {
+  background: var(--sol-base2);
+  border: 1px solid rgba(88, 110, 117, 0.15);
+  border-radius: var(--sim-border-radius, 8px);
+  padding: var(--sim-base-spacing, 16px);
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease-out;
+
+  .mockup-header {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--sim-base-spacing, 16px) * 0.5);
+    margin-bottom: var(--sim-base-spacing, 16px);
+
+    .mockup-icon {
+      font-size: 1.25rem;
+      color: var(--sim-brand-color, var(--sol-blue));
+      transition: color 0.15s ease-out;
+    }
+
+    .mockup-title {
+      font-size: 1rem;
+      font-weight: var(--sim-font-weight, 700);
+      margin: 0;
+      color: var(--sol-base02);
+      font-family: var(--font-family-base);
+    }
+  }
+
+  .mockup-body {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--sim-base-spacing, 16px) * 0.75);
+
+    .mockup-text {
+      font-size: 0.875rem;
+      color: var(--sol-base01);
+      margin: 0;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    .mockup-bar-container {
+      height: 8px;
+      background: var(--sol-base3);
+      border-radius: 4px;
+      overflow: hidden;
+
+      .mockup-bar-fill {
+        height: 100%;
+        background: var(--sim-brand-color, var(--sol-blue));
+        width: 70%;
+        border-radius: 4px;
+        transition: width 0.3s ease, background-color 0.15s ease-out;
+      }
+    }
+  }
+
+  .mockup-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--sim-base-spacing, 16px);
+
+    .mockup-btn {
+      background: var(--sim-brand-color, var(--sol-blue));
+      color: #ffffff;
+      border: none;
+      font-family: var(--font-family-base);
+      font-weight: var(--sim-font-weight, 700);
+      font-size: 0.875rem;
+      padding: 8px 16px;
+      border-radius: var(--sim-border-radius, 8px);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.15s ease-out;
+
+      &:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   CODE BLOCKS DANS L'ONGLET
+   ----------------------------------------------------------------------------- */
+.tokens-code-container {
+  margin: 0;
+  padding: 0;
+  
+  pre {
+    margin: 0 !important;
+    background: var(--sol-base03) !important;
+    border-radius: 8px;
+    border: 1px solid var(--sol-base02);
+  }
+  
+  code {
+    font-family: var(--font-family-code, monospace) !important;
+    font-size: 0.85rem !important;
+  }
+}

@@ -1,0 +1,196 @@
+---
+title: "Le Design Token"
+subtitle: "L'atome de liaison entre Design et Tech"
+---
+
+Un **design token** est un nom symbolique (un alias) qui stocke une valeur graphique brute. C'est le contrat immuable entre le Design et la Tech, éliminant définitivement les valeurs codées en dur (*hard-coding*).
+
+## Pourquoi tokeniser ?
+
+Dans un projet moderne, propager des valeurs brutes comme `#268bd2` ou `16px` directement dans le code pose trois problèmes majeurs :
+- **Maintenance complexe** : Si l'identité de marque change, il faut traquer et remplacer chaque occurrence.
+- **Manque d'intention** : `#268bd2` ne dit pas *pourquoi* cette couleur est là. Est-ce un bouton principal ? Un lien ? Une bordure d'alerte ?
+- **Incohérence multi-plateforme** : Le Web (CSS), iOS (Swift) et Android (Compose) parlent des syntaxes différentes.
+
+Les tokens résolvent ces problèmes en centralisant toutes les décisions de design dans une **Source Unique de Vérité** (généralement un fichier JSON) et en la compilant automatiquement pour toutes les cibles.
+
+::: {.callout-note collapse="true" title="Les bénéfices en entreprise"}
+- **Consistance** : Les mêmes espacements et couleurs sont partagés par toutes les équipes.
+- **Agilité** : Un changement de marque se déploie en quelques minutes sur toutes les applications.
+- **Thématisation** : Le mode sombre ou les thèmes alternatifs se résument à changer un jeu de tokens sémantiques.
+:::
+
+## Les 3 niveaux de spécificité
+
+Pour assurer flexibilité et maintenance, les design tokens sont organisés en trois niveaux hiérarchiques :
+
+::: {.row gap=3}
+:::: {.col span=4}
+::: {.card}
+### 💎 1. Global / Primitive
+
+**La valeur brute.**
+Il liste tous les choix disponibles dans le système de design, sans leur attribuer de rôle.
+
+*Exemple :*
+- `color-blue-500` $\rightarrow$ `#268bd2`
+- `spacing-base` $\rightarrow$ `16px`
+:::
+::::
+
+:::: {.col span=4}
+::: {.card}
+### 🔄 2. Sémantique / Alias
+
+**L'intention de design.**
+Il donne un rôle à une primitive. C'est ici que réside toute la puissance de thématisation.
+
+*Exemple :*
+- `color-action-primary` $\rightarrow$ `{color-blue-500}`
+- `spacing-layout-padding` $\rightarrow$ `{spacing-base}`
+:::
+::::
+
+:::: {.col span=4}
+::: {.card}
+### 📦 3. Composant
+
+**La portée restreinte.**
+Il lie un token sémantique à un composant unique. Il est utilisé pour les micro-ajustements.
+
+*Exemple :*
+- `button-primary-bg` $\rightarrow$ `{color-action-primary}`
+- `card-border-radius` $\rightarrow$ `12px`
+:::
+::::
+:::
+
+::: {.callout-tip}
+### Pourquoi cette séparation ?
+Si vous décidez de passer votre bouton principal en vert pour une campagne, vous changez l'alias `color-action-primary` sans modifier la primitive `color-blue-500`. Tout le système s'adapte sans casser la cohérence.
+:::
+
+## Tokeniser la Couleur, la Typographie et l'Espace
+
+Toutes les propriétés visuelles de l'interface peuvent être tokenisées.
+
+### 🎨 Les couleurs
+Comme vu dans le cours sur les [Couleurs](couleurs.qmd), le choix des couleurs s'appuie sur la physique et la perception humaine (CIELAB).
+En tokenisation, on associe les variations de luminosité ($L^*$) à des échelles de primitives numériques (ex: `100` à `900`) pour assurer un contraste constant et le respect des normes WCAG.
+
+### ✍️ La typographie
+En complément du cours sur les [Polices](polices.qmd), la typographie est tokenisée selon ses propriétés clés (familles, graisses, hauteurs de ligne) ou les axes de polices variables (MONO, CASL, wght). On crée des ensembles sémantiques comme `font-heading-main`.
+
+### 📏 L'espacement
+La grille de 8px étudiée dans le cours sur la [Disposition](disposition.qmd) est tokenisée sous forme de multiplicateurs. Plutôt que d'écrire des valeurs arbitraires, on structure l'échelle selon la loi de Gestalt avec des alias simples : `spacing-s`, `spacing-m`, `spacing-l`.
+
+---
+
+## Du Design au Code : Le Pipeline
+
+Comment les tokens passent-ils de Figma au code de production ? C'est le rôle du pipeline de compilation (souvent géré par **Style Dictionary** d'Amazon).
+
+```{mermaid}
+graph TD
+    Figma["Figma / Tokens Studio"] -->|Export JSON| Src["Source unique de vérité : tokens.json"]
+    Src --> SD["Style Dictionary Compiler"]
+    SD -->|Compile| CSS["web: variables.css"]
+    SD -->|Compile| SCSS["web-build: variables.scss"]
+    SD -->|Compile| Swift["iOS: DesignTokens.swift"]
+    SD -->|Compile| Kotlin["Android: DesignTokens.kt"]
+    
+    style Src fill:#2aa198,color:#fff,stroke:none
+    style SD fill:#268bd2,color:#fff,stroke:none
+    style CSS fill:#859900,color:#fff,stroke:none
+    style SCSS fill:#859900,color:#fff,stroke:none
+    style Swift fill:#cb4b16,color:#fff,stroke:none
+    style Kotlin fill:#b58900,color:#fff,stroke:none
+```
+
+---
+
+## Atelier interactif : Le Pipeline de Tokens {.bi-stars}
+
+Modifiez les décisions de design ci-dessous pour voir comment Style Dictionary compile instantanément les tokens pour le Web (CSS, SCSS), iOS (Swift) et Android (Jetpack Compose).
+
+::: {.row gap=4}
+:::: {.col span=5}
+::: {.card}
+#### Sélecteurs de Tokens {.bi-sliders}
+
+- [Couleur de marque]{.select #tok-color options="Bleu (sol-blue),Vert (sol-green),Orange (sol-orange),Violet (sol-violet)" value="Bleu (sol-blue)"}
+- [Espacement de base]{.slider #tok-spacing value=16 min=8 max=24 step=8}
+- [Arrondi d'angle]{.slider #tok-radius value=12 min=0 max=24 step=6}
+- [Graisse du titre]{.select #tok-weight options="Normal (400),Gras (700),Extra-Gras (900)" value="Gras (700)"}
+- [Police Monospacée]{.checkbox #tok-mono checked=false}
+
+:::
+::::
+
+:::: {.col span=7}
+::: {.card-window}
+#### Pipeline Style Dictionary {.bi-cpu}
+
+::::: {.tabs}
+##### 📱 Aperçu {.bi-eye}
+::: {#tokens-mockup-container}
+:::
+
+##### 📄 Source JSON {.bi-filetype-json}
+::: {#tokens-json-container .tokens-code-container}
+```{#tokens-json-code .json}
+// En attente de compilation...
+```
+:::
+
+##### 🌐 CSS {.bi-filetype-css}
+::: {#tokens-css-container .tokens-code-container}
+```{#tokens-css-code .css}
+/* En attente de compilation... */
+```
+:::
+
+##### 🎨 SCSS {.bi-file-earmark-code}
+::: {#tokens-scss-container .tokens-code-container}
+```{#tokens-scss-code .scss}
+// En attente de compilation...
+```
+:::
+
+##### 🍎 Swift {.bi-apple}
+::: {#tokens-swift-container .tokens-code-container}
+```{#tokens-swift-code .swift}
+// En attente de compilation...
+```
+:::
+
+##### 🤖 Compose {.bi-android2}
+::: {#tokens-compose-container .tokens-code-container}
+```{#tokens-compose-code .kotlin}
+// En attente de compilation...
+```
+:::
+:::::
+:::
+::::
+:::
+
+```{ojs}
+//| echo: false
+tokensSim = {
+  const sim = aptitek.createDesignTokenSimulator("#tokens-mockup-container", {
+    brandColor: tok_color,
+    baseSpacing: tok_spacing,
+    borderRadius: tok_radius,
+    fontWeight: tok_weight,
+    useMono: tok_mono,
+    mockupContainer: "#tokens-mockup-container",
+    jsonCode: "#tokens-json-code",
+    cssCode: "#tokens-css-code",
+    scssCode: "#tokens-scss-code",
+    swiftCode: "#tokens-swift-code",
+    composeCode: "#tokens-compose-code"
+  }, invalidation);
+  return sim;
+}
+```

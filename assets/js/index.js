@@ -99,6 +99,7 @@ export { createSparsitySimulator } from "./custom/sparsity.js";
 export { createSvgDistanceHandle } from "./custom/svg-distance-handle.js";
 export { createColorWheel, createIttenWheel } from "./custom/color-wheel.js";
 export { createSpacingVisualizer, createSpacingScaleVisualizer } from "./custom/spacing.js";
+export { createDesignTokenSimulator } from "./custom/design-tokens.js";
 export { createVectorDemo } from "./custom/vector-demo.js";
 export {
   renderMeanGraph,
