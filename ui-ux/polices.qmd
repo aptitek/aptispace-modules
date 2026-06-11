@@ -4,96 +4,90 @@ title: "La Typographie dans le Design System"
 
 La typographie est l'un des piliers visuels les plus puissants d'une interface utilisateur (UI). Bien plus qu'un simple choix décoratif, elle structure l'information, définit la hiérarchie visuelle, guide la lecture de l'utilisateur et véhicule l'identité de marque. Une typographie maîtrisée garantit la clarté et le confort de lecture (*lisibilité*), tout en optimisant la vitesse d'assimilation des données.
 
----
-
 ## Les Styles de Polices
 
 Avant d'aborder les détails techniques, il convient de comprendre la classification visuelle des polices d'écriture. Chaque famille typographique possède ses propres caractéristiques morphologiques et psychologiques :
 
-::::::: {.row gap=3}
-:::::::: {.col span=4}
-::: {.card}
+::: {.row gap=3}
+:::: {.col span=4}
+::::: {.card}
 ##### Sérif (à empattement)
 *Les classiques & institutionnelles*
 
 Century Schoolbook, Garamond, Times New Roman.
 
 [L'élégance classique d'EB Garamond.]{.font-example-serif}
-:::
-::::::::
-:::::::: {.col span=4}
-::: {.card}
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
 ##### Sans Sérif (linéale)
 *Les modernes & épurées*
 
 Helvetica, Roboto, Inter, Outfit.
 
 [La clarté et la modernité d'Inter.]{.font-example-sans}
-:::
-::::::::
-:::::::: {.col span=4}
-::: {.card}
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
 ##### Slab (mécane)
 *Les empattements épais & carrés*
 
 Rockwell, Archer, Courier Prime (Slab).
 
 [L'impact robuste de la police Arvo.]{.font-example-slab}
+:::::
+::::
 :::
-::::::::
-:::::::
 
-::::::: {.row gap=3 mt=3}
-:::::::: {.col span=4}
-::: {.card}
+::: {.row gap=3 mt=3}
+:::: {.col span=4}
+::::: {.card}
 ##### Cursive / Script
 *L'écriture manuscrite*
 
 Great Vibes, Brush Script, Pacifico.
 
 [Le style expressif de Pacifico.]{.font-example-cursive}
-:::
-::::::::
-:::::::: {.col span=4}
-::: {.card}
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
 ##### Monospace
 *La chasse fixe*
 
 Fira Code, Source Code Pro, Courier.
 
 [`const font = "Fira Code";`]{.font-example-mono}
-:::
-::::::::
-:::::::: {.col span=4}
-::: {.card}
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
 ##### Display / Fantaisie
 *Les styles très marqués*
 
 Impact, Cooper Black, styles pixel-art ou retro.
 
 [RETRO PIXEL BY PRESS START]{.font-example-display}
+:::::
+::::
 :::
-::::::::
-:::::::
-
----
 
 ## La Famille de Polices et ses Attributs
 
 Dans un Design System, une police n'existe jamais seule. Elle se décline en une **famille de polices** (*font family*) caractérisée par des variations physiques précises. Ces attributs permettent de structurer finement la hiérarchie de l'information :
 
-| Attribut | Description | Valeurs types | Rôle UX & Ergonomique |
-|:---|:---|:---|:---|
-| **Graisse** (*Weight*) | Épaisseur visuelle du tracé des lettres. | 100 (*Thin*) à 900 (*Black*) | Création de contraste de taille et d'importance ; distinction immédiate entre titres et corps. |
-| **Inclinaison** (*Slant / Italic*) | Angle d'inclinaison des caractères. | Normal, Italique ($0^\circ$ à $-15^\circ$) | Emphase de termes précis (citations, mots techniques, légendes) sans perturber le rythme global. |
-| **Chasse** (*Width*) | Largeur horizontale occupée par chaque caractère. | Condensé (*Condensed*), Large (*Expanded*) | Gain de place sur mobile (condensé) ou mise en valeur monumentale et espacée de grands titres (large). |
+| Attribut                           | Description                                       | Valeurs types                              | Rôle UX & Ergonomique                                                                                  |
+| :--------------------------------- | :------------------------------------------------ | :----------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| **Graisse** (*Weight*)             | Épaisseur visuelle du tracé des lettres.          | 100 (*Thin*) à 900 (*Black*)               | Création de contraste de taille et d'importance ; distinction immédiate entre titres et corps.         |
+| **Inclinaison** (*Slant / Italic*) | Angle d'inclinaison des caractères.               | Normal, Italique ($0^\circ$ à $-15^\circ$) | Emphase de termes précis (citations, mots techniques, légendes) sans perturber le rythme global.       |
+| **Chasse** (*Width*)               | Largeur horizontale occupée par chaque caractère. | Condensé (*Condensed*), Large (*Expanded*) | Gain de place sur mobile (condensé) ou mise en valeur monumentale et espacée de grands titres (large). |
 
 ::: {.callout-note collapse="true"}
 ##### 💡 L'impact de la hiérarchie typographique sur la charge mentale
 Une bonne hiérarchisation réduit le temps de traitement de l'information par le cerveau. C'est le principe du *scannability* : permettre à l'utilisateur de parcourir l'interface en diagonale et d'identifier la structure globale (titres, sous-titres, corps) en moins d'une seconde.
 :::
-
----
 
 ## Le Cas Pratique : Les Polices Variables avec "Recursive"
 
@@ -107,8 +101,6 @@ Les **polices variables** (*Variable Fonts*) résolvent ce problème : un seul f
 * **`slnt` (Slant)** : Inclinaison continue du tracé de $0^\circ$ à $-15^\circ$.
 * **`CRSV` (Cursive)** : Activation ou désactivation des tracés de type cursif (comme le "a" ou le "g" à boucle ouverte).
 
----
-
 ## Atelier Interactif : Moduler une Police Variable
 
 Expérimentez avec les différents axes de la police variable **Recursive**. Modifiez les curseurs verticaux pour observer l'effet combiné sur l'esthétique, la lisibilité et la structure de la police. Vous pouvez saisir votre propre texte dans le champ prévu à cet effet.
@@ -116,8 +108,8 @@ Expérimentez avec les différents axes de la police variable **Recursive**. Mod
 ::: {.card-window}
 #### Éditeur Typographique Interactif {.bi-input-cursor-text}
 
-::: {#font-sampler-container}
-:::
+:::: {#font-sampler-container}
+::::
 
 :::
 

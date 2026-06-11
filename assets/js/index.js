@@ -120,6 +120,7 @@ export { createSliderRadial } from "./custom/slider-radial.js";
 export { createCielabSphere, createCielabSlider } from "./custom/cielab.js";
 export { createRecursiveFontSampler } from "./custom/recursive-font.js";
 export { createSvgInspector, createTouchTargetVisualizer } from "./custom/iconography.js";
+export { createAtomicDesignSimulator } from "./custom/atomic-design.js";
 
 
 

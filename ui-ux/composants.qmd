@@ -1,0 +1,138 @@
+---
+title: "Les Composants & Le Design Atomique"
+subtitle: "De l'atome à la page : structurer l'interface"
+---
+
+Concevoir une interface moderne ne consiste plus à dessiner des pages web isolées, mais à bâtir un **système de composants cohérent et réutilisable**. En s'inspirant de la chimie, la méthodologie du **Design Atomique** permet de structurer les éléments d'interface du plus simple au plus complexe, garantissant la maintenabilité et l'inclusivité du code.
+
+## Le Design Atomique
+
+Créé par le designer Brad Frost, le **Design Atomique** est une approche modulaire qui décompose une interface utilisateur en cinq étapes distinctes.
+
+::: {.row gap=3}
+:::: {.col span=4}
+::::: {.card}
+### ⚛️ Atomes
+
+Les fondations indivisibles de l'interface. Ils ne peuvent pas être décomposés sans perdre leur fonctionnalité.
+
+- **Exemples** : Un bouton, un champ de saisie, une étiquette de texte, un badge, une icône.
+- **Rôle** : Définir les styles graphiques de base (couleurs, polices, arrondis).
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
+### 🧬 Molécules
+
+L'assemblage de plusieurs atomes formant une unité fonctionnelle simple.
+
+- **Exemples** : Un champ de recherche (atome d'input + atome de bouton + atome de label).
+- **Rôle** : Fournir une interaction réutilisable à un seul but.
+:::::
+::::
+:::: {.col span=4}
+::::: {.card}
+### 🧫 Organismes
+
+Des sections complexes composées de molécules et d'atomes.
+
+- **Exemples** : Une barre de navigation (logo + formulaire de recherche + profil utilisateur).
+- **Rôle** : Structurer une zone fonctionnelle autonome de l'interface.
+:::::
+::::
+:::
+
+::: {.row gap=3}
+:::: {.col span=6}
+::::: {.card}
+### 📐 Templates (Modèles)
+
+Le squelette de mise en page réorganisant les organismes et molécules dans un canevas global.
+
+- **Rôle** : Définir la structure, la grille réactive (grid system) et les espacements de la page sans se soucier du contenu réel.
+- **Visualisation** : Représenté par des maquettes filaires (wireframes) ou des squelettes d'attente (skeleton loaders).
+:::::
+::::
+:::: {.col span=6}
+::::: {.card}
+### 📄 Pages
+
+L'instance finale du template où les données réelles (textes, images, API) remplacent les espaces réservés.
+
+- **Rôle** : Valider l'efficacité du design système en situation réelle.
+- **Interactivité** : Permettre à l'utilisateur d'exécuter des parcours applicatifs complets.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+##### 💡 Pourquoi utiliser le Design Atomique ?
+En liant les composants du plus petit au plus grand, toute modification effectuée sur un **atome** (comme la couleur primaire du bouton) se répercute instantanément sur les **molécules**, les **organismes** et les **pages** qui le contiennent. C'est l'assurance d'un design cohérent et d'un code DRY (*Don't Repeat Yourself*).
+:::
+
+## Atelier Interactif : Le Bac à Sable Atomique
+
+Expérimentez avec les différents niveaux du Design Atomique. Choisissez un niveau dans l'en-tête de l'atelier, modifiez ses variables dans le panneau de gauche et observez comment le code HTML s'assemble et s'imbrique en temps réel dans la zone de rendu.
+
+::: {.card-window}
+#### Éditeur & Analyseur de Structure Design Atomique {.bi-box-seam}
+
+:::: {#atomic-simulator-container}
+::::
+
+:::
+
+```{ojs}
+viewof simState = aptitek.createAtomicDesignSimulator("#atomic-simulator-container", {}, invalidation)
+```
+
+## L'Écosystème des Composants
+
+L'implémentation pratique des composants a évolué d'une approche couplée vers des architectures hautement modulaires et spécialisées.
+
+### Composants Classiques vs Modernes
+
+Historiquement, un composant web (comme un sélecteur de date) mélangeait de manière rigide la structure HTML, le style CSS et la logique Javascript au sein d'un seul bloc difficile à personnaliser.
+
+Les bibliothèques modernes séparent la **structure fonctionnelle** (accessibilité, état interactif, clavier) de la **présentation visuelle** (thème, styles).
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card}
+### 🎨 Bibliothèques de Styles (UI Kits)
+
+Des composants prêts à l'emploi qui imposent une charte graphique prédéfinie.
+
+- **Exemples** : Bootstrap, Material UI, Ant Design.
+- **Avantages** : Développement extrêmement rapide, cohérence esthétique immédiate.
+- **Limites** : Difficiles à personnaliser en dehors du thème de base, code CSS souvent lourd et inutilisé (*bloatware*).
+:::::
+::::
+:::: {.col span=6}
+::::: {.card}
+### ⚙️ Bibliothèques Fonctionnelles (Headless)
+
+Des composants sans styles intégrés qui fournissent uniquement la logique métier et l'accessibilité.
+
+- **Exemples** : Radix UI, Headless UI, React Aria.
+- **Avantages** : Liberté absolue de design (stylisation via CSS vanilla ou tokens), conformité d'accessibilité WCAG garantie.
+- **Limites** : Nécessite d'écrire l'intégralité des styles visuels.
+:::::
+::::
+:::
+
+## Les Bibliothèques de Composants : Tableau Comparatif
+
+Pour choisir la bonne fondation pour votre projet, comparez les deux philosophies dominantes du marché :
+
+| Critère de Choix              | UI Kits Traditionnels (ex: Bootstrap, MUI)                      | Headless UI & Tokens (ex: Radix, Shadcn)                                            |
+| :---------------------------- | :-------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| **Vitesse de démarrage**      | [Très Rapide]{.concept-badge .tag-success} (Prêt à l'emploi)    | [Modérée]{.concept-badge .tag-warning} (Nécessite de styliser)                      |
+| **Fidélité au Design System** | [Faible]{.concept-badge .tag-danger} (Surcharge CSS laborieuse) | [Maximale]{.concept-badge .tag-success} (Styles 100% personnalisés)                 |
+| **Accessibilité (A11y)**      | Variable selon les frameworks                                   | [Excellente]{.concept-badge .tag-success} (Gérée nativement par les états WAI-ARIA) |
+| **Poids du Bundle**           | Moyen à Élevé                                                   | Très Faible (Seulement le JS fonctionnel)                                           |
+
+::: {.callout-note collapse="true"}
+##### ⚡ Recommandation d'Architecture
+Pour un projet grand public ou une application SaaS à forte identité de marque, privilégiez l'approche **Headless + Design Tokens** : elle évite les conflits de style et garantit un rendu pixel-perfect fidèle à vos maquettes Figma. Pour un outil interne ou un prototype rapide, un **UI Kit traditionnel** reste le choix le plus productif.
+:::

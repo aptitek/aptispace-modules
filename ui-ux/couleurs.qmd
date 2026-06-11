@@ -8,30 +8,29 @@ Le design d'une interface commence par le choix de ses teintes. Une palette de c
 
 Le peintre suisse Johannes Itten (1888-1967), enseignant au célèbre Bauhaus, a conçu un cercle chromatique pour modéliser la création et la relation des couleurs. Sa structure géométrique montre de manière limpide comment les 12 teintes fondamentales sont construites :
 
-### 1. Les Couleurs Primaires (Le Triangle)
+### 1.1. Les Couleurs Primaires (Le Triangle)
 Au centre se trouve un triangle équilatéral contenant les trois teintes fondamentales : le **Jaune**, le **Rouge**, et le **Bleu**. Elles sont dites *primaires* car elles sont pures et ne peuvent être obtenues par aucun mélange.
 
-### 2. Les Couleurs Secondaires (L'Hexagone)
+### 1.2. Les Couleurs Secondaires (L'Hexagone)
 En joignant les pointes du triangle central, on forme trois nouveaux triangles qui dessinent un hexagone. Ils accueillent les teintes obtenues par le mélange à parts égales de deux primaires :
+
 * Jaune + Rouge = **Orange**
 * Rouge + Bleu = **Violet**
 * Bleu + Jaune = **Vert**
 
-### 3. Les Couleurs Tertiaires (La Couronne)
+### 1.3. Les Couleurs Tertiaires (La Couronne)
 La couronne externe est divisée en 12 secteurs alignés. Elle réunit les primaires, les secondaires et les teintes dites *tertiaires*, obtenues en combinant une primaire avec une secondaire adjacente (ex: *Bleu-Vert*, *Jaune-Orange*).
 
-::::::: {.row}
-:::::::: {.col .col-centered}
-::::::::: {.section-label}
+::: {.row}
+:::: {.col .col-centered}
+::::: {.section-label}
 Modèle RYB de Johannes Itten
-:::::::::
+:::::
 
-::::::::: {#itten-wheel-container}
-:::::::::
-::::::::
-:::::::
-
----
+::::: {#itten-wheel-container}
+:::::
+::::
+:::
 
 ## Théorie des Harmonies de Couleurs
 
@@ -48,9 +47,6 @@ Pour assembler des couleurs de manière harmonieuse dans une interface, les desi
 En UI/UX, le choix des couleurs doit être inclusif. La norme internationale WCAG (*Web Content Accessibility Guidelines*) recommande un rapport de contraste minimal de **4.5:1** pour le texte normal et **3:1** pour les gros textes ou éléments graphiques. Ne vous fiez pas uniquement à votre perception visuelle : mesurez mathématiquement la luminance de vos couleurs !
 :::
 
----
-
-
 ## Atelier Interactif : Créez vos Harmonies
 
 Choisissez une teinte de base sur le cercle chromatique, puis explorez les différentes harmonies géométriques en changeant d'onglet. Vous verrez instantanément s'afficher la palette générée et sa mise en situation sur une fausse interface logicielle.
@@ -63,175 +59,175 @@ Choisissez une teinte de base sur le cercle chromatique, puis explorez les diff�
 
 *L'harmonie complémentaire utilise deux teintes opposées. Elle offre un contraste maximal et un dynamisme immédiat.*
 
-::::::: {.row}
-:::::::: {.col span=5}
-::::::::: {.section-label}
+::::: {.row}
+:::::: {.col span=5}
+::::::: {.section-label}
 Cercle Chromatique Discret
-:::::::::
+:::::::
 
-::::::::: {#placeholder-comp .color-wheel-placeholder}
-:::::::::: {#shared-color-wheel}
-::::::::::
-:::::::::
-::::::::
-
-:::::::: {.col span=7}
-::::::::: {.palette-swatches}
-:::::::::: {.palette-swatch-item .is-base #swatch-comp-0}
-::::::::::: {.swatch-color-box}
-:::::::::::
-[#000000]{.swatch-hex}
-[Base]{.swatch-label}
-::::::::::
-
-:::::::::: {.palette-swatch-item #swatch-comp-1}
-::::::::::: {.swatch-color-box}
-:::::::::::
-[#000000]{.swatch-hex}
-[Complément]{.swatch-label}
-::::::::::
-:::::::::
-
-::::::::: {.palette-mockup-ui #mockup-comp}
-:::::::::: {.mockup-header}
-Interface Complémentaire
-::::::::::
-
-:::::::::: {.mockup-badge}
-Action requise
-::::::::::
-
-:::::::::: {.mockup-body}
-Le contraste élevé attire instantanément l'œil sur le [bouton principal]{.mockup-highlight}. Utilisez la couleur complémentaire avec parcimonie pour maximiser son effet.
-::::::::::
-
-<button class="mockup-button">Bouton d'Action</button>
-:::::::::
+::::::: {#placeholder-comp .color-wheel-placeholder}
+:::::::: {#shared-color-wheel}
 ::::::::
 :::::::
+::::::
+
+:::::: {.col span=7}
+::::::: {.palette-swatches}
+:::::::: {.palette-swatch-item .is-base #swatch-comp-0}
+::::::::: {.swatch-color-box}
+:::::::::
+[#000000]{.swatch-hex}
+[Base]{.swatch-label}
+::::::::
+
+:::::::: {.palette-swatch-item #swatch-comp-1}
+::::::::: {.swatch-color-box}
+:::::::::
+[#000000]{.swatch-hex}
+[Complément]{.swatch-label}
+::::::::
+:::::::
+
+::::::: {.palette-mockup-ui #mockup-comp}
+:::::::: {.mockup-header}
+Interface Complémentaire
+::::::::
+
+:::::::: {.mockup-badge}
+Action requise
+::::::::
+
+:::::::: {.mockup-body}
+Le contraste élevé attire instantanément l'œil sur le [bouton principal]{.mockup-highlight}. Utilisez la couleur complémentaire avec parcimonie pour maximiser son effet.
+::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::
+::::::
+:::::
 
 ###### Triade {.bi-triangle}
 
 *L'harmonie en triade (ternaire) répartit trois teintes à 120° l'une de l'autre. Elle propose un équilibre vivant et coloré.*
 
-::::::: {.row}
-:::::::: {.col span=5}
-::::::::: {.section-label}
+::::: {.row}
+:::::: {.col span=5}
+::::::: {.section-label}
 Cercle Chromatique Discret
-:::::::::
+:::::::
 
-::::::::: {#placeholder-tri .color-wheel-placeholder}
-:::::::::
-::::::::
+::::::: {#placeholder-tri .color-wheel-placeholder}
+:::::::
+::::::
 
-:::::::: {.col span=7}
-::::::::: {.palette-swatches}
-:::::::::: {.palette-swatch-item .is-base #swatch-tri-0}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::: {.col span=7}
+::::::: {.palette-swatches}
+:::::::: {.palette-swatch-item .is-base #swatch-tri-0}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Base]{.swatch-label}
-::::::::::
+::::::::
 
-:::::::::: {.palette-swatch-item #swatch-tri-1}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::::: {.palette-swatch-item #swatch-tri-1}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Triade 1]{.swatch-label}
-::::::::::
+::::::::
 
-:::::::::: {.palette-swatch-item #swatch-tri-2}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::::: {.palette-swatch-item #swatch-tri-2}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Triade 2]{.swatch-label}
-::::::::::
-:::::::::
-
-::::::::: {.palette-mockup-ui #mockup-tri}
-:::::::::: {.mockup-header}
-Interface en Triade
-::::::::::
-
-:::::::::: {.mockup-badge}
-Info système
-::::::::::
-
-:::::::::: {.mockup-body}
-Trois teintes permettent de [mieux segmenter]{.mockup-highlight} votre design : une couleur pour la structure principale, une pour les textes, et une pour les composants d'interaction.
-::::::::::
-
-<button class="mockup-button">Bouton d'Action</button>
-:::::::::
 ::::::::
 :::::::
+
+::::::: {.palette-mockup-ui #mockup-tri}
+:::::::: {.mockup-header}
+Interface en Triade
+::::::::
+
+:::::::: {.mockup-badge}
+Info système
+::::::::
+
+:::::::: {.mockup-body}
+Trois teintes permettent de [mieux segmenter]{.mockup-highlight} votre design : une couleur pour la structure principale, une pour les textes, et une pour les composants d'interaction.
+::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::
+::::::
+:::::
 
 ###### Tétrade {.bi-grid-1x2}
 
 *L'harmonie en tétrade (quaternaire) associe quatre teintes à 90° d'écart. C'est la configuration la plus riche en variations.*
 
-::::::: {.row}
-:::::::: {.col span=5}
-::::::::: {.section-label}
+::::: {.row}
+:::::: {.col span=5}
+::::::: {.section-label}
 Cercle Chromatique Discret
-:::::::::
+:::::::
 
-::::::::: {#placeholder-tet .color-wheel-placeholder}
-:::::::::
-::::::::
+::::::: {#placeholder-tet .color-wheel-placeholder}
+:::::::
+::::::
 
-:::::::: {.col span=7}
-::::::::: {.palette-swatches}
-:::::::::: {.palette-swatch-item .is-base #swatch-tet-0}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::: {.col span=7}
+::::::: {.palette-swatches}
+:::::::: {.palette-swatch-item .is-base #swatch-tet-0}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Base]{.swatch-label}
-::::::::::
+::::::::
 
-:::::::::: {.palette-swatch-item #swatch-tet-1}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::::: {.palette-swatch-item #swatch-tet-1}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Tétrade 1]{.swatch-label}
-::::::::::
+::::::::
 
-:::::::::: {.palette-swatch-item #swatch-tet-2}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::::: {.palette-swatch-item #swatch-tet-2}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Tétrade 2]{.swatch-label}
-::::::::::
+::::::::
 
-:::::::::: {.palette-swatch-item #swatch-tet-3}
-::::::::::: {.swatch-color-box}
-:::::::::::
+:::::::: {.palette-swatch-item #swatch-tet-3}
+::::::::: {.swatch-color-box}
+:::::::::
 [#000000]{.swatch-hex}
 [Tétrade 3]{.swatch-label}
-::::::::::
-:::::::::
-
-::::::::: {.palette-mockup-ui #mockup-tet}
-:::::::::: {.mockup-header}
-Interface en Tétrade
-::::::::::
-
-:::::::::: {.mockup-badge}
-Dashboard complexe
-::::::::::
-
-:::::::::: {.mockup-secondary-badge}
-Filtre actif
-::::::::::
-
-:::::::::: {.mockup-body}
-Avec quatre teintes de caractères différents, assurez-vous d'avoir une nuance [ultra-dominante]{.mockup-highlight} et réservez les trois autres pour différencier des catégories de données distinctes.
-::::::::::
-
-<button class="mockup-button">Bouton d'Action</button>
-:::::::::
 ::::::::
 :::::::
+
+::::::: {.palette-mockup-ui #mockup-tet}
+:::::::: {.mockup-header}
+Interface en Tétrade
+::::::::
+
+:::::::: {.mockup-badge}
+Dashboard complexe
+::::::::
+
+:::::::: {.mockup-secondary-badge}
+Filtre actif
+::::::::
+
+:::::::: {.mockup-body}
+Avec quatre teintes de caractères différents, assurez-vous d'avoir une nuance [ultra-dominante]{.mockup-highlight} et réservez les trois autres pour différencier des catégories de données distinctes.
+::::::::
+
+<button class="mockup-button">Bouton d'Action</button>
+:::::::
+::::::
+:::::
 ::::
 :::
 
@@ -330,8 +326,6 @@ _ittenWheel = {
 }
 ```
 
----
-
 ## Le Modèle CIELAB et l'Uniformité Perceptive
 
 Bien que les modèles **RGB** (synthèse additive pour les écrans) et **HSL** (plus intuitif pour les humains) soient très pratiques en développement, ils souffrent d'un défaut majeur : ils ne sont pas **perceptivement uniformes**.
@@ -352,31 +346,31 @@ Grâce à son uniformité perceptive, la distance géométrique (Euclidienne) en
 ::: {.card-window}
 #### Explorateur d'Espace Colorimétrique CIELAB {.bi-globe}
 
-::::::: {.row}
-:::::::: {.col span=8 .col-centered}
-::::::::: {.section-label}
+:::: {.row}
+::::: {.col span=8 .col-centered}
+:::::: {.section-label}
 Visualisation Tridimensionnelle Projetée
-:::::::::
+::::::
 
-::::::::: {#cielab-sphere-container}
-:::::::::
-::::::::
+:::::: {#cielab-sphere-container}
+::::::
+:::::
 
-:::::::: {.col span=4}
-::::::::: {.section-label}
+::::: {.col span=4}
+:::::: {.section-label}
 Coordonnées Perceptives
-:::::::::
+::::::
 
-::::::::: {.cielab-sliders-container}
-:::::::::: {#slider-l-container}
-::::::::::
-:::::::::: {#slider-a-container}
-::::::::::
-:::::::::: {#slider-b-container}
-::::::::::
-:::::::::
-::::::::
+:::::: {.cielab-sliders-container}
+::::::: {#slider-l-container}
 :::::::
+::::::: {#slider-a-container}
+:::::::
+::::::: {#slider-b-container}
+:::::::
+::::::
+:::::
+::::
 
 :::
 
@@ -408,7 +402,7 @@ viewof cielabSphere = aptitek.createCielabSphere("#cielab-sphere-container", {
 syncSphereToSliders = {
   const coords = cielabSphere;
   if (!coords) return;
-  
+
   if (viewof sliderL) (viewof sliderL).update(coords.l);
   if (viewof sliderA) (viewof sliderA).update(coords.a);
   if (viewof sliderB) (viewof sliderB).update(coords.b);

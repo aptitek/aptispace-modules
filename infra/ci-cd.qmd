@@ -1,0 +1,492 @@
+---
+title: "Introduction au CI/CD"
+subtitle: "Automatiser les vérifications et le déploiement de vos projets"
+---
+
+Le **CI/CD** est le cœur de l'ingénierie logicielle moderne. Il transforme un processus manuel, lent et risqué en un flux de travail entièrement automatisé et sécurisé.
+
+## 🤖 Démystifier les acronymes : C'est quoi le CI/CD ?
+
+Pour introduire le sujet, imaginez le CI/CD comme un **robot assistant** posté entre votre ordinateur de développement et le serveur qui héberge votre site web. Ce robot s'occupe de toutes les tâches répétitives, techniques et critiques à chaque fois que vous modifiez votre code.
+
+*   **CI (Intégration Continue / *Continuous Integration*) :** C'est la phase de **vérification**. Lorsque plusieurs développeurs travaillent sur un projet commun, ils fusionnent leur code plusieurs fois par jour. À chaque ajout, le robot vérifie automatiquement que le code est propre, bien formaté et qu'il ne casse rien d'existant.
+*   **CD (Livraison ou Déploiement Continu / *Continuous Delivery / Deployment*) :** C'est la phase de **distribution**. Dès que les vérifications (CI) sont validées, le robot emballe automatiquement l'application et l'envoie sur les serveurs de production pour les utilisateurs.
+
+## 🏗️ L'Anatomie d'un Pipeline en Pratique
+
+En pratique, le CI/CD prend la forme d'un **Pipeline** (ou Workflow), c'est-à-dire un enchaînement d'étapes automatisées. Avec **GitHub Actions**, ce pipeline est défini par un simple fichier de configuration au format `.yml` ou `.yaml` placé dans le dossier `.github/workflows/` du projet.
+
+Voici les concepts fondamentaux qui composent un pipeline :
+
+1. **L'Événement (Trigger) :** Ce qui réveille le robot. *Exemple : "À chaque fois que quelqu'un pousse (push) du code sur la branche main, lance le pipeline."*
+2. **Le Runner (L'ordinateur) :** Une machine virtuelle temporaire (souvent sous Linux Ubuntu) fournie par GitHub qui démarre uniquement pour exécuter vos commandes.
+3. **Les Jobs et les Steps :** La liste des corvées à effectuer. Un pipeline contient un ou plusieurs *Jobs* (ex: tester, compiler, déployer), chacun divisé en étapes chronologiques (*Steps*).
+
+### Simulateur de Pipeline CI/CD
+
+Expérimentez ci-dessous avec les paramètres du pipeline. Cochez ou décochez les étapes de configuration pour observer comment le robot réagit lors d'une intégration.
+
+::: {.card-window}
+#### Simulateur de Pipeline CI/CD {.bi-cpu}
+
+:::: {.tabs .pipeline-tabset}
+##### Graphique {.bi-diagram-3}
+
+::::: {.row gap=3}
+:::::: {.col span=7}
+::::::: {#pipeline-loop .chart-container-sm}
+:::::::
+::::::
+:::::: {.col span=5}
+::::::: {#pipeline-terminal .terminal}
+:::::::
+::::::
+:::::
+
+##### Configuration {.bi-sliders}
+
+Activez ou désactivez les conditions du projet ci-dessous pour modifier le comportement du pipeline :
+
+- [Code propre et bien formaté (Linting OK)]{.checkbox #inp-clean-code checked=true}
+- [Tests unitaires passants (Tests OK)]{.checkbox #inp-tests-pass checked=true}
+- [Clés d'API et secrets valides (Secrets OK)]{.checkbox #inp-valid-secrets checked=true}
+
+##### [Lancer le Pipeline]{.btn .bi-play-fill #btn-run-pipeline} {.tab-right .no-pane}
+::::
+:::
+
+```{ojs}
+//| echo: false
+pipelineSim = {
+  // Dépendances réactives aux inputs
+  inp_clean_code;
+  inp_tests_pass;
+  inp_valid_secrets;
+  btn_run_pipeline;
+
+  const graphNodes = [
+    { id: "commit", label: "📦 Commit", shape: "circle", fx: 40, fy: 100 },
+    { id: "lint", label: "🔍 Linting", shape: "rounded rect", fx: 140, fy: 100 },
+    { id: "test", label: "🧪 Tests", shape: "rounded rect", fx: 240, fy: 100 },
+    { id: "build", label: "🏗️ Build", shape: "rounded rect", fx: 340, fy: 100 },
+    { id: "deploy", label: "🚀 Deploy", shape: "rounded rect", fx: 440, fy: 100 },
+    { id: "success", label: "✅ En Ligne", shape: "pill", fx: 540, fy: 60 },
+    { id: "fail", label: "❌ Échec", shape: "pill", fx: 540, fy: 140 }
+  ];
+
+  const graphLinks = [
+    { source: "commit", target: "lint", label: "déclenche" },
+    { source: "lint", target: "test", label: "succès" },
+    { source: "lint", target: "fail", label: "erreur" },
+    { source: "test", target: "build", label: "succès" },
+    { source: "test", target: "fail", label: "erreur" },
+    { source: "build", target: "deploy", label: "succès" },
+    { source: "deploy", target: "success", label: "succès" },
+    { source: "deploy", target: "fail", label: "erreur" }
+  ];
+
+  const graph = aptitek.renderStateMachineGraph("#pipeline-loop", { nodes: graphNodes, links: graphLinks }, {
+    nodeRadius: 22,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 30,
+    height: 240,
+    styles: {
+      success: {
+        nodeBg: "rgba(133, 153, 0, 0.15)",
+        nodeBorder: "var(--sol-green)",
+        nodeText: "var(--sol-green)",
+        linkStroke: "var(--sol-green)",
+        particles: 2,
+        particleColor: "var(--sol-green)",
+        particleSpeed: 0.015
+      },
+      error: {
+        nodeBg: "rgba(220, 50, 47, 0.15)",
+        nodeBorder: "var(--sol-red)",
+        nodeText: "var(--sol-red)",
+        linkStroke: "var(--sol-red)",
+        particles: 2,
+        particleColor: "var(--sol-red)",
+        particleSpeed: 0.015
+      }
+    }
+  });
+
+  const terminal = aptitek.createTerminal("#pipeline-terminal", { defaultPrompt: false, showCursor: false });
+  terminal.writeLine("Prêt. Cliquez sur 'Lancer le Pipeline'.", { type: "muted" });
+
+  let currentIndex = 0;
+  let timeoutId = null;
+
+  // Définition dynamique des étapes selon l'état des checkboxes
+  const steps = [];
+
+  // Étape 0 : Déclenchement
+  steps.push({
+    activeNode: "commit",
+    activeLink: null,
+    pastNodes: [],
+    pastLinks: [],
+    msg: [
+      { text: "[SYSTEM] Détecté push sur branche 'main'", type: "muted" },
+      { text: "[SYSTEM] Démarrage du Runner (Ubuntu-latest)", type: "muted" }
+    ],
+    delay: 1000
+  });
+
+  // Étape 1 : Linting
+  steps.push({
+    activeNode: "lint",
+    activeLink: "commit-lint",
+    pastNodes: ["commit"],
+    pastLinks: [],
+    msg: [
+      { text: "> Run: ESLint --ext .js .", type: "info" },
+      { text: "  Vérification de la syntaxe...", type: "muted" }
+    ],
+    delay: 1200
+  });
+
+  if (!inp_clean_code) {
+    steps.push({
+      activeNode: "fail",
+      activeLink: "lint-fail",
+      activeLinkStatus: "error",
+      activeNodeStatus: "error",
+      pastNodes: ["commit"],
+      pastLinks: [],
+      msg: [
+        { text: "  [-] 2 erreurs de formatage détectées dans index.js.", type: "danger" },
+        { text: "[!] PIPELINE ÉCHOUÉ (Linting)", type: "danger", class: "fw-bold" }
+      ],
+      isFail: true
+    });
+  } else {
+    // Étape 2 : Tests
+    steps.push({
+      activeNode: "test",
+      activeLink: "lint-test",
+      pastNodes: ["commit", "lint"],
+      pastLinks: ["commit-lint"],
+      msg: [
+        { text: "  [+] Code syntaxiquement valide.", type: "success" },
+        { text: "> Run: npm run test", type: "info" },
+        { text: "  Lancement de la suite Jest...", type: "muted" }
+      ],
+      delay: 1500
+    });
+
+    if (!inp_tests_pass) {
+      steps.push({
+        activeNode: "fail",
+        activeLink: "test-fail",
+        activeLinkStatus: "error",
+        activeNodeStatus: "error",
+        pastNodes: ["commit", "lint"],
+        pastLinks: ["commit-lint"],
+        msg: [
+          { text: "  [-] Échec : Test 'AuthManager' > should authenticate user", type: "danger" },
+          { text: "[!] PIPELINE ÉCHOUÉ (Tests)", type: "danger", class: "fw-bold" }
+        ],
+        isFail: true
+      });
+    } else {
+      // Étape 3 : Build
+      steps.push({
+        activeNode: "build",
+        activeLink: "test-build",
+        pastNodes: ["commit", "lint", "test"],
+        pastLinks: ["commit-lint", "lint-test"],
+        msg: [
+          { text: "  [+] Tous les tests (12 passés) sont OK.", type: "success" },
+          { text: "> Run: npm run build", type: "info" },
+          { text: "  Compilation et minification...", type: "muted" }
+        ],
+        delay: 1500
+      });
+
+      // Étape 4 : Déploiement
+      steps.push({
+        activeNode: "deploy",
+        activeLink: "build-deploy",
+        pastNodes: ["commit", "lint", "test", "build"],
+        pastLinks: ["commit-lint", "lint-test", "test-build"],
+        msg: [
+          { text: "  [+] Dossier 'dist/' généré avec succès.", type: "success" },
+          { text: "> Run: wrangler pages deploy dist/", type: "info" },
+          { text: "  Authentification Cloudflare...", type: "muted" }
+        ],
+        delay: 1500
+      });
+
+      if (!inp_valid_secrets) {
+        steps.push({
+          activeNode: "fail",
+          activeLink: "deploy-fail",
+          activeLinkStatus: "error",
+          activeNodeStatus: "error",
+          pastNodes: ["commit", "lint", "test", "build"],
+          pastLinks: ["commit-lint", "lint-test", "test-build"],
+          msg: [
+            { text: "  [-] Erreur : Jeton API Cloudflare non valide ou absent.", type: "danger" },
+            { text: "[!] PIPELINE ÉCHOUÉ (Déploiement)", type: "danger", class: "fw-bold" }
+          ],
+          isFail: true
+        });
+      } else {
+        // Étape 5 : Succès
+        steps.push({
+          activeNode: "success",
+          activeLink: "deploy-success",
+          activeLinkStatus: "success",
+          activeNodeStatus: "success",
+          pastNodes: ["commit", "lint", "test", "build", "deploy"],
+          pastLinks: ["commit-lint", "lint-test", "test-build", "build-deploy"],
+          msg: [
+            { text: "  [+] Téléversement réussi (24 fichiers).", type: "success" },
+            { text: "[+] SITE EN LIGNE à l'adresse :", type: "success", class: "fw-bold" },
+            { text: "  https://aptispace-pages.dev", type: "success", class: "font-code" }
+          ]
+        });
+      }
+    }
+  }
+
+  function updateVisuals(index) {
+    const step = steps[index];
+    if (!step) return;
+
+    // Mise à jour de l'état des nœuds
+    graphNodes.forEach(n => {
+      if (n.id === step.activeNode) {
+        n.status = step.activeNodeStatus || "current";
+      } else if (step.pastNodes.includes(n.id)) {
+        n.status = "past";
+      } else {
+        n.status = "default";
+      }
+    });
+
+    // Mise à jour de l'état des liens
+    graphLinks.forEach(l => {
+      const srcId = typeof l.source === "object" ? l.source.id : l.source;
+      const tgtId = typeof l.target === "object" ? l.target.id : l.target;
+      const lid = `${srcId}-${tgtId}`;
+      if (lid === step.activeLink) {
+        l.status = step.activeLinkStatus || "current";
+      } else if (step.pastLinks.includes(lid)) {
+        l.status = "past";
+      } else {
+        l.status = "default";
+      }
+    });
+
+    graph.graphData({ nodes: graphNodes, links: graphLinks });
+    try {
+      graph.zoomToFit(200, 30);
+    } catch (e) {}
+
+    // Affichage des messages sur le terminal
+    step.msg.forEach(m => {
+      terminal.writeLine(m.text, { type: m.type, class: m.class });
+    });
+  }
+
+  function playNext() {
+    if (currentIndex >= steps.length) {
+      return;
+    }
+
+    updateVisuals(currentIndex);
+    const step = steps[currentIndex];
+    currentIndex++;
+
+    if (step.delay) {
+      timeoutId = setTimeout(playNext, step.delay);
+    }
+  }
+
+  // Lancement manuel au clic sur le bouton
+  if (btn_run_pipeline > 0) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+    currentIndex = 0;
+    terminal.clear();
+
+    // Réinitialiser les nœuds
+    graphNodes.forEach(n => n.status = "default");
+    graphLinks.forEach(l => l.status = "default");
+    graph.graphData({ nodes: graphNodes, links: graphLinks });
+
+    playNext();
+  }
+
+  invalidation.then(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+    graph?.destroy?.();
+    terminal?.destroy?.();
+  });
+
+  return { graph };
+}
+```
+
+## 🛡️ Les Étapes Incontournables du Pipeline
+
+Pour maximiser la stabilité et la sécurité du projet, le pipeline s'appuie sur quatre étapes clés :
+
+### A. Le Linting (La grammaire)
+Le **Linter** (comme *ESLint* ou *Prettier*) analyse statiquement le code sans l'exécuter. Il garantit le respect des règles de style (pas de variables déclarées inutilisées, guillemets homogènes, indentation correcte).
+
+*   **Objectif CI :** Bloquer le code "sale" ou non conforme avant qu'il n'entre dans la branche principale.
+
+### B. Les Tests automatisés (La sécurité)
+On exécute des scripts de tests unitaires ou d'intégration (comme *Jest* ou *Vitest*).
+
+*   **Objectif CI :** Si un test échoue (par exemple, un bouton de connexion ne fonctionne plus suite à une modification), le pipeline s'arrête en erreur et empêche le déploiement du code cassé.
+
+### C. La gestion des Secrets (La confidentialité)
+Les applications nécessitent souvent des clés d'accès ou des identifiants pour communiquer avec les serveurs d'hébergement. **Ces informations ne doivent jamais être écrites en clair dans le code source.**
+
+*   **Pratique :** On utilise un coffre-fort sécurisé (les **GitHub Secrets**). Le pipeline récupère ces clés de manière sécurisée uniquement pendant son exécution pour s'authentifier.
+
+### D. Le Build et le Déploiement (L'aboutissement)
+Pour les sites web modernes, le site est compilé (minification du CSS/JS, optimisation des images) pour créer les fichiers statiques finaux (le dossier de build). Ces fichiers sont ensuite envoyés sur l'hébergeur.
+
+### Panneau de Brassage des Concepts
+
+Associez chaque concept clé du CI/CD (à gauche) à sa fonction ou description logique (à droite) pour tester vos connaissances.
+
+::: {.card-window}
+#### Panneau de Brassage des Étapes {.bi-ethernet}
+
+:::: {#cabling-data .d-none}
+| id      | label                      | match       | feedback                                                                                            |
+| :------ | :------------------------- | :---------- | :-------------------------------------------------------------------------------------------------- |
+| linting | Analyse statique (Linting) | syntaxe     | ESLint et Prettier s'assurent que le code respecte les standards de qualité visuelle et syntaxique. |
+| testing | Tests automatisés          | logique     | Les tests unitaires et d'intégration valident la logique métier avant de déployer l'application.    |
+| secrets | Secrets & Confidentialité  | securite    | Les secrets GitHub permettent de masquer et sécuriser les jetons de connexion et clés d'API.        |
+| build   | Build & Compilation        | compilation | Cette étape prépare l'application pour la production en optimisant les bundles et ressources.       |
+| deploy  | Déploiement final          | hebergement | Cette dernière étape transfère les fichiers compilés vers l'infrastructure d'hébergement.           |
+::::
+
+Reliez chaque port de gauche au bon port de droite. Activez ensuite le levier pour lancer le diagnostic de connexion.
+
+:::: {.cabling-panel}
+::::: {.panel-screw .top-left}
+:::::
+::::: {.panel-screw .top-right}
+:::::
+::::: {.panel-screw .bottom-left}
+:::::
+::::: {.panel-screw .bottom-right}
+:::::
+
+::::: {.cabling-workspace-wrapper}
+:::::: {#cabling-canvas}
+::::::
+
+:::::: {#power-lever .lever-wrapper}
+::::::: {.lever-housing}
+[ON]{.lever-label-top}
+
+:::::::: {.lever-slot}
+::::::::
+
+:::::::: {.lever-handle}
+::::::::
+
+:::::::: {.lever-led}
+::::::::
+
+[OFF]{.lever-label-bottom}
+:::::::
+
+[Circuit alimenté]{#lever-status-on .lever-status .is-on}
+[Circuit coupé]{#lever-status-off .lever-status .is-off}
+::::::
+:::::
+::::
+
+```{ojs}
+//| echo: false
+viewof powerOn = aptitek.createLever("#power-lever", invalidation)
+```
+
+:::: {#cabling-feedback-panel .terminal .mt-4 .d-none}
+#### Diagnostic du Pipeline {.bi-terminal}
+
+::::: {.feedback-card .feedback-incomplete .terminal-line}
+[!] DIAGNOSTIC INTERROMPU : Raccordements incomplets ({{score}}/{{total}} connectés).
+:::::
+
+::::: {.feedback-card .feedback-validated .terminal-line}
+[+] CONFIGURATION VALIDE : Excellent raccordement. Le pipeline est opérationnel ({{score}}/{{total}} corrects).
+:::::
+
+::::: {.feedback-card .feedback-error .terminal-line}
+[-] ERREUR DE BRANCHEMENT : Des inversions ou courts-circuits subsistent ({{score}}/{{total}} corrects).
+:::::
+
+::::: {.feedback-details .reveal-lines}
+:::::
+::::
+
+```{ojs}
+//| echo: false
+leftItems = aptitek.parseTableData("#cabling-data table")
+rightItems = [
+  { id: "syntaxe", label: "Vérifier la syntaxe et le style de code" },
+  { id: "logique", label: "Valider le bon fonctionnement logique" },
+  { id: "securite", label: "Protéger et injecter les clés secrètes" },
+  { id: "compilation", label: "Générer les fichiers optimisés de production" },
+  { id: "hebergement", label: "Envoyer les fichiers sur le serveur d'hébergement" }
+]
+
+engine = {
+  const m = aptitek.createCabling("#cabling-canvas", leftItems, rightItems, (state) => {
+    if (state.score < leftItems.length) aptitek.renderFeedbackUI("#cabling-feedback-panel", { status: "hidden" });
+  });
+  invalidation.then(() => m.destroy());
+  return m;
+}
+
+uiLogic = {
+  powerOn;
+  let state = { status: "hidden" };
+
+  if (powerOn === true) {
+    state = engine.validate();
+  } else {
+    engine.clearValidation();
+    aptitek.renderFeedbackUI("#cabling-feedback-panel", { status: "hidden" });
+    return;
+  }
+
+  let listData = [];
+  if (state.status === "validated") {
+    const isPerfect = state.score === leftItems.length;
+    state.status = isPerfect ? "validated" : "error";
+
+    listData = leftItems.map(item => {
+      const isCorrect = state.connections[item.id] === item.match;
+      const rMatch = rightItems.find(r => r.id === state.connections[item.id]);
+      return {
+        label: item.label,
+        rightLabel: rMatch ? rMatch.label : "?",
+        badgeClass: isCorrect ? "text-success" : "text-danger",
+        badgeText: isCorrect ? "OK" : "Erreur",
+        feedback: isCorrect ? item.feedback : "Incohérence détectée dans l'association du concept."
+      };
+    });
+  }
+
+  aptitek.renderFeedbackUI("#cabling-feedback-panel", state, listData);
+}
+```
+:::

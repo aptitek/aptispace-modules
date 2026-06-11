@@ -4,8 +4,6 @@ title: "Grille et Systèmes d'Espacement"
 
 Dans une interface utilisateur, l'espacement n'est pas un simple vide : c'est la structure invisible qui donne du rythme et de la respiration à votre design. Un système d'espacement rigoureux lie les mathématiques de l'affichage à la psychologie de la perception visuelle. Il permet de guider l'œil, de regrouper les informations logiques et d'assurer une lisibilité optimale.
 
----
-
 ## Les Fondations Mathématiques : Le système de base 8
 
 En design d'interface, on ne choisit pas les marges ou les paddings au hasard. On utilise une **échelle d'espacement** (*spacing scale*) stricte, construite autour d'un multiplicateur universel. Dans la majorité des Design Systems modernes (comme Material Design ou TailwindCSS), ce multiplicateur est de **8 pixels**.
@@ -21,15 +19,15 @@ L'utilisation du chiffre 8 répond à deux impératifs majeurs :
 
 Voici les valeurs autorisées et leurs cas d'usage typiques dans notre Design System :
 
-| Valeur (px) | Multiplicateur | Rôle UX & Ergonomique | Exemple d'utilisation |
-|:---:|:---:|:---|:---|
-| **4 px** | $0.5\times$ | Micro-ajustements et étanchéité | Espace entre une icône et son label dans un bouton |
-| **8 px** | $1\times$ | Unité de base (Petits paddings) | Marge interne d'une cellule de tableau ou petit badge |
-| **16 px** | $2\times$ | Espacement standard | Padding interne des cartes et des champs de saisie |
-| **24 px** | $3\times$ | Espacement moyen | Distance entre le titre d'une carte et sa description |
-| **32 px** | $4\times$ | Espacement large | Espace séparant deux cartes dans une même liste |
-| **48 px** | $6\times$ | Espacement très large | Marge entre des groupes de composants logiques |
-| **64 px** | $8\times$ | Limite de section | Transition entre deux blocs majeurs de la page |
+| Valeur (px) | Multiplicateur | Rôle UX & Ergonomique           | Exemple d'utilisation                                 |
+| :---------: | :------------: | :------------------------------ | :---------------------------------------------------- |
+|   **4 px**  |  $0.5\times$   | Micro-ajustements et étanchéité | Espace entre une icône et son label dans un bouton    |
+|   **8 px**  |   $1\times$    | Unité de base (Petits paddings) | Marge interne d'une cellule de tableau ou petit badge |
+|  **16 px**  |   $2\times$    | Espacement standard             | Padding interne des cartes et des champs de saisie    |
+|  **24 px**  |   $3\times$    | Espacement moyen                | Distance entre le titre d'une carte et sa description |
+|  **32 px**  |   $4\times$    | Espacement large                | Espace séparant deux cartes dans une même liste       |
+|  **48 px**  |   $6\times$    | Espacement très large           | Marge entre des groupes de composants logiques        |
+|  **64 px**  |   $8\times$    | Limite de section               | Transition entre deux blocs majeurs de la page        |
 
 ### Le multiplicateur de 4 pixels (Le demi-pas)
 
@@ -39,8 +37,6 @@ Bien que la base 8 soit la règle, l'espacement de **4px** est toléré pour les
 ##### 💡 Le flou des sous-pixels (Sub-pixel rendering)
 Lorsque vous appliquez un espacement impair (par exemple `9px` ou `13px`) sur un écran avec une mise à l'échelle fractionnaire (comme $150\%$ sur Windows), le moteur de rendu du navigateur tente de diviser cette valeur. Ne pouvant pas allumer physiquement un "demi-pixel", il réalise un fondu de couleur (anticrénelage) sur les pixels adjacents, ce qui donne une impression désagréable de flou. Travailler en base 8 protège vos tracés.
 :::
-
----
 
 ## La Psychologie Visuelle : Le "Friendship System" (Loi de Proximité)
 
@@ -57,9 +53,7 @@ Pour simplifier cette règle d'or, nous utilisons la métaphore des relations so
 * **Strangers (64px et +) :** Éléments sans aucun rapport logique direct.
   * *Exemples :* L'espace entre le pied de page et le contenu principal, ou entre deux grandes sections thématiques.
 
----
-
-## L'Espacement Relatif et Dynamique : La constante *x*
+## L'Espacement Relatif et Dynamique : La constante x
 
 L'échelle d'espacement standard que nous avons vue repose sur une taille de police de référence de 16 pixels. Cependant, comment adapter nos espacements si l'on conçoit une section avec de très grands titres (comme l'en-tête d'un site), ou au contraire, une interface ultra-dense (comme un outil d'administration réseau) ?
 
@@ -76,8 +70,8 @@ En appliquant les multiplicateurs mathématiques de la base 8 à notre unité de
 ::: {.card-window}
 #### Échelle de Proximité et Multiplicateurs {.bi-rulers}
 
-::: {#scale-sampler-container}
-:::
+:::: {#scale-sampler-container}
+::::
 
 :::
 
@@ -87,8 +81,6 @@ viewof scaleSim = aptitek.createSpacingScaleVisualizer("#scale-sampler-container
 }, invalidation)
 ```
 
----
-
 ## Atelier Interactif : Expérimenter la Loi de Proximité
 
 Utilisez les curseurs ci-dessous pour modifier les différents espacements de la fausse interface. Activez les repères visuels pour inspecter la taille réelle des marges et observez comment une mauvaise hiérarchie d'espacement peut complètement casser la compréhension logique de la page.
@@ -96,8 +88,8 @@ Utilisez les curseurs ci-dessous pour modifier les différents espacements de la
 ::: {.card-window}
 #### Éditeur de Proximité et de Gestalt {.bi-arrows-expand}
 
-::: {#proximity-sampler-container}
-:::
+:::: {#proximity-sampler-container}
+::::
 
 :::
 
@@ -110,8 +102,6 @@ viewof spacingSim = aptitek.createSpacingVisualizer("#proximity-sampler-containe
   showOverlays: true
 }, invalidation)
 ```
-
----
 
 ## La Grille de Mise en Page (Layout Grid)
 
@@ -127,34 +117,34 @@ Une grille se compose de trois éléments structurels fondamentaux :
 
 ::: {.row gap=3}
 :::: {.col span=4}
-::: {.card}
+::::: {.card}
 ##### Colonnes (Columns)
 *Les rails de structure*
 
 * Largeurs fluides ou fixes.
 * Reçoivent le contenu principal.
 * Traditionnellement au nombre de 12 sur desktop.
-:::
+:::::
 ::::
 :::: {.col span=4}
-::: {.card}
+::::: {.card}
 ##### Gouttières (Gutters)
 *La respiration latérale*
 
 * Multiples stricts de 8px (ex: 24px).
 * Espacent les composants adjacents.
 * Gardent l'information compartimentée.
-:::
+:::::
 ::::
 :::: {.col span=4}
-::: {.card}
+::::: {.card}
 ##### Marges (Margins)
 *Le cadre de l'écran*
 
 * Définissent le confort visuel global.
 * S'adaptent en responsive.
 * Plus petites sur mobile, plus généreuses sur grand écran.
-:::
+:::::
 ::::
 :::
 

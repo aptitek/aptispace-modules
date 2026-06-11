@@ -4,8 +4,6 @@ title: "L'Iconographie dans le Design System"
 
 L'iconographie est le langage visuel universel de votre interface. En traduisant des concepts complexes en métaphores visuelles immédiates, les icônes guident l'utilisateur, structurent la navigation et accélèrent la prise de décision. Une intégration cohérence et normée au sein d'un Design System garantit une expérience utilisateur fluide et accessible sur tous les supports.
 
----
-
 ## Le Rôle des Icônes et les Bibliothèques Standards
 
 Les icônes ne sont pas de simples éléments décoratifs. Elles agissent comme des **accélérateurs cognitifs** : l'œil humain décode une forme graphique familière bien plus rapidement qu'il ne lit un mot. Elles occupent également moins d'espace, ce qui est crucial pour le design mobile.
@@ -18,6 +16,7 @@ Deux grandes philosophies dominent le web moderne :
 
 ### Le choix pratique : Bootstrap Icons
 Pour ce projet, notre Design System intègre **Bootstrap Icons**. Ce choix répond à plusieurs impératifs :
+
 1. **Intégration directe** : Légère, elle s'intègre harmonieusement avec notre framework CSS (Bootstrap).
 2. **Poids optimisé** : Possibilité de charger uniquement les icônes nécessaires sous forme de fichiers SVG individuels.
 3. **Consistance esthétique** : Des tracés équilibrés, modernes et très lisibles, conçus pour s'accorder avec la typographie de labeur.
@@ -27,13 +26,12 @@ Pour ce projet, notre Design System intègre **Bootstrap Icons**. Ce choix répo
 Selon la loi de double codage d'Allan Paivio, notre cerveau traite les informations visuelles et verbales par des canaux distincts. Associer une icône pertinente à un texte (par exemple, un bouton [Enregistrer]{.bi-check-lg}) permet à l'utilisateur d'identifier l'action par reconnaissance visuelle instantanée avant même d'avoir lu l'intitulé.
 :::
 
----
-
 ## Implémentation : Comment ça s'utilise en pratique ?
 
 En développement web, deux techniques principales s'affrontent pour afficher des icônes :
 
 ### Polices d'icônes (Icon Fonts) vs SVG
+
 * **Icon Fonts** : Les icônes sont stockées comme des caractères dans un fichier de police (`.woff` ou `.ttf`). Bien que simples à utiliser (style via `font-size` et `color`), elles souffrent de problèmes d'accessibilité (non lues par les lecteurs d'écran), de bugs de chargement réseau, et de flou de rendu sur certains écrans.
 * **SVG (Scalable Vector Graphics)** : Le format vectoriel natif du web. **C'est le standard de notre Design System.** Ses avantages sont majeurs :
   - **Netteté absolue** à toutes les échelles (pas de pixellisation).
@@ -43,12 +41,11 @@ En développement web, deux techniques principales s'affrontent pour afficher de
 
 ### Anatomie d'une icône SVG
 Pour maîtriser l'intégration des icônes, il faut comprendre les attributs clés du code SVG :
+
 - `viewBox` : Définit le système de coordonnées interne et le ratio de l'icône (ex: `0 0 16 16`).
 - `fill` : Définit la couleur de remplissage des formes fermées.
 - `stroke` : Définit la couleur du contour des lignes.
 - `stroke-width` : Règle l'épaisseur des contours.
-
----
 
 ## Atelier Interactif : Inspecteur SVG
 
@@ -57,8 +54,8 @@ Expérimentez avec les attributs d'une icône SVG. Utilisez les curseurs pour mo
 ::: {.card-window}
 #### Éditeur & Analyseur Anatomique SVG {.bi-code-square}
 
-::: {#svg-inspector-container}
-:::
+:::: {#svg-inspector-container}
+::::
 
 :::
 
@@ -73,20 +70,16 @@ viewof inspector = aptitek.createSvgInspector("#svg-inspector-container", {
 }, invalidation)
 ```
 
----
-
 ## Les Classiques : Le Tableau de Référence
 
 Certaines métaphores visuelles sont si ancrées dans la mémoire collective qu'elles constituent des **modèles mentaux**. Les réinventer déstabilise l'utilisateur. Voici le guide de référence de notre Design System :
 
-| Catégorie | Exemple d'icône | Sens attendu (Modèle mental) |
-| --- | :---: | --- |
-| **Navigation** | [Accueil]{.bi-house-door} <br> [Menu]{.bi-list} <br> [Retour]{.bi-arrow-left} | Retour à la page d'accueil principale, déploiement du menu de navigation, retour à l'écran précédent. |
-| **Actions** | [Rechercher]{.bi-search} <br> [Modifier]{.bi-pencil} <br> [Supprimer]{.bi-trash} | Ouvrir un champ de recherche, éditer ou modifier le contenu ciblé, supprimer définitivement une ressource. |
-| **Système** | [Configuration]{.bi-gear} <br> [Profil]{.bi-person} <br> [Déconnexion]{.bi-box-arrow-right} | Accéder aux options et préférences, voir/éditer les données utilisateur, fermer la session active. |
-| **Feedback** | [Succès]{.bi-check-circle-fill} <br> [Alerte]{.bi-exclamation-triangle-fill} <br> [Fermer]{.bi-x-circle-fill} | Indiquer la validation d'une étape, avertir d'un risque, annuler ou fermer un panneau/fenêtre modale. |
-
----
+| Catégorie      |                                                Exemple d'icône                                                | Sens attendu (Modèle mental)                                                                               |
+| :------------- | :-----------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------- |
+| **Navigation** |                 [Accueil]{.bi-house-door} <br> [Menu]{.bi-list} <br> [Retour]{.bi-arrow-left}                 | Retour à la page d'accueil principale, déploiement du menu de navigation, retour à l'écran précédent.      |
+| **Actions**    |                [Rechercher]{.bi-search} <br> [Modifier]{.bi-pencil} <br> [Supprimer]{.bi-trash}               | Ouvrir un champ de recherche, éditer ou modifier le contenu ciblé, supprimer définitivement une ressource. |
+| **Système**    |          [Configuration]{.bi-gear} <br> [Profil]{.bi-person} <br> [Déconnexion]{.bi-box-arrow-right}          | Accéder aux options et préférences, voir/éditer les données utilisateur, fermer la session active.         |
+| **Feedback**   | [Succès]{.bi-check-circle-fill} <br> [Alerte]{.bi-exclamation-triangle-fill} <br> [Fermer]{.bi-x-circle-fill} | Indiquer la validation d'une étape, avertir d'un risque, annuler ou fermer un panneau/fenêtre modale.      |
 
 ## Dimensions et Alignement
 
@@ -97,6 +90,7 @@ Une icône SVG s'inscrit toujours dans un carré invisible appelé **boîte d'en
 
 ### Les puissances de 2 (Grille de Base 8)
 Pour assurer un rendu net (sans flou de demi-pixels dû à des redimensionnements fractionnaires), les tailles d'icônes sont des multiples de la grille de **base 8** :
+
 - **16 px** : Petites icônes intégrées au texte (badges, métadonnées).
 - **24 px** : Taille standard pour les boutons d'action et barres de navigation.
 - **32 px** : Boutons proéminents et listes complexes.
@@ -104,10 +98,9 @@ Pour assurer un rendu net (sans flou de demi-pixels dû à des redimensionnement
 
 ### La zone de clic (Touch Target)
 En conception mobile ou tactile, le principal piège est de calquer la taille cliquable sur la taille physique de l'icône. Même si une icône ne fait que `24x24px`, sa **zone de clic active doit être considérablement plus grande** pour compenser l'imprécision du doigt humain.
+
 - **Règle d'accessibilité (Apple iOS)** : Minimum **44 × 44 px** pour toute cible tactile.
 - **Règle d'accessibilité (Google Android & W3C)** : Minimum **48 × 48 px** pour garantir le respect des normes WCAG.
-
----
 
 ## Atelier Interactif : Zone de Clic & Accessibilité
 
@@ -116,8 +109,8 @@ Manipulez la taille physique de l'icône et la taille réelle du bouton qui la c
 ::: {.card-window}
 #### Simulateur de Zone Tactile {.bi-phone}
 
-::: {#touch-target-container}
-:::
+:::: {#touch-target-container}
+::::
 
 :::
 
