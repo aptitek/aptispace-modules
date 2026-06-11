@@ -329,3 +329,98 @@ _ittenWheel = {
   aptitek.createIttenWheel("#itten-wheel-container");
 }
 ```
+
+---
+
+## Le Modèle CIELAB et l'Uniformité Perceptive
+
+Bien que les modèles **RGB** (synthèse additive pour les écrans) et **HSL** (plus intuitif pour les humains) soient très pratiques en développement, ils souffrent d'un défaut majeur : ils ne sont pas **perceptivement uniformes**.
+
+En HSL, par exemple, un jaune pur ($H=60^\circ$) et un bleu pur ($H=240^\circ$) à saturation et luminosité égales ($S=100\%$, $L=50\%$) paraissent radicalement différents en termes de clarté perçue : le jaune semble extrêmement lumineux tandis que le bleu semble sombre. Cette distorsion complique le calcul automatisé des contrastes pour l'accessibilité numérique.
+
+Pour résoudre ce problème, la Commission Internationale de l'Éclairage (CIE) a créé en 1976 le modèle **CIELAB** ($L^*a^*b^*$). Ce modèle est basé sur la théorie de l'opposition des couleurs de la vision humaine :
+
+* **$L^*$ (Luminosité)** : Varie de $0$ (noir complet) à $100$ (blanc pur). Elle correspond fidèlement à la sensation physique de clarté.
+* **$a^*$ (Axe Vert/Rouge)** : Représente la chromaticité du Vert (valeurs négatives) au Rouge (valeurs positives).
+* **$b^*$ (Axe Bleu/Jaune)** : Représente la chromaticité du Bleu (valeurs négatives) au Jaune (valeurs positives).
+
+::: {.callout-note collapse="true"}
+##### 🔬 Pourquoi utiliser CIELAB en UI/UX ?
+Grâce à son uniformité perceptive, la distance géométrique (Euclidienne) entre deux couleurs dans l'espace CIELAB ($\Delta E^*$) correspond exactement à la différence visuelle perçue par l'œil humain. C'est l'outil de référence pour générer des gammes de nuances équilibrées et valider des contrastes d'accessibilité avec une rigueur mathématique absolue.
+:::
+
+::: {.card-window}
+#### Explorateur d'Espace Colorimétrique CIELAB {.bi-globe}
+
+::::::: {.row}
+:::::::: {.col span=8 .col-centered}
+::::::::: {.section-label}
+Visualisation Tridimensionnelle Projetée
+:::::::::
+
+::::::::: {#cielab-sphere-container}
+:::::::::
+::::::::
+
+:::::::: {.col span=4}
+::::::::: {.section-label}
+Coordonnées Perceptives
+:::::::::
+
+::::::::: {.cielab-sliders-container}
+:::::::::: {#slider-l-container}
+::::::::::
+:::::::::: {#slider-a-container}
+::::::::::
+:::::::::: {#slider-b-container}
+::::::::::
+:::::::::
+::::::::
+:::::::
+
+:::
+
+```{ojs}
+// Initialisation des sliders verticaux individuels
+viewof sliderL = aptitek.createCielabSlider({ label: "L*", value: 70, min: 0, max: 100, step: 1, className: "slider-l" })
+viewof sliderA = aptitek.createCielabSlider({ label: "a*", value: 20, min: -128, max: 127, step: 1, className: "slider-a" })
+viewof sliderB = aptitek.createCielabSlider({ label: "b*", value: 20, min: -128, max: 127, step: 1, className: "slider-b" })
+
+// Montage des curseurs dans les conteneurs dédiés
+mountSliders = {
+  const containerL = document.getElementById("slider-l-container");
+  const containerA = document.getElementById("slider-a-container");
+  const containerB = document.getElementById("slider-b-container");
+
+  if (containerL && containerL.childElementCount === 0) containerL.appendChild(viewof sliderL);
+  if (containerA && containerA.childElementCount === 0) containerA.appendChild(viewof sliderA);
+  if (containerB && containerB.childElementCount === 0) containerB.appendChild(viewof sliderB);
+}
+
+// Initialisation de la sphère CIELAB interactive
+viewof cielabSphere = aptitek.createCielabSphere("#cielab-sphere-container", {
+  l: sliderL,
+  a: sliderA,
+  b: sliderB
+})
+
+// Synchronisation réactive : de la sphère vers les curseurs verticaux
+syncSphereToSliders = {
+  const coords = cielabSphere;
+  if (!coords) return;
+  
+  if (viewof sliderL) (viewof sliderL).update(coords.l);
+  if (viewof sliderA) (viewof sliderA).update(coords.a);
+  if (viewof sliderB) (viewof sliderB).update(coords.b);
+}
+
+// Synchronisation réactive : des curseurs verticaux vers la sphère
+syncSlidersToSphere = {
+  const l = sliderL;
+  const a = sliderA;
+  const b = sliderB;
+  if (viewof cielabSphere) {
+    (viewof cielabSphere).update({ l, a, b });
+  }
+}
+```

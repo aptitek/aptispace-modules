@@ -115,6 +115,7 @@ export { createReparamViz } from "./custom/reparam.js";
 export { createThermometer } from "./custom/thermometer.js";
 export { createBladeSlider } from "./custom/blade-slider.js";
 export { createSliderRadial } from "./custom/slider-radial.js";
+export { createCielabSphere, createCielabSlider } from "./custom/cielab.js";
 
 
 

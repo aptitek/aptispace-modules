@@ -1,0 +1,197 @@
+// =====================================================================
+// _cielab.scss — Sphère interactive CIELAB et curseurs 3D
+// =====================================================================
+
+.cielab-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 550px;
+    margin: 2rem auto;
+    background: $sol-base3;
+    border: 1px solid rgba($sol-base1, 0.12);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    user-select: none;
+}
+
+.cielab-container {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+}
+
+.cielab-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.cielab-svg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    overflow: visible;
+
+    .cielab-axis {
+        stroke: $sol-base01;
+        stroke-width: 1.5px;
+        fill: none;
+        
+        &.axis-dashed {
+            stroke-dasharray: 4 4;
+            stroke: $sol-base1;
+        }
+    }
+
+    .cielab-axis-arrow {
+        fill: $sol-base01;
+    }
+
+    .cielab-equator {
+        fill: none;
+        stroke: rgba($sol-base01, 0.25);
+        stroke-width: 1.2px;
+        stroke-dasharray: 3 3;
+    }
+
+    .cielab-projection {
+        fill: none;
+        stroke: $sol-base1;
+        stroke-width: 1.2px;
+        stroke-dasharray: 3 3;
+    }
+
+    .cielab-axis-label {
+        font-family: $font-family-base;
+        font-weight: 700;
+        font-size: 11px;
+        fill: $sol-base01;
+        text-anchor: middle;
+        dominant-baseline: middle;
+
+        &.label-minmax {
+            font-size: 9px;
+            fill: $sol-base1;
+            font-weight: 600;
+        }
+    }
+
+    .cielab-indicator-group {
+        cursor: grab;
+        
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .cielab-swatch {
+        stroke: $sol-base3;
+        stroke-width: 2.5px;
+        transition: stroke 0.2s ease;
+    }
+
+    .cielab-indicator-dot {
+        fill: $sol-base3;
+        stroke: $sol-base03;
+        stroke-width: 2px;
+    }
+}
+
+// Disposition des curseurs verticaux
+.cielab-sliders-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: stretch;
+    width: 100%;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    min-height: 250px;
+}
+
+// Personnalisation des pistes de curseurs avec des dégradés
+.cielab-slider {
+    @extend .slider-vertical;
+    flex: 1;
+    min-width: 75px;
+
+    .slider-track-container {
+        width: 18px;
+        box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.15);
+        overflow: visible;
+    }
+
+    .slider-thumb {
+        position: absolute;
+        left: 50%;
+        width: 26px;
+        height: 20px;
+        margin-left: -13px;
+        background: $sol-base3;
+        border: 2.5px solid $sol-base01;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+        z-index: 5;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 2px;
+            background: $sol-base01;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    .slider-input {
+        max-width: 26px;
+    }
+
+    // Slider L* (Noir -> Blanc)
+    &.slider-l {
+        .slider-track-container {
+            background: linear-gradient(to top, #000000 0%, #777777 50%, #ffffff 100%);
+        }
+        .slider-fill {
+            background: transparent; // Le dégradé de fond fait tout
+            box-shadow: none;
+        }
+    }
+
+    // Slider a* (Vert -> Rouge)
+    &.slider-a {
+        .slider-track-container {
+            background: linear-gradient(to top, #008f39 0%, #fdf6e3 50%, #e30613 100%);
+        }
+        .slider-fill {
+            background: transparent;
+            box-shadow: none;
+        }
+    }
+
+    // Slider b* (Bleu -> Jaune)
+    &.slider-b {
+        .slider-track-container {
+            background: linear-gradient(to top, #1a237e 0%, #fdf6e3 50%, #ffdf00 100%);
+        }
+        .slider-fill {
+            background: transparent;
+            box-shadow: none;
+        }
+    }
+}
