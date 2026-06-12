@@ -40,7 +40,8 @@ L'IA a tendance à produire du "code spaghetti" si elle n'est pas bien guidée. 
 * **DevOps & QA :**
 * **Linting & Formatage :** Présence d'outils configurés (Prettier, ESLint, etc.).
 * **Tests :** Présence de tests automatisés validant la logique métier.
-* **CI/CD :** Pipeline automatisé déployant le client sur **GitHub Pages** ou **Cloudflare Pages**.
+* **Soit CI/CD :** Pipeline automatisé déployant le client sur **GitHub Pages** ou **Cloudflare Pages**.
+* **Soit Sécurité & Robustesse :** Audit de sécurité du code généré par l'IA.
 
 
 
@@ -78,7 +79,6 @@ Le README est le livrable central de votre démarche "Vibe Coding". Il doit êtr
 | **Critère** | **OUI** | **NON** |
 | --- | --- | --- |
 | Présence du fichier `README.md` avec Noms et Prénoms clairs | ☐ | ☐ |
-| URL de production (CI/CD) présente et le jeu se charge | ☐ | ☐ |
 | Les interactions multijoueurs (min. 2 joueurs) fonctionnent | ☐ | ☐ |
 
 ---
@@ -105,7 +105,8 @@ Le README est le livrable central de votre démarche "Vibe Coding". Il doit êtr
 | **Critère** | **Détail** | **Note** |
 | --- | --- | --- |
 | **Tests Automatisés** | Présence de tests pertinents (unitaires ou E2E) générés/validés par l'IA sur la logique critique. | **/ 2** |
-| **CI/CD** | Le pipeline de déploiement (GitHub Actions vers Pages/Cloudflare) est fonctionnel et s'exécute à chaque push. | **/ 2** |
+| **Soit CI/CD** | Le pipeline de déploiement (GitHub Actions vers Pages/Cloudflare) est fonctionnel et s'exécute à chaque push. | **/ 2** |
+| **OU Sinon** | **Sécurité & Robustesse :** Audit de sécurité du code généré par l'IA. | **2 pts** |
 
 ### 4. Post-Mortem Vibe Coding (5 pts)
 
