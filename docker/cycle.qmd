@@ -1,0 +1,237 @@
+---
+title: 🔄 Cycle de Vie
+categories:
+- Docker
+- Système & Réseau
+description: Gestion des états des conteneurs (run, stop, rm) et boucle d'exécution.
+---
+
+Un conteneur Docker n'est pas un serveur permanent : c'est un **environnement éphémère** conçu pour exécuter une tâche ou un service spécifique, puis s'arrêter proprement une fois sa mission accomplie.
+
+Maîtriser le cycle de vie d'un conteneur et ses commandes CLI associées est la première étape indispensable avant d'aborder l'automatisation et l'orchestration.
+
+## 🔄 Les États du Conteneur
+
+Au cours de son existence, un conteneur passe par plusieurs états distincts pilotés par le Docker Daemon :
+
+::: {.card-window .mb-4}
+#### Machine à États du Cycle de Vie Docker {.bi-diagram-3}
+
+:::: {#lifecycle-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_lifecycleGraph = {
+  const nodes = [
+    { id: "created", label: "📦 Created", shape: "rounded rect", fx: 70, fy: 160 },
+    { id: "running", label: "▶️ Running", shape: "rounded rect", fx: 250, fy: 80 },
+    { id: "paused", label: "⏸️ Paused", shape: "rounded rect", fx: 430, fy: 80 },
+    { id: "stopped", label: "⏹️ Stopped", shape: "rounded rect", fx: 250, fy: 240 },
+    { id: "deleted", label: "🗑️ Removed", shape: "pill", fx: 430, fy: 240 }
+  ];
+
+  const links = [
+    { source: "created", target: "running", label: "docker start" },
+    { source: "running", target: "paused", label: "docker pause" },
+    { source: "paused", target: "running", label: "docker unpause" },
+    { source: "running", target: "stopped", label: "docker stop / kill" },
+    { source: "stopped", target: "running", label: "docker restart" },
+    { source: "stopped", target: "deleted", label: "docker rm" }
+  ];
+
+  aptitek.renderStateMachineGraph("#lifecycle-graph", { nodes, links }, {
+    nodeRadius: 26,
+    fontSize: 10,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 320
+  });
+}
+```
+
+::: {.callout-note collapse="true"}
+## 🔍 Définition des 5 états principaux
+
+1. **Created (Créé) :** Le conteneur a été instancié (`docker create`) mais son processus principal n'a pas encore démarré.
+2. **Running (En cours d'exécution) :** Le processus principal (PID 1) tourne activement dans le conteneur.
+3. **Paused (En pause) :** Les processus du conteneur sont suspendus en mémoire via les cgroups Linux.
+4. **Stopped / Exited (Arrêté) :** Le processus s'est terminé (succès code 0 ou erreur) ou a été stoppé (`docker stop`). Les données restent sur le disque tant que le conteneur n'est pas supprimé.
+5. **Removed (Supprimé) :** Le conteneur et sa couche de fichiers temporaires ont été effacés (`docker rm`).
+:::
+
+## 🧪 Playground Interactif : Console de Commandes CLI
+
+Expérimentez l'exécution des commandes en sélectionnant l'action à réaliser sur le conteneur virtuel `mon-serveur` :
+
+::: {.card-window .mb-4}
+#### Console Interactive CLI Docker {.bi-terminal}
+
+:::: {.tabs}
+##### Commandes CLI {.bi-sliders}
+
+Choisissez une commande à exécuter :
+[Action à exécuter]{.select #cli_cmd_select options="docker run -d -p 8080:80 --name mon-serveur nginx,docker ps,docker exec -it mon-serveur nginx -v,docker stop mon-serveur,docker rm mon-serveur" value="docker run -d -p 8080:80 --name mon-serveur nginx"}
+
+##### [Exécuter]{.btn .bi-play-fill #btnexeccli} {.tab-right .no-pane}
+::::
+
+:::: {#cli-playground-terminal .terminal}
+#### Résultat du Terminal Docker {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_cliPlayground = {
+  cli_cmd_select;
+  btn_exec_cli;
+
+  const term = aptitek.createTerminal("#cli-playground-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (cli_cmd_select.includes("run")) {
+    term.writeLine("$ " + cli_cmd_select, { type: "info" });
+    term.writeLine("8a7f92e31b40285a9c0182419f02c9a1b02...", { type: "success" });
+    term.writeLine("✅ Conteneur 'mon-serveur' (Nginx) démarré en arrière-plan sur http://localhost:8080", { type: "success" });
+    term.writeLine("Statut: RUNNING (PID 1: nginx: master process)", { type: "muted" });
+  } else if (cli_cmd_select.includes("ps")) {
+    term.writeLine("$ " + cli_cmd_select, { type: "info" });
+    term.writeLine("CONTAINER ID   IMAGE   COMMAND                  CREATED         STATUS         PORTS                  NAMES", { type: "muted" });
+    term.writeLine("8a7f92e31b40   nginx   \"/docker-entrypoint.…\"   12 seconds ago  Up 11 seconds  0.0.0.0:8080->80/tcp   mon-serveur", { type: "success" });
+  } else if (cli_cmd_select.includes("exec")) {
+    term.writeLine("$ " + cli_cmd_select, { type: "info" });
+    term.writeLine("nginx version: nginx/1.25.3 (Ubuntu)", { type: "success" });
+    term.writeLine("Commande exécutée à l'intérieur du conteneur en cours d'exécution.", { type: "muted" });
+  } else if (cli_cmd_select.includes("stop")) {
+    term.writeLine("$ " + cli_cmd_select, { type: "info" });
+    term.writeLine("Sending SIGTERM signal to PID 1...", { type: "warning" });
+    term.writeLine("mon-serveur", { type: "success" });
+    term.writeLine("Statut: STOPPED / EXITED (Code 0)", { type: "muted" });
+  } else if (cli_cmd_select.includes("rm")) {
+    term.writeLine("$ " + cli_cmd_select, { type: "info" });
+    term.writeLine("mon-serveur", { type: "success" });
+    term.writeLine("✅ Conteneur et sa couche Read-Write temporaire supprimés.", { type: "danger" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🛠️ Commandes Fondamentales du Cycle de Vie
+
+### 4.1. Démarrer un Conteneur (`docker run`)
+
+La commande `docker run` combine en réalité deux actions : `docker create` puis `docker start`.
+
+```bash
+# Lancer un serveur Web Nginx en arrière-plan (-d) avec un nom personnalisé
+docker run -d -p 8080:80 --name mon-serveur nginx
+
+```
+
+::: {.callout-tip}
+
+- **`-d` (*Detached*) :** Exécute le conteneur en arrière-plan et libère immédiatement votre terminal.
+- **`-p 8080:80` :** Mappe le port `8080` de votre ordinateur (l'hôte) vers le port `80` interne du conteneur.
+- **`--name` :** Attribue un nom lisible au lieu de laisser Docker générer un nom aléatoire.
+:::
+
+### 4.2. Observer les Conteneurs (`docker ps`)
+
+```bash
+# Lister uniquement les conteneurs ACTIFS (état Running)
+docker ps
+
+# Lister TOUS les conteneurs (actifs, arrêtés et échoués)
+docker ps -a
+
+```
+
+### 4.3. Arrêter et Supprimer (`docker stop` & `docker rm`)
+
+```bash
+# Arrêt propre (envoie un signal SIGTERM puis SIGKILL après 10s)
+docker stop mon-serveur
+
+# Arrêt brut et immédiat (SIGKILL)
+docker kill mon-serveur
+
+# Supprimer un conteneur arrêté
+docker rm mon-serveur
+
+# Forcer l'arrêt ET la suppression en une seule commande
+docker rm -f mon-serveur
+
+```
+
+## 🔎 Inspection et Diagnostic
+
+Lorsqu'un conteneur ne se comporte pas comme prévu, vous passerez la majorité de votre temps avec ces trois outils d'inspection :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### 📜 1. Consulter les Logs {.bi-journal-text}
+Récupère les sorties standards (`stdout` / `stderr`) émises par l'application :
+
+```bash
+docker logs mon-serveur
+# Suivre en direct (-f)
+docker logs -f mon-serveur
+
+```
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 💻 2. Entrer dans le Conteneur {.bi-terminal-fill}
+Ouvre un terminal interactif à l'intérieur du conteneur en cours d'exécution :
+
+```bash
+# -it : Terminal interactif
+docker exec -it mon-serveur bash
+
+```
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 🔍 3. Inspecter la Config {.bi-search}
+Affiche toutes les métadonnées JSON (IP, volumes montés, variables d'environnement) :
+
+```bash
+docker inspect mon-serveur
+
+```
+:::::
+::::
+:::
+
+## 🧹 Gestion et Nettoyage des Images
+
+Au fur et à mesure des builds et des téléchargements, les images occupent un espace disque considérable. Il est indispensable de savoir faire le ménage.
+
+```bash
+# Lister toutes les images présentes localement
+docker images
+
+# Télécharger une image depuis Docker Hub sans la lancer
+docker pull nginx:latest
+
+# Supprimer une image spécifique (par nom ou Image ID)
+docker rmi nginx
+
+# Purger toutes les images orphelines (dangling) non utilisées
+docker image prune
+
+```
+
+::: {.callout-warning}
+## ⚠️ Dépendance image-conteneur
+Docker refusera de supprimer une image (`docker rmi`) si au moins un conteneur (même arrêté) fait référence à cette image. Vous devez toujours supprimer les conteneurs arrêtés (`docker rm`) avant d'effacer leurs images.
+:::

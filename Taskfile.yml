@@ -16,7 +16,7 @@ tasks:
   preview:
     desc: Start live preview server
     cmds:
-      - quarto preview
+      - quarto preview --port 6767
 
   clean:
     desc: Remove build artifacts

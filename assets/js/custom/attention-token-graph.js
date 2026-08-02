@@ -1,7 +1,7 @@
 // ==========================================
 // attention-token-graph.js - Carte d'attention en puzzle WebGL
 // ==========================================
-import * as THREE from "https://esm.sh/three";
+import * as THREE from "https://esm.sh/three@0.160.0";
 import { resolveCssValue } from "../core.js";
 import { SOL_FALLBACKS } from "../networks.js";
 import { generatePuzzleGrid, generatePuzzlePieceShape } from "../networks3d.js";

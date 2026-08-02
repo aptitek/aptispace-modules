@@ -1,0 +1,138 @@
+---
+title: "Structures de Données"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Découvrir les structures de données fondamentales : Enums, Structs/Tuples, Listes/Arrays, Dictionnaires/Maps."
+---
+
+En programmation, manipuler des variables isolées (`age`, `nom`, `prix`) devient très vite ingérable lorsque le volume d'informations augmente. Les **structures de données** permettent d'organiser, de regrouper et de stocker des collections de données de manière efficace.
+
+## 🏷️ Les Énumérations (Enums)
+
+Une **énumération (Enum)** est un type de donnée spécial utilisé pour définir un ensemble fixe et fermé de **constantes nommées**. Elle remplace les valeurs brutes magiques (comme `0`, `1`, `2` ou `"admin"`, `"user"`) qui risquent de créer des erreurs de frappe.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Pourquoi utiliser un Enum ? {.bi-exclamation-triangle}
+
+❌ **Sans Enum (Déconseillé) :**
+```python
+statut_commande = 2  # Que signifie 2 ? Livré ? En cours ? Annulé ?
+if statut_commande == "Livree":  # Erreur de frappe silencieuse !
+    pass
+```
+
+✅ **Avec Enum (Recommandé) :**
+```python
+from enum import Enum
+
+class StatutCommande(Enum):
+    EN_ATTENTE = 1
+    EN_COURS = 2
+    LIVREE = 3
+    ANNULEE = 4
+
+statut = StatutCommande.EN_COURS
+if statut == StatutCommande.LIVREE:
+    print("Commande arrivée")
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Avantages des Enums {.bi-check2-circle}
+
+1. **Sécurité de typage :** Impossible d'affecter une valeur invalide non prévue.
+2. **Auto-complétion :** L'IDE suggère immédiatement les choix valides (`StatutCommande.`).
+3. **Lisibilité :** Le code s'explique lui-même sans avoir besoin de commentaires.
+:::::
+::::
+:::
+
+## 🧩 Regroupements Passifs : Structs & Tuples
+
+Avant même de parler d'Orienté Objet avec des comportements complexes, on a souvent besoin de regrouper simplement des variables qui vont ensemble.
+
+- **Tuple :** Séquence ordonnée immuable de valeurs pouvant être de types différents (ex: `coordonnees = (48.8566, 2.3522)`).
+- **Structure (Struct / Record / dataclass) :** Conteneur de données passif avec des champs nommés, **sans logique métier**.
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Point2D:
+    x: float
+    y: float
+
+# Création d'une structure simple
+p1 = Point2D(x=10.5, y=20.0)
+print(p1.x)  # Accès direct au champ
+```
+
+## 📚 Collections : Séquences & Dictionnaires
+
+Les deux grandes familles de collections universelles sont les **séquences ordonnées** et les **tables d'association clé-valeur**.
+
+::: {.tabs}
+##### 3.0.0.1. Séquences (List / Array) {.bi-list-ol}
+
+Une **liste** (ou tableau dynamique) stocke des éléments dans un **ordre séquentiel précis**. Chaque élément est accessible via son **index numérique** (commençant généralement à `0`).
+
+```python
+fruits = ["Pomme", "Banane", "Orange"]
+print(fruits[0])  # "Pomme"
+fruits.append("Fraise")  # Ajoute à la fin
+```
+
+##### 3.0.0.2. Dictionnaires (Dict / Map) {.bi-key}
+
+Un **dictionnaire** (ou table de hachage) associe une **clé unique** à une **valeur**. C'est la structure idéale pour retrouver instantanément une donnée sans parcourir toute la collection.
+
+```python
+utilisateur = {
+    "id": 101,
+    "nom": "Alice",
+    "role": "Administrateur"
+}
+print(utilisateur["nom"])  # "Alice"
+```
+
+##### 3.0.0.3. Ensembles (Set) {.bi-bounding-box-circles}
+
+Un **ensemble (Set)** est une collection non ordonnée d'éléments **uniques**. Tout doublon inséré est automatiquement ignoré.
+
+```python
+tags = {"python", "poo", "python"}
+print(tags)  # {'python', 'poo'} -> doublon supprimé !
+```
+:::
+
+## 📊 Explorateur Interactif de Données Structurées
+
+Voici une illustration interactive d'un tableau d'objets structurés (données de démonstration d'outils) géré via la table dynamique `aptitek` :
+
+::: {#struct-dt-container}
+:::
+
+```{ojs}
+//| echo: false
+structData = [
+  { ID: 1, Intitulé: "Enum Statut", Categorie: "Type de Base", Usage: "Constantes nommées sécurisées", Complexite: "Faible" },
+  { ID: 2, Intitulé: "Tuple / Struct", Categorie: "Structure Passive", Usage: "Regroupement de champs bruts", Complexite: "Faible" },
+  { ID: 3, Intitulé: "List / Array", Categorie: "Collection Séquentielle", Usage: "Stockage ordonné d'éléments", Complexite: "Moyenne" },
+  { ID: 4, Intitulé: "Dict / Map", Categorie: "Associatif Clé-Valeur", Usage: "Recherche directe par clé", Complexite: "Moyenne" },
+  { ID: 5, Intitulé: "Class / Object", Categorie: "Objet Orienté", Usage: "Encapsulation état + comportements", Complexite: "Élevée" }
+]
+
+structCols = [
+  { key: "Intitulé", label: "Structure", type: "text" },
+  { key: "Categorie", label: "Catégorie", type: "badge" },
+  { key: "Usage", label: "Cas d'usage principal", type: "text" },
+  { key: "Complexite", label: "Complexité", type: "badge-bool" }
+]
+
+structTable = aptitek.createDataTable("#struct-dt-container", structData, { columns: structCols, pageSize: 5 })
+```

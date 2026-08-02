@@ -1,5 +1,9 @@
 ---
-title: "🧠 Hiérarchie Mémoire"
+title: 🧠 Hiérarchie Mémoire
+categories:
+- Architecture
+- Système
+description: Module et exercices interactifs sur 🧠 Hiérarchie Mémoire.
 ---
 
 Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si la donnée est **à portée de main**. La mémoire d'un ordinateur est organisée en une pyramide : plus on monte, plus c'est rapide — mais plus c'est petit et coûteux.

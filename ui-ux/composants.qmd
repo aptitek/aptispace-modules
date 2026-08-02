@@ -1,6 +1,10 @@
 ---
-title: "Les Composants & Le Design Atomique"
-subtitle: "De l'atome à la page : structurer l'interface"
+title: Les Composants & Le Design Atomique
+subtitle: 'De l''atome à la page : structurer l''interface'
+categories:
+- UI/UX Design
+- Design System
+description: Module et exercices interactifs sur Les Composants & Le Design Atomique.
 ---
 
 Concevoir une interface moderne ne consiste plus à dessiner des pages web isolées, mais à bâtir un **système de composants cohérent et réutilisable**. En s'inspirant de la chimie, la méthodologie du **Design Atomique** permet de structurer les éléments d'interface du plus simple au plus complexe, garantissant la maintenabilité et l'inclusivité du code.

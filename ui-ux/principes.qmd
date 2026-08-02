@@ -1,5 +1,9 @@
 ---
-title: "Mes Principes de Design"
+title: Mes Principes de Design
+categories:
+- UI/UX Design
+- Design System
+description: Module et exercices interactifs sur Mes Principes de Design.
 ---
 
 Cinq convictions sur ce que devrait être une interface bien conçue, illustrées par des situations concrètes.

@@ -1,0 +1,233 @@
+---
+title: 🐙 Docker Compose
+categories:
+- Docker
+- Système & Réseau
+description: Orchestration multi-conteneurs et définition de services découpés.
+---
+
+Jusqu'à présent, pour déployer une application composée d'un serveur web, d'un backend et d'une base de données, nous devions exécuter plusieurs longues commandes `docker run`, créer manuellement des réseaux et des volumes, et gérer soigneusement l'ordre de démarrage à la main.
+
+**Docker Compose** transforme ce processus manuel en **Infrastructure as Code (IaC)** : il permet de décrire l'ensemble de votre architecture multi-conteneurs dans un unique fichier déclaratif au format YAML nommé `docker-compose.yml`.
+
+## 📄 Du CLI au Fichier YAML (IaC)
+
+Comparez la différence d'effort et de clarté entre la gestion manuelle en ligne de commande (CLI) et l'utilisation de Docker Compose :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### ❌ Avant : Commandes CLI Manuelles {.bi-terminal}
+
+```bash
+# 1. Créer le réseau
+docker network create mon-reseau
+
+# 2. Lancer la base de données
+docker run -d --name ma-db \
+  --network mon-reseau \
+  -v db-data:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=secret \
+  postgres:15
+
+# 3. Lancer l'application web
+docker run -d --name webapp \
+  --network mon-reseau \
+  -p 8080:80 \
+  -e DB_HOST=ma-db \
+  mon-app-image
+
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### ✅ Après : Fichier `docker-compose.yml` {.bi-file-earmark-code}
+
+```yaml
+services:
+  ma-db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  webapp:
+    image: mon-app-image
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: ma-db # Résolution DNS automatique
+    depends_on:
+      - ma-db
+
+volumes:
+  db-data:
+```
+:::::
+::::
+:::
+
+## 🕹️ Simulateur Interactif : Stack Docker Compose Multi-Services & Scaling
+
+Expérimentez ci-dessous le cycle de vie et la mise à l'échelle (*scaling*) d'une architecture multi-conteneurs pilotée par Docker Compose :
+
+::: {.card-window .mb-4}
+#### Orchestrateur & Simulateur de Scaling Compose {.bi-layers-half}
+
+:::: {.tabs .compose-sim-tabset}
+##### Topologie de la Stack {.bi-diagram-3}
+
+::::: {#compose-topology-graph .chart-container-sm}
+:::::
+
+##### Contrôles & Scaling {.bi-sliders}
+
+Activer les options de déploiement et ajuster le nombre de réplicas Web :
+
+[Nombre d'instances Web (Replicas)]{.slider #inp-scale-web value=1 min=1 max=4 step=1}
+
+- [Attendre la santé de la DB (Healthcheck OK)]{.checkbox #inp-healthcheck checked=true}
+- [Activer le profil d'administration (pgAdmin)]{.checkbox #inp-profile-admin checked=false}
+
+##### [docker compose up -d]{.btn .bi-play-fill #btn-compose-up} {.tab-right .no-pane}
+##### [docker compose down]{.btn .bi-stop-fill #btn-compose-down} {.tab-right .no-pane}
+::::
+
+:::: {#compose-terminal .terminal}
+#### Journal d'Orchestration Docker Compose {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_graphCompose = {
+  inp_scale_web;
+
+  const nodes = [
+    { id: "network", label: "🌉 default_net", shape: "circle", fx: 70, fy: 150 },
+    { id: "db", label: "📦 Service: ma-db", shape: "rounded rect", fx: 250, fy: 150 }
+  ];
+
+  const links = [
+    { source: "network", target: "db", label: "172.22.0.2" }
+  ];
+
+  // Ajouter dynamiquement les instances de webapp selon le slider scale
+  for (let i = 1; i <= inp_scale_web; i++) {
+    const nodeId = "web_" + i;
+    nodes.push({ id: nodeId, label: "🚀 webapp_" + i, shape: "pill", fx: 470, fy: 50 + (i - 1) * 70 });
+    links.push({ source: nodeId, target: "db", label: "DNS: ma-db" });
+    links.push({ source: "network", target: nodeId, label: "IP 172.22.0." + (2 + i) });
+  }
+
+  aptitek.renderStateMachineGraph("#compose-topology-graph", { nodes, links }, {
+    nodeRadius: 22,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 20,
+    height: 330
+  });
+}
+
+_termCompose = {
+  inp_scale_web;
+  inp_healthcheck;
+  inp_profile_admin;
+  btn_compose_up;
+  btn_compose_down;
+
+  const term = aptitek.createTerminal("#compose-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (btn_compose_down > btn_compose_up) {
+    term.writeLine("🔥 Executing 'docker compose down'...", { type: "warning" });
+    term.writeLine("[-] Stopping container webapp_1..." + (inp_scale_web > 1 ? " to webapp_" + inp_scale_web : "") + " ... done", { type: "muted" });
+    term.writeLine("[-] Stopping container ma-db ... done", { type: "muted" });
+    term.writeLine("[-] Removing network project_default ... done", { type: "success" });
+    term.writeLine("✅ Stack arretée et nettoyée.", { type: "success" });
+  } else if (btn_compose_up > 0) {
+    term.writeLine("🚀 Executing 'docker compose up -d --scale webapp=" + inp_scale_web + "'...", { type: "info" });
+    term.writeLine("[+] Creating network 'project_default' (driver bridge)", { type: "info" });
+    term.writeLine("[+] Creating container project-ma-db-1 ... started", { type: "info" });
+
+    if (inp_healthcheck) {
+      term.writeLine("⏳ Waiting for ma-db to become healthy...", { type: "warning" });
+      term.writeLine("✓ Healthcheck PASSED (pg_isready accept connections)", { type: "success" });
+    }
+
+    for (let i = 1; i <= inp_scale_web; i++) {
+      term.writeLine("[+] Creating container project-webapp-" + i + " ... started", { type: "success" });
+    }
+
+    if (inp_profile_admin) {
+      term.writeLine("[+] Profil 'admin' actif: Creating container project-pgadmin-1 ... started", { type: "info" });
+    }
+
+    term.writeLine("✅ Stack avec " + inp_scale_web + " réplica(s) Web démarrée !", { type: "success" });
+  } else {
+    term.writeLine("Ajustez le slider scale et cliquez sur 'docker compose up -d'.", { type: "muted" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🔒 Gestion des Secrets & Profils d'Exécution
+
+### 3.1. Les Secrets (`secrets`)
+Pour ne pas exposer de mots de passe en clair dans des variables d'environnement (accessibles via `docker inspect`), Compose permet de monter des secrets de manière sécurisée sous `/run/secrets/` :
+
+```yaml
+services:
+  db:
+    image: postgres:15
+    secrets:
+      - db_password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+
+secrets:
+  db_password:
+    file: ./secrets/db_pass.txt
+```
+
+## 🛠️ Exercice Interactif : "The Broken Stack" (Troubleshooting)
+
+::: {.callout-warning}
+## 🕵️‍♂️ Mission Débogage
+Un développeur débutant a tenté d'orchestrer une stack WordPress + MySQL avec le fichier YAML ci-dessous, mais rien ne fonctionne. Saurez-vous identifier les 3 erreurs critiques ?
+:::
+
+::: {.card-window}
+#### Code YAML Défectueux {.bi-bug}
+
+```yaml
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: localhost        # ERREUR 1 ?
+      WORDPRESS_DB_PASSWORD: secret
+
+  db_server:
+    image: mysql:8.0
+    enviromnent:                           # ERREUR 2 ?
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./db_data:/var/lib/mysql
+```
+:::
+
+::: {.callout-note collapse="true"}
+## 💡 solution et explications du débogage
+
+1. **Erreur `WORDPRESS_DB_HOST: localhost` :** `localhost` fait référence au conteneur WordPress lui-même ! Il faut utiliser le nom du service MySQL : `WORDPRESS_DB_HOST: db_server`.
+2. **Erreur de frappe `enviromnent:` :** La clé YAML est mal orthographiée (`environment:`). MySQL démarre sans mot de passe root configuré.
+3. **Erreur de Volume Manquant :** Dans `volumes: - ./db_data:/var/lib/mysql`, si c'est un volume nommé `db_data`, il manque sa déclaration globale en bas du fichier (`volumes: db_data:`).
+:::

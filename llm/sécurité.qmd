@@ -1,5 +1,9 @@
 ---
-title: "🛡️ Injection de Prompt"
+title: 🛡️ Injection de Prompt
+categories:
+- LLM & IA
+- Deep Learning
+description: Module et exercices interactifs sur 🛡️ Injection de Prompt.
 ---
 
 L'intégration des Modèles de Langage (LLM) dans des environnements d'entreprise (banque, santé, service client) ne se limite pas à écrire de bons prompts. Ces modèles présentent des vulnérabilités inédites.

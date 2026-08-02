@@ -1,0 +1,303 @@
+---
+title: 📦 Conteneurs
+categories:
+- Docker
+- Système & Réseau
+description: Introduction à la conteneurisation et comparaison avec les machines virtuelles.
+---
+
+Avant l'arrivée de la conteneurisation, le déploiement d'applications était régulièrement confronté au célèbre **"enfer des dépendances"** (*Dependency Hell*). Une application fonctionnait parfaitement sur la machine d'un développeur, mais tombait en panne en production à cause d'une différence mineure de version de bibliothèque ou de configuration du système d'exploitation.
+
+La conteneurisation apporte une réponse élégante et universelle : empaqueter l'application avec **exactement** les dépendances dont elle a besoin pour s'exécuter de manière identique sur n'importe quelle machine.
+
+## 📦 Virtualisation vs Conteneurisation
+
+Pour comprendre l'intérêt d'un conteneur, il faut le comparer à une **machine virtuelle (VM)** classique.
+
+*   **Machine Virtuelle (VM) :** Émule un ordinateur complet au niveau matériel. Chaque VM embarque son propre **Système d'Exploitation invité (Guest OS)** complet avec son propre noyau. Résultat : une empreinte lourde (plusieurs Gigaoctets), une consommation mémoire élevée et un démarrage qui prend plusieurs dizaines de secondes.
+*   **Conteneur Docker :** Partage le **noyau (Kernel)** du système d'exploitation hôte. Il n'embarque que l'application et ses bibliothèques strictes. Résultat : une empreinte ultra-légère (quelques Mégaoctets), un démarrage quasi instantané et une isolation logicielle parfaite.
+
+::: {.callout-note collapse="true"}
+## 💡 L'analogie immobilière
+
+- Une **Machine Virtuelle** est comparable à une **maison individuelle** : totalement autonome avec ses propres fondations, sa toiture et sa plomberie. Elle offre une isolation absolue mais coûte cher en terrain et en ressources.
+- Un **Conteneur** est comparable à un **appartement dans un immeuble** : il possède son espace privé séparé et sécurisé, tout en partageant la structure globale (fondations, réseaux, arrivées d'eau) de l'immeuble hôte.
+:::
+
+### 2.1. Comparatif de l'Empilement des Couches Système
+
+Observez comment les couches d'architecture s'empilent dans une VM face à un Conteneur :
+
+::: {.card-window .mb-4}
+#### Visualiseur d'Architecture Système {.bi-layers-half}
+
+:::: {.tabs .arch-compare-tabset}
+##### Machine Virtuelle (VM) {.bi-pc-display}
+Chaque application tourne au-dessus de son propre OS invité complet et d'un hyperviseur.
+
+##### Conteneur Docker {.bi-box-seam}
+Tous les conteneurs s'exécutent en espace utilisateur directement au-dessus du Docker Engine et du Noyau Hôte partagé.
+::::
+
+:::: {#arch-stack-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable archView = "vm"
+
+_archWatcher = {
+  const w = createTabsetWatcher(
+    ".arch-compare-tabset",
+    { "Machine Virtuelle (VM)": "vm", "Conteneur Docker": "container" },
+    (val) => { mutable archView = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_archStackRender = {
+  const nodesVM = [
+    { id: "hardware", label: "💻 Matériel Physique (CPU/RAM)", shape: "rounded rect", fx: 300, fy: 320 },
+    { id: "hostos", label: "🐧 Host OS (Kernel)", shape: "rounded rect", fx: 300, fy: 250 },
+    { id: "hyper", label: "⚡ Hyperviseur (Type 2)", shape: "rounded rect", fx: 300, fy: 180 },
+    { id: "guestos1", label: "📀 Guest OS A (Lourd)", shape: "pill", fx: 150, fy: 110 },
+    { id: "guestos2", label: "📀 Guest OS B (Lourd)", shape: "pill", fx: 450, fy: 110 },
+    { id: "app1", label: "📦 App A (Bin/Libs)", shape: "circle", fx: 150, fy: 40 },
+    { id: "app2", label: "📦 App B (Bin/Libs)", shape: "circle", fx: 450, fy: 40 }
+  ];
+
+  const linksVM = [
+    { source: "hardware", target: "hostos", label: "" },
+    { source: "hostos", target: "hyper", label: "" },
+    { source: "hyper", target: "guestos1", label: "Émulation RAM/CPU" },
+    { source: "hyper", target: "guestos2", label: "Émulation RAM/CPU" },
+    { source: "guestos1", target: "app1", label: "" },
+    { source: "guestos2", target: "app2", label: "" }
+  ];
+
+  const nodesDocker = [
+    { id: "hardware", label: "💻 Matériel Physique (CPU/RAM)", shape: "rounded rect", fx: 300, fy: 320 },
+    { id: "hostos", label: "🐧 Host OS (Noyau Partagé)", shape: "rounded rect", fx: 300, fy: 230 },
+    { id: "engine", label: "🐳 Docker Engine (dockerd)", shape: "rounded rect", fx: 300, fy: 140 },
+    { id: "c1", label: "🚀 Conteneur A (App+Libs)", shape: "pill", fx: 120, fy: 50 },
+    { id: "c2", label: "🚀 Conteneur B (App+Libs)", shape: "pill", fx: 300, fy: 50 },
+    { id: "c3", label: "🚀 Conteneur C (App+Libs)", shape: "pill", fx: 480, fy: 50 }
+  ];
+
+  const linksDocker = [
+    { source: "hardware", target: "hostos", label: "" },
+    { source: "hostos", target: "engine", label: "cgroups & namespaces" },
+    { source: "engine", target: "c1", label: "Isolation Processus" },
+    { source: "engine", target: "c2", label: "Isolation Processus" },
+    { source: "engine", target: "c3", label: "Isolation Processus" }
+  ];
+
+  const targetNodes = archView === "vm" ? nodesVM : nodesDocker;
+  const targetLinks = archView === "vm" ? linksVM : linksDocker;
+
+  aptitek.renderStateMachineGraph("#arch-stack-graph", { nodes: targetNodes, links: targetLinks }, {
+    nodeRadius: 24,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 20,
+    height: 350
+  });
+}
+```
+
+### 2.2. Comparatif des Ressources Consommées
+
+Visualisez la différence d'empreinte entre une architecture basée sur des machines virtuelles et des conteneurs Docker :
+
+::: {.card-window .mb-4}
+#### Comparateur de Ressources (VM vs Conteneur) {.bi-bar-chart-line}
+
+:::: {.tabs .vm-container-tabset}
+##### Mémoire RAM {.bi-memory}
+Empreinte mémoire vive moyenne consommée par instance.
+
+##### Espace Disque {.bi-hdd}
+Taille moyenne requise sur le stockage pour démarrer l'environnement.
+
+##### Démarrage {.bi-stopwatch}
+Temps d'initialisation moyen avant que le service soit prêt à recevoir du trafic.
+::::
+
+:::: {#vm-vs-container-chart .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable metricType = "ram"
+
+_chartWatcher = {
+  const w = createTabsetWatcher(
+    ".vm-container-tabset",
+    { "Mémoire RAM": "ram", "Espace Disque": "disk", "Démarrage": "startup" },
+    (val) => { mutable metricType = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_chartRender = {
+  const dataMap = {
+    ram: {
+      categories: ["App Node.js", "Base SQL", "Serveur Web"],
+      vm: [1024, 2048, 512],
+      container: [80, 150, 25]
+    },
+    disk: {
+      categories: ["App Node.js", "Base SQL", "Serveur Web"],
+      vm: [15000, 25000, 10000],
+      container: [180, 350, 40]
+    },
+    startup: {
+      categories: ["App Node.js", "Base SQL", "Serveur Web"],
+      vm: [45, 60, 30],
+      container: [1.2, 2.5, 0.5]
+    }
+  };
+
+  const curr = dataMap[metricType];
+  const primaryColor = getThemeColor("--sol-blue", "#268bd2");
+  const successColor = getThemeColor("--sol-green", "#859900");
+
+  aptitek.createBar("vm-vs-container-chart", {
+    x: curr.categories,
+    y: curr.vm,
+    name: "Machine Virtuelle (VM)",
+    marker: { color: primaryColor }
+  }, "Consommation comparative", {
+    barmode: "group",
+    extraTraces: [{
+      x: curr.categories,
+      y: curr.container,
+      name: "Conteneur Docker",
+      type: "bar",
+      marker: { color: successColor }
+    }],
+    layout: {
+      yaxis: { title: metricType === "startup" ? "Temps (secondes)" : "Taille (Mo)" }
+    }
+  });
+}
+```
+
+## 🏗️ L'Architecture Tripartite de Docker
+
+Docker repose sur une architecture **Client-Serveur** distribuée composée de trois piliers fondamentaux :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.1. Le Client CLI {.bi-terminal}
+C'est votre point d'entrée principal en ligne de commande (`docker run`, `docker build`). Il traduit vos intentions en requêtes API REST envoyées au démon.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.2. Le Daemon Engine {.bi-cpu}
+Le "cerveau" en arrière-plan (`dockerd`). Il écoute les requêtes API, gère la construction des images, le réseau, les volumes et l'exécution des conteneurs.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.3. Le Registry {.bi-cloud-download}
+L'entrepôt distant (tel que **Docker Hub**) où sont stockées et partagées les images de conteneurs publiques ou privées.
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Exécution de `docker run hello-world`
+
+Déclenchez la commande ci-dessous pour observer pas à pas la séquence de communication entre le Client, le Daemon, Docker Hub et le Conteneur final :
+
+::: {.card-window .mb-4}
+#### Séquence d'Exécution `docker run` {.bi-play-btn}
+
+:::: {.tabs}
+##### Graphique de Flux {.bi-diagram-3}
+
+::::: {#docker-flow-graph .chart-container-md}
+:::::
+
+##### [Lancer `docker run hello-world`]{.btn .bi-play-fill #btn-run-demo} {.tab-right .no-pane}
+::::
+
+:::: {#run-demo-terminal .terminal}
+#### Console de Suivi du Docker Daemon {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_flowGraph = {
+  const nodes = [
+    { id: "user", label: "💻 Client CLI", shape: "rounded rect", fx: 60, fy: 100 },
+    { id: "daemon", label: "⚙️ Docker Daemon", shape: "rounded rect", fx: 250, fy: 100 },
+    { id: "local", label: "📂 Cache Local", shape: "circle", fx: 250, fy: 220 },
+    { id: "registry", label: "☁️ Docker Hub", shape: "rounded rect", fx: 450, fy: 100 },
+    { id: "container", label: "🚀 Conteneur", shape: "pill", fx: 250, fy: 320 }
+  ];
+
+  const links = [
+    { source: "user", target: "daemon", label: "1. docker run" },
+    { source: "daemon", target: "local", label: "2. vérifie cache" },
+    { source: "daemon", target: "registry", label: "3. pull (si absent)" },
+    { source: "registry", target: "daemon", label: "4. télécharge image" },
+    { source: "daemon", target: "container", label: "5. instancie & exécute" }
+  ];
+
+  aptitek.renderStateMachineGraph("#docker-flow-graph", { nodes, links }, {
+    nodeRadius: 24,
+    fontSize: 10,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 350
+  });
+}
+
+_runTerminal = {
+  btn_run_demo;
+  const term = aptitek.createTerminal("#run-demo-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (btn_run_demo > 0) {
+    term.writeLine("$ docker run hello-world", { type: "info" });
+    term.writeLine("Unable to find image 'hello-world:latest' locally", { type: "warning" });
+    term.writeLine("latest: Pulling from library/hello-world", { type: "muted" });
+    term.writeLine("c1ec31b23c32: Pull complete", { type: "success" });
+    term.writeLine("Digest: sha256:d37ada45f44e2b630c4e122281...", { type: "muted" });
+    term.writeLine("Status: Downloaded newer image for hello-world:latest", { type: "success" });
+    term.writeLine("\nHello from Docker!", { type: "success" });
+    term.writeLine("This message shows that your installation appears to be working correctly.", { type: "info" });
+  } else {
+    term.writeLine("En attente du lancement. Cliquez sur le bouton 'Lancer docker run hello-world'.", { type: "muted" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🎨 Image vs Conteneur : La Distinction Clé
+
+C'est la confusion la plus fréquente chez les débutants. Pour bien les différencier, utilisez la métaphore de la **Programmation Orientée Objet (POO)** :
+
+*   **L'Image Docker :** C'est le modèle inerte, la "recette" ou la **Classe en POO**. Elle est immuable (en lecture seule) et contient le système de fichiers de base, les binaire et la configuration.
+*   **Le Conteneur Docker :** C'est l'instance vivante de l'image, l'**Objet en POO**. Vous pouvez créer des dizaines de conteneurs isolés basés sur la même image unique.
+
+| Concept              | Image Docker                       | Conteneur Docker                       |
+| :------------------- | :--------------------------------- | :------------------------------------- |
+| **État**             | Inerte, statique, en lecture seule | Vivant, dynamique, en lecture/écriture |
+| **Rôle**             | Modèle de distribution (Blueprint) | Environnement d'exécution du processus |
+| **Analogie POO**     | `class ServeurWeb`                 | `new ServeurWeb()`                     |
+| **Analogie Cuisine** | La recette imprimée                | Le plat préparé sur la table           |

@@ -1,0 +1,252 @@
+---
+title: 💾 Volumes & Persistance
+categories:
+- Docker
+- Système & Réseau
+description: Stockage persistant, bind mounts et gestion des volumes Docker.
+---
+
+Par défaut, **les données générées au sein d'un conteneur sont temporaires et éphémères**. Lorsqu'un conteneur est supprimé (`docker rm`), tous les fichiers créés ou modifiés pendant son exécution sont définitivement perdus.
+
+Pour héberger des applications d'État (*Stateful*) — comme une base de données PostgreSQL, des fichiers téléversés par des utilisateurs ou des journaux d'audit —, Docker propose des mécanismes de **persistance des données** indépendants du cycle de vie du conteneur.
+
+## 🧱 L'Anatomie du Stockage Docker (Copy-on-Write)
+
+Une image Docker est constituée de plusieurs couches en **lecture seule** (*Read-Only Layers*). Lorsqu'un conteneur démarre, Docker ajoute une mince couche supérieure en **lecture-écriture** (*Writable Layer* ou *Container Layer*).
+
+```text
++-------------------------------------------------+
+|  Couche Conteneur (Read-Write)  <-- ÉPHÉMÈRE    |  <- Effacée lors du 'docker rm'
++-------------------------------------------------+
+|  Couche Image N (Read-Only)                     |
+|  Couche Image 1 (Read-Only)                     |
++-------------------------------------------------+
+```
+
+Toutes les écritures (création de fichier, modification) s'effectuent dans cette couche éphémère grâce au système **Copy-on-Write (CoW)**.
+
+## 💾 Les 3 Types de Montages Docker
+
+Docker propose trois stratégies distinctes pour conserver les données hors de la couche éphémère :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### 2.0.1. Bind Mounts {.bi-folder-symlink}
+Lie un dossier ou fichier précis de votre ordinateur hôte directement dans le conteneur.
+
+- **Idéal pour :** Le développement local (mise à jour du code en direct / *hot-reload*).
+- **Inconvénient :** Dépend du système de fichiers et des chemins de la machine hôte.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 2.0.2. Volumes Nommés {.bi-database-fill-gear}
+Gérés intégralement par Docker dans une zone dédiée isolée (`/var/lib/docker/volumes/`).
+
+- **Idéal pour :** La production, les bases de données et la sauvegarde.
+- **Avantage :** Indépendants de la structure du système d'exploitation hôte.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 2.0.3. tmpfs Mounts {.bi-memory}
+Stocke les données directement dans la mémoire **RAM** de la machine hôte sans écriture disque.
+
+- **Idéal pour :** Les secrets, clés privées ou caches nécessitant une haute performance et zéro trace disque.
+- **Inconvénient :** Données perdues à l'arrêt de la machine.
+:::::
+::::
+:::
+
+### 📊 Comparatif Interactif des Performances & Fonctions
+
+Sélectionnez le mode de stockage pour analyser ses métriques de performance et de sécurité :
+
+::: {.card-window .mb-4}
+#### Matrice d'Évaluation des Modes de Stockage {.bi-bar-chart-steps}
+
+:::: {.tabs .storage-mode-tabset}
+##### Bind Mounts {.bi-folder-symlink}
+Partage direct de répertoires système hôte.
+
+##### Volumes Nommés {.bi-database-check}
+Stockage isolé et géré par le Docker Daemon.
+
+##### tmpfs Mounts {.bi-cpu}
+Espace mémoire vive (RAM) temporaire.
+::::
+
+:::: {#storage-mode-chart .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable selectedStorageMode = "bind"
+
+_storageWatcher = {
+  const w = createTabsetWatcher(
+    ".storage-mode-tabset",
+    { "Bind Mounts": "bind", "Volumes Nommés": "named", "tmpfs Mounts": "tmpfs" },
+    (val) => { mutable selectedStorageMode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_storageChartRender = {
+  const modeData = {
+    bind: {
+      metrics: ["Vitesse I/O", "Isolation Hôte", "Portabilité", "Facilité Dev"],
+      values: [70, 40, 50, 100],
+      color: getThemeColor("--sol-orange", "#cb4b16")
+    },
+    named: {
+      metrics: ["Vitesse I/O", "Isolation Hôte", "Portabilité", "Facilité Dev"],
+      values: [90, 95, 95, 75],
+      color: getThemeColor("--sol-green", "#859900")
+    },
+    tmpfs: {
+      metrics: ["Vitesse I/O", "Isolation Hôte", "Portabilité", "Facilité Dev"],
+      values: [100, 100, 40, 30],
+      color: getThemeColor("--sol-blue", "#268bd2")
+    }
+  };
+
+  const curr = modeData[selectedStorageMode];
+
+  aptitek.createBar("storage-mode-chart", {
+    x: curr.metrics,
+    y: curr.values,
+    marker: { color: curr.color }
+  }, "Évaluation du stockage (%)", {
+    layout: {
+      yaxis: { title: "Score (%)", range: [0, 100] }
+    }
+  });
+}
+```
+
+## 🧪 Simulateur Interactif : Impact du `docker rm`
+
+Testez l'impact de la suppression d'un conteneur avec et sans montage de stockage :
+
+::: {.card-window .mb-4}
+#### Simulateur de Persistance des Données {.bi-device-hdd}
+
+:::: {.tabs .vol-sim-tabset}
+##### Stockage Éphémère {.bi-trash}
+Conteneur standard sans volume attaché.
+
+##### Bind Mount {.bi-folder-check}
+Dossier du projet hôte monté avec `-v $PWD/app:/app`.
+
+##### Volume Nommé {.bi-database-check}
+Volume géré par Docker monté avec `-v ma-db-data:/var/lib/mysql`.
+
+##### [Supprimer le Conteneur (docker rm)]{.btn .bi-lightning-fill #btn-trigger-rm} {.tab-right .no-pane}
+::::
+
+:::: {#persistence-feedback .terminal}
+#### État du Système de Fichiers {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable modePersist = "ephemeral"
+
+_volWatcher = {
+  const w = createTabsetWatcher(
+    ".vol-sim-tabset",
+    { "Stockage Éphémère": "ephemeral", "Bind Mount": "bind", "Volume Nommé": "named" },
+    (val) => { mutable modePersist = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_persistRender = {
+  btn_trigger_rm; // Réactif au clic du bouton dans l'onglet
+  const term = aptitek.createTerminal("#persistence-feedback", { defaultPrompt: false, showCursor: false });
+
+  if (modePersist === "ephemeral") {
+    term.writeLine("[!] Mode Stockage Éphémère sélectionné.", { type: "warning" });
+    term.writeLine("Écriture dans la couche Read-Write locale du conteneur (/var/data)...", { type: "info" });
+    if (btn_trigger_rm > 0) {
+      term.writeLine("❌ Action: 'docker rm -f container_1'", { type: "danger" });
+      term.writeLine("💥 PERTE DE DONNÉES: La couche Read-Write a été détruite.", { type: "danger" });
+      term.writeLine("Fichiers détruits: 12 table_users.db, 45 uploads.png", { type: "muted" });
+    }
+  } else if (modePersist === "bind") {
+    term.writeLine("[✓] Mode Bind Mount sélectionné ($PWD/data -> /app/data).", { type: "info" });
+    term.writeLine("Les données sont écrites directement sur le disque hôte.", { type: "info" });
+    if (btn_trigger_rm > 0) {
+      term.writeLine("⚡ Action: 'docker rm -f container_1'", { type: "warning" });
+      term.writeLine("✅ DONNÉES CONSERVÉES: Le dossier hôte '$PWD/data' est intact.", { type: "success" });
+      term.writeLine("Nouveau conteneur relancé -> Accès immédiat aux données créées !", { type: "success" });
+    }
+  } else {
+    term.writeLine("[✓] Mode Volume Nommé sélectionné ('db_data' -> /var/lib/mysql).", { type: "info" });
+    term.writeLine("Docker gère le volume dans /var/lib/docker/volumes/db_data/_data", { type: "info" });
+    if (btn_trigger_rm > 0) {
+      term.writeLine("⚡ Action: 'docker rm -f container_1'", { type: "warning" });
+      term.writeLine("✅ DONNÉES CONSERVÉES: Le volume nommé 'db_data' persiste dans le Docker Daemon.", { type: "success" });
+      term.writeLine("Un nouveau conteneur MySQL peut être rattaché instantanément au volume !", { type: "success" });
+    }
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 💻 Pratique : Syntaxe des Commandes `-v` et `--mount`
+
+### 4.1. Utiliser un Bind Mount (Développement Local)
+
+Pour lier votre dossier de code actuel (`$PWD` sous Linux/macOS) à un serveur Nginx :
+
+```bash
+# Syntaxe courte (-v) : cheminhôte:cheminconteneur
+docker run -d -p 8080:80 -v $PWD/site-web:/usr/share/nginx/html --name mon-web nginx
+
+```
+
+::: {.callout-tip}
+## 💡 Modifiez en direct !
+Toute modification apportée à un fichier HTML sur votre ordinateur dans `./site-web` sera immédiatement reflétée sur `http://localhost:8080` sans redémarrer le conteneur.
+:::
+
+### 5.1. Utiliser un Volume Nommé (Production & Bases de Données)
+
+```bash
+# 1. Créer un volume nommé géré par Docker
+docker volume create ma-db-data
+
+# 2. Attacher le volume lors du lancement de MySQL
+docker run -d --name base-donnees \
+  -e MYSQL_ROOT_PASSWORD=secret \
+  -v ma-db-data:/var/lib/mysql \
+  mysql:8.0
+
+```
+
+### 5.2. Gérer les Volumes en Ligne de Commande
+
+```bash
+# Lister les volumes gérés par Docker
+docker volume ls
+
+# Obtenir l'emplacement exact et les détails d'un volume
+docker volume inspect ma-db-data
+
+# Supprimer un volume inactif
+docker volume rm ma-db-data
+
+# Nettoyer TOUS les volumes non rattachés à un conteneur
+docker volume prune
+
+```

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favAccretion" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#859900" />
+      <stop offset="50%" stop-color="#2aa198" />
+      <stop offset="100%" stop-color="#d33682" />
+    </linearGradient>
+    <radialGradient id="favHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d33682" stop-opacity="0.6" />
+      <stop offset="70%" stop-color="#859900" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#002b36" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background container -->
+  <rect width="64" height="64" rx="14" fill="#002b36" />
+
+  <!-- Black Hole Group -->
+  <g transform="translate(32, 32)">
+    <!-- Halo -->
+    <circle cx="0" cy="0" r="26" fill="url(#favHalo)" />
+
+    <!-- Stars -->
+    <path d="M -18,-15 L -16,-13 L -18,-11 L -20,-13 Z" fill="#b58900" opacity="0.95" />
+    <path d="M 17,-16 L 19,-14 L 17,-12 L 15,-14 Z" fill="#2aa198" opacity="0.9" />
+    <path d="M 18,14 L 20,16 L 18,18 L 16,16 Z" fill="#d33682" opacity="0.95" />
+    <path d="M -15,16 L -13,18 L -15,20 L -17,18 Z" fill="#859900" opacity="0.9" />
+
+    <!-- Accretion Disk -->
+    <ellipse cx="0" cy="0" rx="21" ry="8" fill="none" stroke="url(#favAccretion)" stroke-width="3.5" transform="rotate(-22)" opacity="0.95" />
+
+    <!-- Dark Event Horizon -->
+    <circle cx="0" cy="0" r="11" fill="#002b36" stroke="#859900" stroke-width="1.2" />
+    <circle cx="0" cy="0" r="8.5" fill="#00141a" />
+
+    <!-- Front Accretion Arch -->
+    <path d="M -19,8 A 21 8 0 0 0 18,-8" fill="none" stroke="url(#favAccretion)" stroke-width="3.5" transform="rotate(-22)" stroke-linecap="round" />
+  </g>
+</svg>

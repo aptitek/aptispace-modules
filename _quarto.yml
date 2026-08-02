@@ -23,9 +23,15 @@ filters:
   - aptitek/grid
 
 website:
-  title: "Aptispace"
+  title: ""
+  favicon: assets/favicon.svg
   search: false
   sidebar: false
+  navbar:
+    logo: assets/aptispace-logo.svg
+    left:
+      - text: "🔍 Explorer les Cours"
+        href: /index.qmd
 
 format:
   html:

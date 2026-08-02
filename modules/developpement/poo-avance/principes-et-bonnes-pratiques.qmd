@@ -1,0 +1,116 @@
+---
+title: "Principes & Bonnes Pratiques"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Apprendre à écrire un code propre, lisible et maintenable grâce aux principes KISS, DRY, YAGNI et SOLID."
+---
+
+Écrire du code que seul un ordinateur comprend est à la portée de n'importe quel débutant. L'art du développeur expérimenté consiste à écrire du code que les **êtres humains** peuvent comprendre et maintenir facilement.
+
+## 🧹 L'Hygiène du Code & la Lisibilité
+
+> *"Un code source est lu au moins 10 fois plus souvent qu'il n'est écrit."* — Robert C. Martin (*Clean Code*)
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### ❌ Code Obscur (À Éviter) {.bi-x-circle}
+
+```python
+# Que fait ce code ? Mystère...
+def f(l):
+    r = []
+    for x in l:
+        if x.s == 1 and x.a > 18:
+            r.append(x)
+    return r
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### ✅ Code Auto-Documenté {.bi-check-circle}
+
+```python
+# Noms explicites = Pas besoin de commentaires !
+def filtrer_clients_actifs_majeurs(liste_clients):
+    clients_valides = []
+    for client in liste_clients:
+        if client.est_actif and client.est_majeur:
+            clients_valides.append(client)
+    return clients_valides
+```
+:::::
+::::
+:::
+
+## 🎯 Le Triumvirat des Principes Agnostiques
+
+Trois acronymes fondamentaux guident le quotidien des développeurs dans tous les langages.
+
+::: {.tabs}
+##### 2.0.0.1. DRY (Don't Repeat Yourself) {.bi-arrow-repeat}
+
+**Principe :** Chaque connaissance ou logique métier doit avoir une représentation unique et non ambiguë dans le système.
+
+- **Le problème :** Copier-coller un bloc de code à 3 endroits différents. Si un bug est découvert, il faut penser à le corriger aux 3 endroits !
+- **La solution :** Extraire la logique dans une fonction ou une méthode réutilisable.
+
+##### 2.0.0.2. KISS (Keep It Simple, Stupid) {.bi-stars}
+
+**Principe :** Privilégier la solution la plus simple possible. La simplicité doit être un objectif clé du design.
+
+- **Le problème :** Créer une architecture complexe avec 10 classes et des interfaces abstraites pour une simple addition.
+- **La solution :** Résoudre le problème actuel clairement sans complexité inutile.
+
+##### 2.0.0.3. YAGNI (You Ain't Gonna Need It) {.bi-hourglass}
+
+**Principe :** Ne jamais coder une fonctionnalité avant d'en avoir réellement besoin.
+
+- **Le problème :** Passer des jours à développer un système de plugin ultra-générique "au cas où on en aurait besoin dans deux ans".
+- **La solution :** Développer uniquement les fonctionnalités demandées aujourd'hui. Refactorer plus tard si les besoins évoluent.
+:::
+
+## 🏛️ Aperçu des Principes SOLID
+
+Le système **SOLID** regroupe 5 principes d'architecture objet pour concevoir du code évolutif et robuste.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Les 5 Principes SOLID {.bi-building}
+
+1. **S - Single Responsibility (SRP) :** Une classe ne doit avoir qu'une seule raison de changer (une seule responsabilité).
+2. **O - Open/Closed (OCP) :** Ouvert à l'extension, fermé à la modification.
+3. **L - Liskov Substitution (LSP) :** Une sous-classe doit pouvoir remplacer sa classe mère sans casser le programme.
+4. **I - Interface Segregation (ISP) :** Préférer plusieurs petites interfaces spécifiques plutôt qu'une grande interface générale.
+5. **D - Dependency Inversion (DIP) :** Dépendre des abstractions (interfaces), pas des implémentations concrètes.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Audit Interactif de Qualité {.bi-sliders}
+
+Évaluez votre code selon les critères de qualité :
+
+- [Taille moyenne des fonctions]{.slider #inp-func-size value=15 min=5 max=100}
+- [Taux de duplication code]{.slider #inp-dup-rate value=5 min=0 max=50}
+- [Responsabilités par classe]{.number #inp-resp-count value=1 min=1 max=10}
+
+:::::: {.metrics}
+| Fonctions               | Duplication       | Responsabilités              |
+| :---------------------- | :---------------- | :--------------------------- |
+| ${inp-func-size} lignes | ${inp-dup-rate} % | ${inp-resp-count} par classe |
+::::::
+
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+### 💡 En Résumé
+Un code de qualité n'est pas un code "intelligent" ou "astucieux" qui impressionne. C'est un code **ennuyeux et prévisible** que n'importe quel collègue peut relire, comprendre et modifier sereinement sans rien casser.
+:::

@@ -1,5 +1,9 @@
 ---
-title: "📐 Statistiques"
+title: 📐 Statistiques
+categories:
+- Statistiques
+- Data & IA
+description: Module et exercices interactifs sur 📐 Statistiques.
 ---
 
 Les statistiques descriptives servent à **résumer une série de valeurs** sans perdre l'essentiel.

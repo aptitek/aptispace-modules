@@ -1,5 +1,9 @@
 ---
-title: "🗄️ La Donnée"
+title: 🗄️ La Donnée
+categories:
+- Informatique
+- Fondations
+description: Module et exercices interactifs sur 🗄️ La Donnée.
 ---
 
 Une donnée est un **fait brut mesurable** — une observation élémentaire de la réalité attachée à une entité. Seule, elle ne dit rien. C'est la combinaison de sa **nature**, son **type**, son **unité** et son **domaine** qui lui confère sa valeur analytique.

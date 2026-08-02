@@ -1,0 +1,214 @@
+---
+title: 📄 Dockerfile
+categories:
+- Docker
+- Système & Réseau
+description: Construction d'images sur mesure et bonnes pratiques d'optimisation.
+---
+
+Un **Dockerfile** est un fichier texte contenant la suite d'instructions exécutées par le Docker Daemon pour construire automatiquement une image personnalisée.
+
+Rédiger un bon Dockerfile ne consiste pas seulement à faire fonctionner son code : c'est un art qui vise à produire des images **légères, sécurisées et rapides à construire** grâce à la gestion du cache.
+
+## 🍰 Le Concept des Couches (Layers)
+
+Une image Docker n'est pas un bloc monolithique : c'est un **mille-feuille de couches immuables** en lecture seule.
+
+Chaque instruction (`FROM`, `RUN`, `COPY`) crée une nouvelle couche de système de fichiers superposée aux précédentes.
+
+```text
++-------------------------------------------------+
+|  CMD ["python", "app.py"]                       | <- Couche 4
++-------------------------------------------------+
+|  COPY . /app                                    | <- Couche 3
++-------------------------------------------------+
+|  RUN pip install -r requirements.txt            | <- Couche 2
++-------------------------------------------------+
+|  FROM python:3.11-alpine                        | <- Couche 1 (Base)
++-------------------------------------------------+
+```
+
+## 📖 Référence des Instructions Essentielles
+
+| Instruction      | Description                                                         | Exemple                       |
+| :--------------- | :------------------------------------------------------------------ | :---------------------------- |
+| **`FROM`**       | **Obligatoire**. Spécifie l'image de base parent.                   | `FROM python:3.11-alpine`     |
+| **`WORKDIR`**    | Définit le dossier de travail courant (équivalent `cd`).            | `WORKDIR /app`                |
+| **`COPY`**       | Copie des fichiers locaux vers l'image. Privilégier à `ADD`.        | `COPY package.json .`         |
+| **`RUN`**        | Exécute des commandes lors du **build** pour installer des paquets. | `RUN apk add --no-cache curl` |
+| **`CMD`**        | Commande par défaut exécutée au **lancement du conteneur**.         | `CMD ["node", "server.js"]`   |
+| **`ENTRYPOINT`** | Définit le binaire fixe du conteneur (difficilement surchargeable). | `ENTRYPOINT ["python3"]`      |
+| **`ENV`**        | Définit des variables d'environnement persistantes.                 | `ENV PORT=8080`               |
+| **`EXPOSE`**     | Documente le port d'écoute du conteneur (ne l'ouvre pas).           | `EXPOSE 8080`                 |
+| **`USER`**       | Spécifie un utilisateur non-root pour des raisons de sécurité.      | `USER node`                   |
+
+## ⚡ La Gestion du Cache Docker : L'Ordre des Instructions
+
+Lors d'un `docker build`, Docker parcourt les instructions dans l'ordre :
+
+1. Si l'instruction et les fichiers concernés n'ont pas changé $\rightarrow$ **CACHE HIT** (réutilisation instantanée de la couche existante).
+2. Si un fichier a été modifié $\rightarrow$ **CACHE MISS** (reconstruction de la couche **ET invalidation en cascade de TOUTES les couches suivantes**).
+
+### 🧪 Simulateur Interactif : Impact de l'Invalidation du Cache
+
+Testez l'impact du type de fichier modifié sur les performances de votre `docker build` :
+
+::: {.card-window .mb-4}
+#### Inspecteur du Cache de Build Docker {.bi-cpu-fill}
+
+:::: {.tabs .cache-sim-tabset}
+##### Scénario 1 : Ordre sous-optimal {.bi-exclamation-triangle}
+`COPY . .` est placé avant `RUN pip install`.
+
+##### Scénario 2 : Ordre optimisé {.bi-check-circle}
+`COPY requirements.txt .` est placé avant `RUN pip install`.
+
+##### [Modifier `app.py` (Code)]{.btn .bi-code-slash #btneditcode} {.tab-right .no-pane}
+##### [Modifier `requirements.txt` (Lib)]{.btn .bi-journal-code #btneditreq} {.tab-right .no-pane}
+::::
+
+:::: {#cache-sim-terminal .terminal}
+#### Rapport d'Exécution du Build {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable cacheOptMode = "suboptimal"
+
+_cacheWatcher = {
+  const w = createTabsetWatcher(
+    ".cache-sim-tabset",
+    { "Scénario 1 : Ordre sous-optimal": "suboptimal", "Scénario 2 : Ordre optimisé": "optimal" },
+    (val) => { mutable cacheOptMode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_cacheRender = {
+  btn_edit_code;
+  btn_edit_req;
+
+  const term = aptitek.createTerminal("#cache-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (cacheOptMode === "suboptimal") {
+    term.writeLine("🔹 Configuration : Scénario 1 (COPY . . avant RUN pip install)", { type: "info" });
+    if (btn_edit_code > 0) {
+      term.writeLine("$ docker build -t mon-app .", { type: "info" });
+      term.writeLine("--> Step 1/4 : FROM python:3.11-alpine ---> CACHE HIT [0.0s]", { type: "success" });
+      term.writeLine("--> Step 2/4 : COPY . . ---> CACHE MISS (Code app.py modifié !) [0.1s]", { type: "danger" });
+      term.writeLine("--> Step 3/4 : RUN pip install -r requirements.txt ---> REBUILD OBLIGATOIRE [82.4s]", { type: "warning" });
+      term.writeLine("--> Step 4/4 : CMD [\"python\", \"app.py\"] ---> [0.1s]", { type: "info" });
+      term.writeLine("❌ Temps total du build : 82.6s (Invalidation du cache réinstallation des libs !)", { type: "danger" });
+    } else {
+      term.writeLine("Cliquez sur 'Modifier app.py' pour simuler le build.", { type: "muted" });
+    }
+  } else {
+    term.writeLine("🔹 Configuration : Scénario 2 (COPY requirements.txt avant RUN pip install)", { type: "info" });
+    if (btn_edit_code > 0) {
+      term.writeLine("$ docker build -t mon-app .", { type: "info" });
+      term.writeLine("--> Step 1/5 : FROM python:3.11-alpine ---> CACHE HIT [0.0s]", { type: "success" });
+      term.writeLine("--> Step 2/5 : WORKDIR /app ---> CACHE HIT [0.0s]", { type: "success" });
+      term.writeLine("--> Step 3/5 : COPY requirements.txt . ---> CACHE HIT (Non modifié) [0.0s]", { type: "success" });
+      term.writeLine("--> Step 4/5 : RUN pip install -r requirements.txt ---> CACHE HIT [0.0s]", { type: "success" });
+      term.writeLine("--> Step 5/5 : COPY . . ---> CACHE MISS (Seule cette couche est reconstruite !) [0.4s]", { type: "warning" });
+      term.writeLine("⚡ Temps total du build : 0.4s (Build instantané grâce au cache !)", { type: "success" });
+    } else if (btn_edit_req > 0) {
+      term.writeLine("$ docker build -t mon-app .", { type: "info" });
+      term.writeLine("--> Step 3/5 : COPY requirements.txt . ---> CACHE MISS (Fichier dépendances modifié)", { type: "warning" });
+      term.writeLine("--> Step 4/5 : RUN pip install ---> REBUILD (Installation nouvelles libs) [45.1s]", { type: "info" });
+      term.writeLine("✓ Réinstallation normale des dépendances lorsque le fichier requirements change.", { type: "info" });
+    } else {
+      term.writeLine("Cliquez sur 'Modifier app.py' pour voir l'efficacité du cache.", { type: "muted" });
+    }
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## ⚖️ Choix de l'Image de Base : Ubuntu vs Alpine
+
+Le choix de l'image de départ détermine la taille finale de votre image et sa surface d'attaque sécurité.
+
+::: {.card-window .mb-4}
+#### Comparatif de Taille des Images de Base {.bi-hdd-network}
+
+:::: {#base-image-size-chart .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_imageSizeChart = {
+  const images = ["Ubuntu 22.04", "Debian Bookworm", "Node.js (Standard)", "Node.js (Slim)", "Python (Alpine)"];
+  const sizes = [78, 124, 1100, 240, 48];
+  const colors = [
+    getThemeColor("--sol-red", "#dc322f"),
+    getThemeColor("--sol-orange", "#cb4b16"),
+    getThemeColor("--sol-yellow", "#b58900"),
+    getThemeColor("--sol-blue", "#268bd2"),
+    getThemeColor("--sol-green", "#859900")
+  ];
+
+  aptitek.createBar("base-image-size-chart", {
+    x: images,
+    y: sizes,
+    marker: { color: colors }
+  }, "Taille des images de base (Mo)", {
+    layout: {
+      yaxis: { title: "Taille de l'image (Mo)" }
+    }
+  });
+}
+```
+
+## 🚀 Build Multi-Étapes (Multi-Stage Build)
+
+Pour les langages compilés (Go, Java, Rust, C++), découvrez le gain spectaculaire de taille entre un build classique à étape unique et un **Multi-Stage Build** :
+
+::: {.card-window .mb-4}
+#### Gain de Taille : Single-Stage vs Multi-Stage Build {.bi-pie-chart}
+
+:::: {#multistage-chart .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_multiStageChart = {
+  const builds = ["Build Étape Unique (avec SDK Go)", "Multi-Stage Build (Runtime Pur)"];
+  const sizes = [860, 14.5];
+  const colors = [
+    getThemeColor("--sol-red", "#dc322f"),
+    getThemeColor("--sol-green", "#859900")
+  ];
+
+  aptitek.createBar("multistage-chart", {
+    x: builds,
+    y: sizes,
+    marker: { color: colors }
+  }, "Taille finale de l'image binaire (Mo)", {
+    layout: {
+      yaxis: { title: "Taille de l'image (Mo)" }
+    }
+  });
+}
+```
+
+```dockerfile
+# Étape 1 : Build (image lourde avec le compilateur Go)
+FROM golang:1.20-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o mon-app
+
+# Étape 2 : Runtime (image ultra-minimale)
+FROM alpine:3.18
+WORKDIR /app
+# Copie uniquement le binaire compilé depuis l'étape 'builder'
+COPY --from=builder /app/mon-app .
+
+CMD ["./mon-app"]
+```

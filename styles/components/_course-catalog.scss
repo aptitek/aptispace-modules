@@ -1,0 +1,304 @@
+// =============================================================================
+// COURSE CATALOG LISTING STYLES (High-Contrast & Colorized Categories)
+// =============================================================================
+
+// Header-Integrated Window Search Bar (Matching AI Tools / DataTables pattern)
+.card-window .card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+
+  .quarto-listing-filter {
+    margin-bottom: 0 !important;
+    margin-left: auto !important;
+    max-width: 260px !important;
+    flex: 1 1 200px !important;
+
+    input.search {
+      padding: 0.35rem 0.75rem 0.35rem 2.2rem !important;
+      font-size: 0.85rem !important;
+      height: 32px !important;
+      background-position: 0.6rem center !important;
+      background-size: 14px 14px !important;
+      border-radius: 6px !important;
+      border: 1px solid rgba(var(--sol-cyan-rgb), 0.4) !important;
+      box-shadow: none !important;
+
+      &:focus {
+        border-color: var(--sol-cyan) !important;
+        box-shadow: 0 0 0 2px rgba(var(--sol-cyan-rgb), 0.25) !important;
+      }
+    }
+  }
+}
+
+.quarto-listing {
+  margin-top: 1.5rem;
+
+  // Search Filter Controls (High-contrast fallback input)
+  .quarto-listing-filter {
+    margin-bottom: 1.5rem;
+
+    input.search {
+      width: 100%;
+      padding: 0.85rem 1.25rem 0.85rem 2.75rem;
+      font-size: 1.05rem;
+      font-family: var(--font-sans);
+      color: var(--sol-base3);
+      background-color: var(--sol-base02);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%232aa198' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 0.9rem center;
+      border: 2px solid rgba(var(--sol-cyan-rgb), 0.5);
+      border-radius: 10px;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+      &:focus {
+        outline: none;
+        background-color: var(--sol-base03);
+        border-color: var(--sol-cyan);
+        box-shadow: 0 0 0 3px rgba(var(--sol-cyan-rgb), 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      &::placeholder {
+        color: var(--sol-base0);
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // Category Pills Bar
+  .quarto-listing-category {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(var(--sol-base01-rgb), 0.3);
+
+    .category {
+      font-size: 0.875rem;
+      font-weight: 700;
+      padding: 0.45rem 1.1rem;
+      border-radius: 20px;
+      color: var(--sol-base2);
+      background: var(--sol-base02);
+      border: 1px solid rgba(var(--sol-base01-rgb), 0.4);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--sol-base3);
+        border-color: var(--sol-cyan);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      &.active {
+        color: #ffffff !important;
+        background: var(--sol-cyan) !important;
+        border-color: var(--sol-cyan) !important;
+        box-shadow: 0 4px 12px rgba(var(--sol-cyan-rgb), 0.5) !important;
+      }
+    }
+  }
+
+  // Cards Grid Layout
+  .list.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .g-col-12, .g-col-sm-6, .g-col-md-4 {
+    grid-column: span 1 / span 1 !important;
+    width: 100% !important;
+  }
+
+  // High-Contrast Individual Course Card
+  .quarto-grid-item {
+    background: var(--sol-base02);
+    border: 1.5px solid rgba(var(--sol-base01-rgb), 0.45);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: var(--sol-cyan);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 16px rgba(var(--sol-cyan-rgb), 0.25);
+      background: var(--sol-base03);
+
+      .card-body .card-title a {
+        color: var(--sol-cyan);
+      }
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+
+      // High-Contrast Title
+      .card-title {
+        font-family: var(--font-sans);
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--sol-base3);
+        margin-bottom: 0.75rem;
+        line-height: 1.35;
+
+        a {
+          color: var(--sol-base3);
+          text-decoration: none;
+          transition: color 0.2s ease;
+
+          &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+          }
+        }
+      }
+
+      // High-Contrast Description Text
+      .card-text {
+        font-size: 0.95rem;
+        color: var(--sol-base1);
+        line-height: 1.6;
+        margin-bottom: 1.25rem;
+        flex-grow: 1;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      // Category Badges Container
+      .listing-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(var(--sol-base01-rgb), 0.2);
+      }
+    }
+  }
+
+  // ===========================================================================
+  // CATEGORY COLOR SCHEMES (Solarized Palette Tokens)
+  // ===========================================================================
+
+  // General badge fallback
+  .category,
+  .listing-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.7rem;
+    border-radius: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+    transition: all 0.2s ease;
+    color: var(--sol-cyan);
+    background: rgba(var(--sol-cyan-rgb), 0.18);
+    border: 1px solid rgba(var(--sol-cyan-rgb), 0.4);
+  }
+
+  // 1. Docker / Système & Réseau (Cyan / Blue)
+  [data-category="Docker"],
+  [data-category="Système & Réseau"] {
+    color: #2aa198 !important; // Solarized Cyan
+    background: rgba(42, 161, 152, 0.18) !important;
+    border: 1px solid rgba(42, 161, 152, 0.45) !important;
+  }
+
+  // 2. LLM & IA / Deep Learning (Magenta / Pink)
+  [data-category="LLM & IA"],
+  [data-category="Deep Learning"] {
+    color: #d33682 !important; // Solarized Magenta
+    background: rgba(211, 54, 130, 0.18) !important;
+    border: 1px solid rgba(211, 54, 130, 0.45) !important;
+  }
+
+  // 3. Machine Learning (Violet / Purple)
+  [data-category="Machine Learning"] {
+    color: #6c71c4 !important; // Solarized Violet
+    background: rgba(108, 113, 196, 0.18) !important;
+    border: 1px solid rgba(108, 113, 196, 0.45) !important;
+  }
+
+  // 4. Data Science / Statistiques (Green)
+  [data-category="Data Science"],
+  [data-category="Statistiques"] {
+    color: #859900 !important; // Solarized Green
+    background: rgba(133, 153, 0, 0.18) !important;
+    border: 1px solid rgba(133, 153, 0, 0.45) !important;
+  }
+
+  // 5. DevOps / Infra (Orange)
+  [data-category="DevOps"] {
+    color: #cb4b16 !important; // Solarized Orange
+    background: rgba(203, 75, 22, 0.18) !important;
+    border: 1px solid rgba(203, 75, 22, 0.45) !important;
+  }
+
+  // 6. UI/UX Design / Design System (Blue)
+  [data-category="UI/UX Design"],
+  [data-category="Design System"] {
+    color: #268bd2 !important; // Solarized Blue
+    background: rgba(38, 139, 210, 0.18) !important;
+    border: 1px solid rgba(38, 139, 210, 0.45) !important;
+  }
+
+  // 7. Projets / Vibe Coding (Yellow / Gold)
+  [data-category="Projets"],
+  [data-category="Vibe Coding"] {
+    color: #b58900 !important; // Solarized Yellow
+    background: rgba(181, 137, 0, 0.18) !important;
+    border: 1px solid rgba(181, 137, 0, 0.45) !important;
+  }
+
+  // 8. Informatique / Architecture / Fondations (Red)
+  [data-category="Informatique"],
+  [data-category="Architecture"],
+  [data-category="Fondations"] {
+    color: #dc322f !important; // Solarized Red
+    background: rgba(220, 50, 47, 0.18) !important;
+    border: 1px solid rgba(220, 50, 47, 0.45) !important;
+  }
+
+  // 9. Aide-Mémoire (Cyan Accent)
+  [data-category="Aide-Mémoire"],
+  [data-category="Outils IA"] {
+    color: #2aa198 !important;
+    background: rgba(42, 161, 152, 0.18) !important;
+    border: 1px solid rgba(42, 161, 152, 0.45) !important;
+  }
+
+  // Zero Results Message
+  .no-matching-documents {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--sol-base1);
+    font-size: 1.1rem;
+
+    &::before {
+      content: "🔍";
+      display: block;
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+  }
+}

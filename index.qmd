@@ -1,0 +1,33 @@
+---
+title: "Catalogue des Cours"
+subtitle: "Explorez et recherchez l'ensemble des modules interactifs et simulateurs d'Aptispace."
+page-layout: full
+toc: false
+sidebar: false
+listing:
+  - id: course-catalog
+    contents:
+      - "**/*.qmd"
+      - "!index.qmd"
+      - "!demo.qmd"
+      - "!legacy/**"
+      - "!tests/**"
+      - "!archive/**"
+    type: table
+    sort: "title asc"
+    categories: cloud
+    filter-ui: true
+    sort-ui: true
+    fields: [title, categories, description]
+    field-display-names:
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+---
+
+::: {.card-window}
+#### Explorer les parcours & modules {.bi-compass}
+
+:::: {#course-catalog}
+::::
+:::

@@ -1,7 +1,7 @@
 // ==========================================
 // kv-puzzle-graph.js - Scores QK en puzzle WebGL
 // ==========================================
-import * as THREE from "https://esm.sh/three";
+import * as THREE from "https://esm.sh/three@0.160.0";
 import { resolveCssValue } from "../core.js";
 import { SOL_FALLBACKS } from "../networks.js";
 import { generatePuzzleGrid, generatePuzzlePieceShape } from "../networks3d.js";

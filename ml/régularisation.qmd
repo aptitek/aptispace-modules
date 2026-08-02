@@ -1,5 +1,9 @@
 ---
-title: "Régularisation et Généralisation"
+title: Régularisation et Généralisation
+categories:
+- Machine Learning
+- Data & IA
+description: Module et exercices interactifs sur Régularisation et Généralisation.
 ---
 
 Si le sur-apprentissage est la maladie, la **régularisation** en est le remède. Elle impose une contrainte mathématique de "lissage" pour favoriser la généralisation en pénalisant la complexité excessive du modèle.

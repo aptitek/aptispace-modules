@@ -1,5 +1,9 @@
 ---
-title: "✍️ Prompt Engineering"
+title: ✍️ Prompt Engineering
+categories:
+- LLM & IA
+- Deep Learning
+description: Module et exercices interactifs sur ✍️ Prompt Engineering.
 ---
 
 Un LLM ne cherche pas la "vraie" réponse dans une base de données. À chaque token généré, il **tire au sort** dans une distribution de probabilité sur tout son vocabulaire. Le Prompt Engineering consiste à orienter cette distribution vers la zone de réponse souhaitée — c'est de la physique probabiliste, pas de la magie.

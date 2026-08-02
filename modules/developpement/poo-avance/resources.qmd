@@ -1,0 +1,51 @@
+---
+title: "Fiche Synthèse & Ressources"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Fiche récapitulative pour identifier les entités de programmation et ressources complémentaires."
+---
+
+Cette fiche synthèse vous sert de **guide de référence rapide** pour identifier immédiatement chaque entité de programmation lorsque vous lisez ou rédigez du code source dans n'importe quel langage.
+
+## 📋 Table de Reconnaissance des Entités
+
+| Type d'Entité           | Rôle & Description                                                         | Exemple de Syntaxe                              |
+| :---------------------- | :------------------------------------------------------------------------- | :---------------------------------------------- |
+| **Mot-clé (*Keyword*)** | Mot réservé au langage pour la grammaire et les structures de contrôle     | `if`, `else`, `while`, `return`, `class`, `def` |
+| **Identifiant**         | Nom attribué par le développeur à une variable, fonction ou classe         | `vitesse`, `calculerTotal`, `CompteBancaire`    |
+| **Littéral**            | Valeur écrite en dur directement dans le code source                       | `42`, `"Texte"`, `true`, `3.14`                 |
+| **Variable**            | Conteneur mémoire dont la valeur peut évoluer au cours du temps            | `x = 10` puis `x = 20`                          |
+| **Constante**           | Conteneur mémoire dont la valeur est fixe et immuable après initialisation | `const PI = 3.14159`                            |
+| **Fonction / Méthode**  | Bloc de code réutilisable recevant des arguments et retournant un résultat | `def calculer_surface(l, h): return l * h`      |
+| **Lambda**              | Fonction anonyme courte écrite en ligne                                    | `lambda x: x * 2`                               |
+| **Classe (Moule)**      | Plan/Modèle abstrait définissant des attributs et méthodes                 | `class Joueur: ...`                             |
+| **Instance (Objet)**    | Pièce/Élément concret fabriqué à partir du moule de la classe              | `joueur1 = Joueur()`                            |
+| **Enum**                | Ensemble fermé de constantes nommées                                       | `class Couleur(Enum): ROUGE = 1`                |
+| **Struct / Record**     | Regroupement passif de variables sans comportements complexes              | `@dataclass class Point: x: float`              |
+
+## 📚 Principes & Bonnes Pratiques en Mémento
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Principes Clés {.bi-bookmark-check}
+
+- **DRY :** Ne vous répétez pas, réutilisez votre code.
+- **KISS :** Privilégiez la simplicité à la sur-ingénierie.
+- **YAGNI :** Ne codez que ce dont vous avez besoin aujourd'hui.
+- **SRP :** Une seule responsabilité par classe ou fonction.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Lexique des Design Patterns {.bi-diagram-3}
+
+- **Factory :** Déléguer la création des objets.
+- **Strategy :** Interchangeabilité des algorithmes.
+- **Singleton :** Instance unique contrôlée.
+- **Observer :** Système de notifications et d'événements.
+:::::
+::::
+:::

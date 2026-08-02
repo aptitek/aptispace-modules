@@ -1,5 +1,9 @@
 ---
-title: "Modèles, Données et Apprentissage"
+title: Modèles, Données et Apprentissage
+categories:
+- Machine Learning
+- Data & IA
+description: Module et exercices interactifs sur Modèles, Données et Apprentissage.
 ---
 
 Pour démystifier ce qu'est réellement l'apprentissage en machine learning, une analogie physique simple : le **moulage**.

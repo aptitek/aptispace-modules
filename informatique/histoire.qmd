@@ -1,5 +1,9 @@
 ---
-title: "⏳ Histoire de l'Informatique"
+title: ⏳ Histoire de l'Informatique
+categories:
+- Informatique
+- Fondations
+description: Module et exercices interactifs sur ⏳ Histoire de l'Informatique.
 ---
 
 De la roue dentée grecque au modèle de langage, l'informatique est une longue accumulation de ruptures — chacune impensable sans la précédente.

@@ -1,5 +1,9 @@
 ---
-title: "Compromis Biais-Variance"
+title: Compromis Biais-Variance
+categories:
+- Machine Learning
+- Data & IA
+description: Module et exercices interactifs sur Compromis Biais-Variance.
 ---
 
 Trouver le bon modèle est une affaire de compromis : soit il est trop rigide et rate les grandes tendances (**biais élevé**), soit il est trop fluide et mémorise les moindres détails inutiles (**variance élevée**). Entre les deux se trouve la zone de **généralisation optimale**.

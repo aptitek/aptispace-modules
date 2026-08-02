@@ -1,5 +1,9 @@
 ---
-title: "🧱 Stockage Colonnaire"
+title: 🧱 Stockage Colonnaire
+categories:
+- Data Science
+- Data & IA
+description: Module et exercices interactifs sur 🧱 Stockage Colonnaire.
 ---
 
 Quand un jeu de données grandit, la question n'est plus seulement : **quelles valeurs contient-il ?**

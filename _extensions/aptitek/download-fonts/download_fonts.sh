@@ -18,26 +18,13 @@ download_font() {
   if [ ! -f "$dest" ]; then
     echo "Downloading $filename..."
     curl -L -s -o "$dest" "$url"
-  else
-    echo "$filename already exists."
   fi
 }
 
-# 1. Recursive (from zip)
-RECURSIVE_FILE="$FONT_DIR/Recursive_VF_1.085.ttf"
-if [ ! -f "$RECURSIVE_FILE" ]; then
-  echo "Downloading Recursive font..."
-  curl -L -s -o recursive.zip "https://github.com/arrowtype/recursive/releases/download/v1.085/ArrowType-Recursive-1.085.zip"
-  unzip -q -j -o recursive.zip "ArrowType-Recursive-1.085/Recursive_Desktop/Recursive_VF_1.085.ttf" -d "$FONT_DIR/"
-  rm recursive.zip
-  
-  if [ -d "$HOME/.local/share/fonts" ] || [ "$(uname)" = "Linux" ]; then
-    mkdir -p "$HOME/.local/share/fonts/recursive"
-    cp "$RECURSIVE_FILE" "$HOME/.local/share/fonts/recursive/"
-    if command -v fc-cache >/dev/null 2>&1; then
-      fc-cache -f "$HOME/.local/share/fonts/recursive"
-    fi
-  fi
+# 1. Recursive (WOFF2 from Google Fonts + TTF fallback)
+RECURSIVE_WOFF2="$FONT_DIR/Recursive_VF_1.085.woff2"
+if [ ! -f "$RECURSIVE_WOFF2" ]; then
+  curl -L -s -o "$RECURSIVE_WOFF2" "https://fonts.gstatic.com/s/recursive/v44/8vIK7wMr0mhh-RQChyHuE2Za.woff2"
 fi
 
 # 2. EB Garamond (Sérif)
@@ -57,5 +44,3 @@ download_font "FiraCode.ttf" "https://github.com/google/fonts/raw/main/ofl/firac
 
 # 7. Press Start 2P (Display)
 download_font "PressStart2P.ttf" "https://github.com/google/fonts/raw/main/ofl/pressstart2p/PressStart2P-Regular.ttf"
-
-echo "Font download sync complete."

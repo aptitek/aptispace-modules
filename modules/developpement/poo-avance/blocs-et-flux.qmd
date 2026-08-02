@@ -1,0 +1,177 @@
+---
+title: "Blocs, Portée & Flux de Contrôle"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Maîtriser la portée des variables, l'empilement des blocs de code, les boucles et les fonctions/lambdas."
+---
+
+Un programme informatique n'est pas une simple liste d'instructions exécutées de haut en bas sans détour. Pour résoudre des problèmes complexes, le programme doit prendre des décisions, répéter des tâches et organiser ses données dans des **espaces de visibilité scellés**.
+
+## 📦 Blocs de Code et Portée (Scope)
+
+Un **bloc de code** est un groupe d'instructions délimité qui s'exécute ensemble.
+
+- En C++, Java, JS, C# : délimité par des accolades `{ ... }`.
+- En Python : délimité par l'**indentation** (espaces).
+
+La **portée (*scope*)** définit la durée de vie et la visibilité d'une variable. Une variable créée à l'intérieur d'un bloc naît à son entrée et **meurt à sa sortie**.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Exemple de Portée {.bi-layers-half}
+
+```python
+# Variable Globale (accessible partout)
+niveau_global = 100
+
+def calculer_bonus():
+    # Variable Locale à la fonction
+    bonus_local = 25
+
+    if bonus_local > 10:
+        # Variable de bloc (portée restreinte)
+        multiplicateur = 2
+        total = (niveau_global + bonus_local) * multiplicateur
+        return total
+
+    # ERREUR si on essaie d'accéder à multiplicateur ici !
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Règle d'Or de la Portée {.bi-shield-check}
+
+:::::: {.callout-note collapse="true"}
+### 🔒 Le principe du moindre privilège
+Une variable doit toujours être déclarée dans la portée la plus restreinte possible. Cela évite qu'une autre partie du programme ne la modifie par accident (*effet de bord*).
+::::::
+
+1. **Variables Globales :** À utiliser avec une extrême parcimonie (de préférence uniquement pour des constantes immuables).
+2. **Variables Locales :** Créées lors de l'appel d'une fonction et détruites dès le `return`.
+:::::
+::::
+:::
+
+## 🔀 Contrôle du Flux : Conditionnelles & Match
+
+Le flux d'exécution représente le chemin emprunté par l'ordinateur à travers le code. Les structures conditionnelles permettent au programme d'emprunter des branches différentes selon la vérité d'une expression logique.
+
+::: {.row gap=4}
+:::: {.col span=7}
+::::: {.card-window}
+#### Graphe de Décision Interactif {.bi-diagram-3}
+
+:::::: {#sm-flux-demo .chart-container-md}
+::::::
+
+```{ojs}
+//| echo: false
+smFluxNodes = [
+  { id: "start", label: "Entrée", status: "entry", shape: "circle" },
+  { id: "test", label: "Solde >= Prix ?", status: "current", shape: "diamond" },
+  { id: "buy", label: "Acheter", status: "past", shape: "rounded rect" },
+  { id: "refuse", label: "Refuser", status: "default", shape: "rounded rect" },
+  { id: "end", label: "Fin", status: "default", shape: "circle" }
+]
+
+smFluxLinks = [
+  { source: "start", target: "test", label: "demande" },
+  { source: "test", target: "buy", label: "Oui", condition: true },
+  { source: "test", target: "refuse", label: "Non", condition: false },
+  { source: "buy", target: "end", label: "validé" },
+  { source: "refuse", target: "end", label: "annulé" }
+]
+
+renderSMFlux = renderStateMachineGraph("#sm-flux-demo", { nodes: smFluxNodes, links: smFluxLinks }, {
+  nodeRadius: 20,
+  fontSize: 9,
+  height: 260
+})
+```
+:::::
+::::
+
+:::: {.col span=5}
+::::: {.card-window}
+#### Syntaxe Agnostique {.bi-code-slash}
+
+```python
+# Structure if / elif / else
+if solde >= prix:
+    valider_achat()
+elif solde > 0:
+    proposer_credit()
+else:
+    refuser_achat()
+
+# Pattern Matching (switch / match)
+match statut:
+    case "ACTIF":
+        autoriser()
+    case "SUSPENDU":
+        avertir()
+    case _:
+        bloquer()
+```
+:::::
+::::
+:::
+
+## 🔄 Boucles et Itérations
+
+Les boucles répètent un bloc de code tant qu'une condition reste vraie ou pour chaque élément d'une collection.
+
+::: {.tabs}
+##### Boucle Réactive {.bi-sliders}
+
+Ajustez le nombre d'itérations et observez l'exécution dynamique de la boucle :
+
+- [Nombre d'itérations]{.slider #inp-loop-count value=5 min=1 max=10}
+- [Mode d'interruption]{.select #inp-loop-mode options="Exécution normale,Interrompre avec Break (à i=3),Sauter avec Continue (si i est pair)" value="Exécution normale"}
+
+:::: {.metrics}
+| Itérations demandées | Étape actuelle         | Statut                  |
+| :------------------- | :--------------------- | :---------------------- |
+| ${inp-loop-count}    | [inp-loop-count]{.val} | Mode : ${inp-loop-mode} |
+::::
+
+##### Comparative Syntaxes {.bi-code-square}
+
+```python
+# 1. Boucle Pour (For) avec compteur
+for i in range(5):
+    print(f"Étape {i}")
+
+# 2. Boucle Pour Chaque (For-Each) sur collection
+animaux = ["Chat", "Chien", "Oiseau"]
+for animal in animaux:
+    print(animal)
+
+# 3. Boucle Tant Que (While)
+compteur = 0
+while compteur < 5:
+    compteur += 1
+```
+:::
+
+## ⚡ Fonctions, Méthodes & Lambdas
+
+Une **fonction** est un bloc de code réutilisable qui prend des **entrées (paramètres)**, effectue des traitements, et retourne un **résultat (valeur de retour)**.
+
+- **Fonction vs Méthode :** Une fonction est autonome. Une **méthode** est une fonction rattachée à un objet ou une classe.
+- **Fonction Anonyme / Lambda :** Une fonction courte déclarée en ligne sans nom explicite, très utilisée pour filtrer ou transformer des données.
+
+```python
+# Fonction classique
+def calculer_surface(largeur, hauteur):
+    return largeur * hauteur
+
+# Fonction Lambda (anonyme)
+multiplier_par_deux = lambda x: x * 2
+
+print(multiplier_par_deux(5))  # Résultat: 10
+```

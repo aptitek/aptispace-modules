@@ -1,0 +1,150 @@
+---
+title: "Syntaxes & Entités"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Comprendre les composantes fondamentales de tout code source : instructions, expressions, types, nommage et littéraux."
+---
+
+Lorsque l'on apprend à programmer, la tentation est grande de se focaliser sur la syntaxe spécifique d'un langage (un point-virgule ici, des crochets là). Pourtant, **tous les langages de programmation partagent la même grammaire fondamentale**.
+
+Apprendre à programmer, c'est comme apprendre la musique : une fois que l'on sait identifier une note, une clé ou une mesure, on peut lire une partition quel que soit l'instrument.
+
+## 🧱 Anatomie d'un Code Source
+
+Tout programme informatique est un assemblage de briques élémentaires appelées **entités de programmation**. Savoir les identifier instantanément est la compétence clé pour devenir agnostique du langage.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Les 5 Entités Fondamentales {.bi-box-seam}
+
+1. **Mot-clé (*Keyword*) :** Un mot réservé par le langage qui possède un sens fixe pour le compilateur ou l'interpréteur (`if`, `class`, `return`, `let`, `def`).
+2. **Identifiant (*Identifier*) :** Le nom donné par le développeur à une entité (variable, fonction, classe) pour la retrouver plus tard (`vitesse`, `calculer_total`, `Utilisateur`).
+3. **Littéral (*Literal*) :** Une valeur brute écrite directement dans le code (`42`, `"Bonjour"`, `true`, `3.14`).
+4. **Opérateur (*Operator*) :** Un symbole effectuant un calcul ou une comparaison (`+`, `-`, `==`, `&&`, `=`).
+5. **Instruction vs Expression :**
+   - Une **expression** produit une valeur (ex: `5 + 3`).
+   - Une **instruction** accomplit une action (ex: une affectation `x = 8`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Analyseur d'Entités {.bi-terminal}
+
+:::::: {.tabs}
+─────── Onglet 1 ───────
+##### Exemple Python {.bi-filetype-py}
+```python
+# Un exemple d'instruction classique
+vitesse_max = 130  # Identifiant = Littéral
+
+if vitesse_max > 110:  # Mot-clé + Expression
+    print("Vitesse élevée")  # Appel de fonction
+```
+
+─────── Onglet 2 ───────
+##### Exemple C++ {.bi-filetype-cpp}
+```cpp
+// Le même concept en C++
+const int vitesseMax = 130;
+
+if (vitesseMax > 110) {
+  std::cout << "Vitesse élevée\n";
+}
+```
+
+─────── Onglet 3 ───────
+##### Exemple Java {.bi-filetype-java}
+```java
+// Le même concept en Java
+final int vitesseMax = 130;
+
+if (vitesseMax > 110) {
+  System.out.println("Vitesse élevée");
+}
+```
+::::::
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+### 💡 Zoom sur la différence : Variable vs Constante
+
+- **Variable :** Un emplacement mémoire nommé dont la valeur peut changer au cours du temps (`vitesse = 50` puis `vitesse = 80`).
+- **Constante :** Un emplacement mémoire nommé dont la valeur est fixée dès sa création et ne peut plus être modifiée (`const PI = 3.14159`).
+:::
+
+## 🏷️ Conventions de Nommage
+
+Pour rendre le code lisible et maintenable au sein d'une équipe, les développeurs utilisent des conventions de nommage standardisées.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Les 4 Styles Majoritaires {.bi-fonts}
+
+- **camelCase :** La première lettre est en minuscule, puis chaque mot commence par une majuscule. Utilisé pour les variables et fonctions en Java, JS, C#. (ex: `vitesseMaximal`, `calculerMoyenne`).
+- **snake_case :** Les mots sont en minuscules, séparés par des tirets bas. Standard en Python et Rust. (ex: `vitesse_maximale`, `calculer_moyenne`).
+- **PascalCase :** Chaque mot commence par une majuscule. Standard universel pour les **Noms de Classes**. (ex: `CompteBancaire`, `VehiculeElectrique`).
+- **UPPER_SNAKE_CASE :** Tout en majuscules avec tirets bas. Réservé aux **Constantes globales**. (ex: `PI`, `MAX_CONNEXIONS_HTTP`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Testeur de Convention {.bi-sliders}
+
+Entrez un nom d'entité et observez la convention recommandée :
+
+- [Nom d'entité]{.text #inp-entity-name value="compte_utilisateur"}
+- [Type d'entité]{.select #inp-entity-kind options="Variable / Fonction,Nom de Classe,Constante Globale" value="Variable / Fonction"}
+
+:::::: {.metrics}
+| Entité saisie      | Type d'entité      | Convention Recommandée  |
+| :----------------- | :----------------- | :---------------------- |
+| ${inp-entity-name} | ${inp-entity-kind} | [inp-entity-kind]{.val} |
+::::::
+
+:::::
+::::
+:::
+
+## 🔮 Le Système de Types
+
+Le **type** d'une donnée définit la nature des valeurs qu'elle peut prendre et les opérations qu'on peut lui appliquer (on ne peut pas diviser une chaîne de caractères par un nombre !).
+
+::: {.tabs}
+##### Types Primitifs {.bi-layers}
+
+Les types de base présents dans presque tous les langages :
+
+| Type Agnostique               | Description                               | Exemples de Littéraux                  |
+| :---------------------------- | :---------------------------------------- | :------------------------------------- |
+| **Integer (Entier)**          | Nombre entier relatif sans virgule        | `-5`, `0`, `42`                        |
+| **Float / Double (Flottant)** | Nombre à virgule                          | `3.14`, `-0.001`, `2.0`                |
+| **Boolean (Booléen)**         | Valeur logique binaire                    | `true` / `false` (ou `True` / `False`) |
+| **String (Chaîne)**           | Séquence de caractères texte              | `"Bonjour"`, `'Aptispace'`             |
+| **Char (Caractère)**          | Caractère unique (dans certains langages) | `'a'`, `'Z'`, `'9'`                    |
+
+##### Typage Statique vs Dynamique {.bi-arrow-left-right}
+
+- **Typage Statique (C++, Java, Rust, TypeScript) :** Le type d'une variable est vérifié à la **compilation** et ne peut plus changer.
+  ```java
+  int score = 10; // score est un entier pour toujours
+                  // score = "Dix"; // ERREUR DE COMPILATION !
+  ```
+
+- **Typage Dynamique (Python, JavaScript, Ruby) :** Le type est associé à la **valeur**, pas à la variable. La variable peut recevoir d'autres types durant l'exécution.
+  ```python
+  score = 10      # score contient un entier
+  score = "Dix"   # Valide en Python !
+  ```
+
+##### Typage Explicite vs Inférait {.bi-magic}
+
+- **Explicite :** Le développeur écrit le type noir sur blanc (`int total = 0;`).
+- **Inférait (*Type Inference*) :** Le compilateur ou l'interpréteur devine le type grâce à la valeur initiale (`var total = 0;` ou `total = 0`).
+:::

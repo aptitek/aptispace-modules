@@ -1,23 +1,27 @@
+---
+title: Cv
+description: Module et exercices interactifs sur Cv.
+categories:
+- Projets
+- Vibe Coding
+---
+
 # 📄 Projet Vibe Coding : Générateur de CV "As Code"
 
-### 1. Contexte & Objectifs
+### 1.0.1. Contexte & Objectifs
 
 Fini le bricolage sur Word. L'objectif de ce projet est d'appliquer les principes d'ingénierie logicielle (KISS, DRY) à votre propre curriculum vitae en créant un pipeline de génération automatisée.
 
 Vous allez utiliser l'IA en approche "Vibe Coding" pour concevoir une chaîne de compilation transformant un fichier source (Markdown) en un PDF pixel-perfect, grâce à **Pandoc** et **WeasyPrint**. Le but est d'obtenir une architecture où le contenu est strictement séparé de la présentation, avec un code généré élégant et un environnement de build parfaitement reproductible.
 
----
-
-### 2. Modalités de Rendu
+### 1.0.2. Modalités de Rendu
 
 * **Travail :** Individuel.
 * **Livrable :** Un lien vers un dépôt **GitHub Public**.
 * **Artéfact :** Le PDF généré doit être disponible dans les *Releases* GitHub ou via les *GitHub Actions Artifacts*.
 * **⚠️ CRITÈRE ÉLIMINATOIRE :** Le PDF rendu ne doit sous aucun prétexte être généré à la main puis poussé sur Git. Il doit être le fruit exclusif de votre pipeline de code.
 
----
-
-### 3. Spécifications Techniques Obligatoires
+### 1.0.3. Spécifications Techniques Obligatoires
 
 L'utilisation de WeasyPrint et Pandoc nécessite une configuration rigoureuse. Vous devez guider vos agents IA pour respecter les standards suivants :
 
@@ -26,24 +30,17 @@ L'utilisation de WeasyPrint et Pandoc nécessite une configuration rigoureuse. V
 * **Structure :** Un template HTML/Pandoc personnalisé pour structurer le document.
 * **Style :** Une feuille de style CSS dédiée à l'impression (utilisation de `@page`, gestion des sauts de page, marges).
 
-
 * **Reproductibilité & Architecture :**
 * L'installation locale de Pandoc et des dépendances graphiques de WeasyPrint pouvant être chaotique selon les machines (notamment sur les architectures ARM/Snapdragon ou Mac M1/M2), **l'environnement de build doit être conteneurisé** (ex: `Dockerfile`) ou scripté proprement.
 * Mise en place d'un script d'automatisation (ex: `Makefile`, `taskfile` ou script bash) : une seule commande (genre `make build`) doit générer le PDF.
 
-
 * **Qualité du Code (KISS & DRY) :**
 * Le CSS généré par l'IA doit utiliser des variables (`--primary-color`, etc.) et éviter la redondance. Pas de CSS inline.
-
 
 * **CI/CD :**
 * Une GitHub Action qui compile automatiquement le Markdown en PDF à chaque `push` sur la branche principale.
 
-
-
----
-
-### 4. Le Rapport Analytique (README.md)
+### 1.0.4. Le Rapport Analytique (README.md)
 
 Puisque l'IA va générer une grande partie de la configuration technique, votre évaluation portera sur la façon dont vous l'avez pilotée. Votre README doit contenir :
 
@@ -52,13 +49,8 @@ Puisque l'IA va générer une grande partie de la configuration technique, votre
 3. **L'Ingénierie de Prompt (CSS & Print) :**
 * Comment avez-vous guidé l'IA pour générer un CSS compatible avec WeasyPrint (qui a des spécificités techniques liées à l'impression) ? Partagez vos prompts clés.
 
-
-4. **Analyse Critique & Débogage :**
+1. **Analyse Critique & Débogage :**
 * Quelles ont été les hallucinations ou les difficultés de l'IA (ex: problèmes de sauts de page, marges rognées, conflits de versions Pandoc) ? Comment avez-vous résolu ces blocages ?
-
-
-
----
 
 # 📝 Fiche de Notation (20 Points)
 
@@ -66,42 +58,40 @@ Puisque l'IA va générer une grande partie de la configuration technique, votre
 
 *Si l'une des cases ci-dessous est cochée "NON", le projet n'est pas corrigé (Note = 0 ou rattrapage).*
 
-| **Critère** | **OUI** | **NON** |
-| --- | --- | --- |
-| Présence du fichier `README.md` avec Nom et Prénom | ☐ | ☐ |
-| Le code source (Markdown, CSS, Scripts) est versionné | ☐ | ☐ |
-| Le PDF n'est pas versionné manuellement dans le dépôt | ☐ | ☐ |
-
----
+| **Critère**                                           | **OUI** | **NON** |
+| :---------------------------------------------------- | :------ | :------ |
+| Présence du fichier `README.md` avec Nom et Prénom    | ☐       | ☐       |
+| Le code source (Markdown, CSS, Scripts) est versionné | ☐       | ☐       |
+| Le PDF n'est pas versionné manuellement dans le dépôt | ☐       | ☐       |
 
 ## 📊 Grille Détaillée
 
-### 1. Architecture & Reproductibilité (6 pts)
+### 2.2.1. Architecture & Reproductibilité (6 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Séparation Contenu/Forme** | Le Markdown est propre, sémantique, et ne contient pas de balises HTML ou de style "en dur". | **/ 2** |
-| **Pipeline de Build** | La commande de compilation (ex: `Makefile`) est simple (KISS) et fonctionne sans erreur. | **/ 2** |
-| **Isolation** | L'environnement est documenté et/ou isolé (Docker) pour éviter les conflits locaux d'architecture. | **/ 2** |
+| **Critère**                  | **Détail**                                                                                         | **Note** |
+| :--------------------------- | :------------------------------------------------------------------------------------------------- | :------- |
+| **Séparation Contenu/Forme** | Le Markdown est propre, sémantique, et ne contient pas de balises HTML ou de style "en dur".       | **/ 2**  |
+| **Pipeline de Build**        | La commande de compilation (ex: `Makefile`) est simple (KISS) et fonctionne sans erreur.           | **/ 2**  |
+| **Isolation**                | L'environnement est documenté et/ou isolé (Docker) pour éviter les conflits locaux d'architecture. | **/ 2**  |
 
-### 2. Design & Maîtrise de WeasyPrint (5 pts)
+### 2.2.2. Design & Maîtrise de WeasyPrint (5 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Rendu Visuel** | Le CV généré est professionnel, lisible, et l'UI est soignée (polices, espacements). | **/ 2** |
-| **Code CSS (DRY)** | Le CSS est propre, factorisé (variables), et tire parti des règles spécifiques à l'impression (`@page`). | **/ 3** |
+| **Critère**        | **Détail**                                                                                               | **Note** |
+| :----------------- | :------------------------------------------------------------------------------------------------------- | :------- |
+| **Rendu Visuel**   | Le CV généré est professionnel, lisible, et l'UI est soignée (polices, espacements).                     | **/ 2**  |
+| **Code CSS (DRY)** | Le CSS est propre, factorisé (variables), et tire parti des règles spécifiques à l'impression (`@page`). | **/ 3**  |
 
-### 3. DevOps & Automatisation (4 pts)
+### 2.2.3. DevOps & Automatisation (4 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Propreté Git** | `.gitignore` présent (exclut les fichiers PDF locaux générés), messages de commit clairs. | **/ 1** |
-| **CI/CD** | Une GitHub Action compile le projet à chaque push et met à disposition le PDF en tant qu'artéfact. | **/ 3** |
+| **Critère**      | **Détail**                                                                                         | **Note** |
+| :--------------- | :------------------------------------------------------------------------------------------------- | :------- |
+| **Propreté Git** | `.gitignore` présent (exclut les fichiers PDF locaux générés), messages de commit clairs.          | **/ 1**  |
+| **CI/CD**        | Une GitHub Action compile le projet à chaque push et met à disposition le PDF en tant qu'artéfact. | **/ 3**  |
 
-### 4. Post-Mortem Vibe Coding (5 pts)
+### 2.2.4. Post-Mortem Vibe Coding (5 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Qualité du Rapport** | Le README est clair, sans fautes, et présente bien le projet. | **/ 1** |
-| **Analyse des Échecs IA** | La section sur le débogage (notamment les spécificités de Pandoc/Weasyprint) montre que l'étudiant a compris le code généré. | **/ 2** |
-| **Ingénierie de Prompt** | Les instructions données à l'IA pour forcer l'usage du CSS d'impression ou configurer le CI/CD sont pertinentes. | **/ 2** |
+| **Critère**               | **Détail**                                                                                                                   | **Note** |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- | :------- |
+| **Qualité du Rapport**    | Le README est clair, sans fautes, et présente bien le projet.                                                                | **/ 1**  |
+| **Analyse des Échecs IA** | La section sur le débogage (notamment les spécificités de Pandoc/Weasyprint) montre que l'étudiant a compris le code généré. | **/ 2**  |
+| **Ingénierie de Prompt**  | Les instructions données à l'IA pour forcer l'usage du CSS d'impression ou configurer le CI/CD sont pertinentes.             | **/ 2**  |

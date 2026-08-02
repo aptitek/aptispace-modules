@@ -12,3 +12,4 @@ lab/**/*.html
 *.min.css
 *_files
 legacy/
+archive/

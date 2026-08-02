@@ -1,5 +1,9 @@
 ---
-title: "Création de Palette Graphique"
+title: Création de Palette Graphique
+categories:
+- UI/UX Design
+- Design System
+description: Module et exercices interactifs sur Création de Palette Graphique.
 ---
 
 Le design d'une interface commence par le choix de ses teintes. Une palette de couleurs cohérente n'est pas qu'un choix artistique : c'est un outil ergonomique majeur qui hiérarchise l'information, guide le regard et renforce l'identité visuelle de votre application.

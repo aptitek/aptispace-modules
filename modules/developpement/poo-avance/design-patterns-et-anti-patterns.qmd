@@ -1,0 +1,133 @@
+---
+title: "Design Patterns & Anti-Patterns"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Reconnaître et corriger les anti-patterns courants tout en tirant parti des patterns de conception éprouvés (Factory, Strategy, Singleton, Observer)."
+---
+
+Dans le monde de l'architecture logicielle, les développeurs rencontrent régulièrement les mêmes types de défis. Au fil des décennies, deux catégories de solutions ont été formalisées :
+
+1. **Les Anti-Patterns :** Des pièges de conception séduisants au premier abord mais qui détruisent la maintenabilité du code.
+2. **Les Design Patterns (Patrons de Conception) :** Des solutions éprouvées et élégantes aux problèmes d'architecture récurrents.
+
+## ⚠️ Les Anti-Patterns : Les Pièges à Éviter
+
+Un **anti-pattern** est une réponse courante à un problème qui produit des conséquences négatives à long terme.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### 1.0.1. Le God Object (La Classe Dieu) {.bi-exclamation-octagon}
+
+Une classe géante qui fait tout, possède des milliers de lignes de code et connaît l'intégralité du système.
+
+- **Danger :** Modifier la moindre ligne risque d'impacter tout le logiciel.
+- **Remède :** Appliquer le principe **SRP** pour découper la classe en sous-composants spécialisés.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### 1.0.2. Nombres Magiques & Code Spaghetti {.bi-signpost-split}
+
+- **Nombres Magiques (*Magic Numbers*) :** Utiliser des valeurs brutes inexpliquées dans les calculs (ex: `if x > 86400:` au lieu d'utiliser une constante `SECONDES_PAR_JOUR = 86400`).
+- **Code Spaghetti :** Un flux d'exécution confus sans structure claire avec des sauts désordonnés.
+:::::
+::::
+:::
+
+## 🛠️ Les Design Patterns Essentiels
+
+Les Design Patterns sont classés en trois grandes familles : **Créationnels**, **Structurels** et **Comportementaux**.
+
+::: {.tabs}
+##### 2.0.0.1. Factory (Fabrique) {.bi-box-seam}
+
+**Famille : Créationnel**
+Délègue l'instanciation des objets à une classe dédiée pour ne pas coupler le code principal aux classes concrètes.
+
+```python
+class FabriqueVehicule:
+    @staticmethod
+    def creer_vehicule(type_vehicule):
+        if type_vehicule == "voiture":
+            return Voiture()
+        elif type_vehicule == "velo":
+            return Velo()
+        raise ValueError("Type inconnu")
+```
+
+##### 2.0.0.2. Strategy (Stratégie) {.bi-gear}
+
+**Famille : Comportemental**
+Définit une famille d'algorithmes, encapsule chacun d'eux et les rend interchangeables dynamiquement à l'exécution.
+
+```python
+# Permet de changer de mode de paiement à la volée !
+class Panier:
+    def __init__(self, strategie_paiement):
+        self.strategie_paiement = strategie_paiement
+
+    def payer(self, montant):
+        self.strategie_paiement.payer(montant)
+```
+
+##### 2.0.0.3. Singleton {.bi-key}
+
+**Famille : Créationnel**
+Garantit qu'une classe n'a qu'**une seule instance** en mémoire et fournit un point d'accès global à cette instance (ex: Gestionnaire de Connexion Base de Données).
+
+##### 2.0.0.4. Observer (Observateur) {.bi-bell}
+
+**Famille : Comportemental**
+Définit une relation un-à-plusieurs : lorsqu'un objet change d'état, tous ses abonnés sont automatiquement notifiés et mis à jour.
+:::
+
+## 🌐 Nuage de Mots-Clés de l'Architecture
+
+Voici un aperçu dynamique des concepts clés abordés dans la conception orientée objet :
+
+::: {#wc-patterns-container .chart-container-sm}
+:::
+
+```{ojs}
+//| echo: false
+renderWCPatterns = {
+  createWordCloud("wc-patterns-container",
+    ["Factory", "Strategy", "Singleton", "Observer", "Builder",
+     "Encapsulation", "Polymorphisme", "Héritage", "Abstraction", "Interface",
+     "DRY", "KISS", "YAGNI", "SOLID", "CleanCode"],
+    { radius: 85, maxSpeed: "slow", initSpeed: "slow" }
+  )
+}
+```
+
+## 🔄 Interaction entre Composants (Pattern Observer)
+
+Visualisation du réseau d'événements et de notification du pattern Observer :
+
+::: {#sm-observer-demo .chart-container-md}
+:::
+
+```{ojs}
+//| echo: false
+smObsNodes = [
+  { id: "Sujet", label: "Émetteur (Sujet)", status: "current", shape: "rounded rect" },
+  { id: "Obs1", label: "Observateur A", status: "past", shape: "circle" },
+  { id: "Obs2", label: "Observateur B", status: "past", shape: "circle" },
+  { id: "Obs3", label: "Observateur C", status: "default", shape: "circle" }
+]
+
+smObsLinks = [
+  { source: "Sujet", target: "Obs1", label: "Notifier", condition: true },
+  { source: "Sujet", target: "Obs2", label: "Notifier", condition: true },
+  { source: "Sujet", target: "Obs3", label: "Abonné" }
+]
+
+renderSMObs = renderStateMachineGraph("#sm-observer-demo", { nodes: smObsNodes, links: smObsLinks }, {
+  nodeRadius: 22,
+  fontSize: 9,
+  height: 280
+})
+```

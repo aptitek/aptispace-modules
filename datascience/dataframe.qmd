@@ -1,5 +1,9 @@
 ---
-title: "📊 DataFrame"
+title: 📊 DataFrame
+categories:
+- Data Science
+- Data & IA
+description: Module et exercices interactifs sur 📊 DataFrame.
 ---
 
 Un **DataFrame** est une table organisée pour enquêter sur des données.

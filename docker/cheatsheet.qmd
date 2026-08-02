@@ -1,0 +1,130 @@
+---
+title: ⚡ Aide-Mémoire
+categories:
+- Docker
+- Aide-Mémoire
+description: Synthèse des commandes Docker indispensables.
+---
+
+Cet aide-mémoire rassemble les commandes Docker les plus utilisées au quotidien par les développeurs et administrateurs système, classées par thématique avec leurs options courantes.
+
+::: {.card-window .mb-4}
+#### Recherche Rapide par Catégorie {.bi-search}
+
+:::: {.tabs .cheatsheet-tabset}
+##### Conteneurs {.bi-box-seam}
+Gestion du cycle de vie des conteneurs.
+
+##### Images {.bi-layers}
+Construction, téléchargement et suppression des images.
+
+##### Logs & Diagnostic {.bi-journal-check}
+Inspection, débogage et surveillance des performances.
+
+##### Volumes & Réseaux {.bi-hdd-rack}
+Persistance et communication inter-conteneurs.
+
+##### Nettoyage {.bi-broom}
+Purger l'espace disque encombré.
+::::
+:::
+
+## 🛠️ Générateur Interactif de Commande `docker run`
+
+Configurez les drapeaux (*flags*) ci-dessous pour construire en temps réel la commande de lancement optimale pour votre conteneur :
+
+::: {.card-window .mb-4}
+#### Constructeur Interactif de Commande `docker run` {.bi-gear-fill}
+
+:::: {.tabs}
+##### Configuration des Flags {.bi-sliders}
+
+- [Exécuter en arrière-plan (-d / detached)]{.checkbox #opt_detached checked=true}
+- [Supprimer le conteneur à l'arrêt (--rm)]{.checkbox #opt_rm checked=false}
+- [Attribuer un nom personnalisé (--name mon-app)]{.checkbox #opt_name checked=true}
+- [Rediriger un port (-p 8080:80)]{.checkbox #opt_port checked=true}
+- [Monter un volume (-v $PWD/app:/app)]{.checkbox #opt_vol checked=false}
+- [Ajouter une variable d'environnement (-e ENV=prod)]{.checkbox #opt_env checked=false}
+
+[Image Docker]{.select #opt_image options="nginx:alpine,postgres:15,node:18-alpine,redis:7" value="nginx:alpine"}
+::::
+
+:::: {#cmd-builder-terminal .terminal}
+#### Commande Générée {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_cmdBuilder = {
+  opt_detached;
+  opt_rm;
+  opt_name;
+  opt_port;
+  opt_vol;
+  opt_env;
+  opt_image;
+
+  let cmd = "docker run";
+  if (opt_detached) cmd += " -d";
+  if (opt_rm) cmd += " --rm";
+  if (opt_name) cmd += " --name mon-app";
+  if (opt_port) cmd += " -p 8080:80";
+  if (opt_vol) cmd += " -v $PWD/app:/app";
+  if (opt_env) cmd += " -e ENV=production";
+  cmd += " " + opt_image;
+
+  const term = aptitek.createTerminal("#cmd-builder-terminal", { defaultPrompt: false, showCursor: false });
+  term.writeLine("Copiez la commande générée :", { type: "info" });
+  term.writeLine(cmd, { type: "success" });
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🚀 1. Gestion des Conteneurs
+
+| Commande         | Description                                        | Exemple / Options                         |
+| :--------------- | :------------------------------------------------- | :---------------------------------------- |
+| `docker run`     | Crée et démarre un nouveau conteneur.              | `docker run -d -p 80:80 --name web nginx` |
+| `docker ps`      | Liste les conteneurs actifs (*Running*).           | `docker ps`                               |
+| `docker ps -a`   | Liste **tous** les conteneurs (actifs et arrêtés). | `docker ps -a`                            |
+| `docker stop`    | Arrête proprement un conteneur (*SIGTERM*).        | `docker stop mon-conteneur`               |
+| `docker start`   | Redémarre un conteneur arrêté.                     | `docker start mon-conteneur`              |
+| `docker restart` | Redémarre un conteneur en cours d'exécution.       | `docker restart mon-conteneur`            |
+| `docker kill`    | Force l'arrêt immédiat (*SIGKILL*).                | `docker kill mon-conteneur`               |
+| `docker rm`      | Supprime un conteneur arrêté.                      | `docker rm mon-conteneur`                 |
+| `docker rm -f`   | Force l'arrêt et la suppression d'un conteneur.    | `docker rm -f mon-conteneur`              |
+
+## 📦 2. Gestion des Images
+
+| Commande         | Description                                   | Exemple                              |
+| :--------------- | :-------------------------------------------- | :----------------------------------- |
+| `docker build`   | Construit une image à partir d'un Dockerfile. | `docker build -t mon-app:1.0 .`      |
+| `docker images`  | Liste les images stockées localement.         | `docker images`                      |
+| `docker pull`    | Télécharge une image depuis Docker Hub.       | `docker pull postgres:15`            |
+| `docker push`    | Envoie une image locale vers un Registry.     | `docker push mon-pseudo/mon-app:1.0` |
+| `docker rmi`     | Supprime une image locale.                    | `docker rmi nginx:latest`            |
+| `docker tag`     | Crée un alias / tag pour une image.           | `docker tag app:latest app:v1.0`     |
+| `docker history` | Affiche les couches d'une image.              | `docker history mon-app`             |
+
+## 🔍 3. Logs, Inspection & Diagnostic
+
+| Commande          | Description                                     | Exemple                                   |
+| :---------------- | :---------------------------------------------- | :---------------------------------------- |
+| `docker logs`     | Affiche les journaux d'un conteneur.            | `docker logs mon-conteneur`               |
+| `docker logs -f`  | Suit les logs en temps réel (*follow*).         | `docker logs -f --tail 100 mon-conteneur` |
+| `docker exec -it` | Ouvre un shell interactif dans le conteneur.    | `docker exec -it mon-conteneur bash`      |
+| `docker inspect`  | Rend les métadonnées JSON complètes d'un objet. | `docker inspect mon-conteneur`            |
+| `docker stats`    | Affiche la consommation CPU/RAM en direct.      | `docker stats`                            |
+| `docker top`      | Affiche les processus internes d'un conteneur.  | `docker top mon-conteneur`                |
+
+## 🧹 4. Maintenance et Nettoyage de l'Espace Disque
+
+| Commande                           | Action                                                 | Niveau de Danger  |
+| :--------------------------------- | :----------------------------------------------------- | :---------------- |
+| `docker system df`                 | Affiche l'utilisation disque détaillée par Docker.     | 🟢 Sans danger     |
+| `docker image prune`               | Purge les images non étiquetées (*dangling*).          | 🟢 Sans danger     |
+| `docker container prune`           | Purge tous les conteneurs arrêtés.                     | 🟡 Prudence        |
+| `docker volume prune`              | Purge tous les volumes non rattachés.                  | 🟠 Attention       |
+| `docker system prune -a --volumes` | **Purger TOUT** ce qui n'est pas utilisé actuellement. | 🔴 Grand Nettoyage |

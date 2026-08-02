@@ -1,5 +1,9 @@
 ---
-title: "⚡ Skills de Codage"
+title: ⚡ Skills de Codage
+categories:
+- LLM & IA
+- Deep Learning
+description: Module et exercices interactifs sur ⚡ Skills de Codage.
 ---
 
 Dans le Vibe Coding, le développeur ne tape plus de code ligne par ligne — il transmet une *intention* et l'agent exécute. Mais déléguer sans contraintes produit un code fonctionnel... et architecturalement chaotique. La clé : deux couches complémentaires.

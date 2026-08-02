@@ -1,0 +1,226 @@
+---
+title: 🌐 Ports & Réseaux
+categories:
+- Docker
+- Système & Réseau
+description: Redirection de ports, réseaux bridge et communication entre conteneurs.
+---
+
+L'un des avantages majeurs de la conteneurisation est l'**isolation réseau**. Par défaut, un conteneur vit dans son propre espace de noms réseau (*Network Namespace*) et ne possède aucune exposition vers le monde extérieur ou les autres conteneurs.
+
+Pour permettre la communication, Docker fournit des pilotes de réseau (*Network Drivers*) et un système de redirection de ports (*Port Mapping*).
+
+## 🔌 Le Mapping de Ports (`-p`)
+
+Par défaut, si votre application dans un conteneur écoute sur le port `80`, ce port est totalement inaccessible depuis votre ordinateur hôte.
+
+Pour rendre ce service accessible, il faut créer une passerelle avec l'option `-p` (*publish*) :
+
+```bash
+# Syntaxe : -p PORTHÔTE:PORTCONTENEUR
+docker run -d -p 8080:80 --name mon-serveur nginx
+
+```
+
+::: {.callout-note collapse="true"}
+## 🛠️ Que fait Docker en arrière-plan ?
+
+Lorsque vous exécutez `-p 8080:80` :
+
+1. Docker configure une règle **iptables** ou démarre un processus léger appelé `docker-proxy`.
+2. Tout le trafic arrivant sur le port `8080` de l'interface réseau de votre ordinateur est intercepté.
+3. Le trafic est redirigé vers l'adresse IP interne du conteneur sur son port `80`.
+:::
+
+### 🧪 Testeur Interactif de Redirection de Ports
+
+Testez l'envoi de requêtes HTTP avec différentes configurations de redirection de ports :
+
+::: {.card-window .mb-4}
+#### Simulateur de Redirection HTTP & Ports {.bi-router}
+
+:::: {.tabs}
+##### Configuration des Ports {.bi-sliders}
+
+Choisissez la règle de port-mapping à simuler :
+[Configuration -p]{.select #port_rule_select options="-p 8080:80 (Standard Web),-p 3000:3000 (Node.js/React),-p 5432:5432 (PostgreSQL),Pas de redirection (Port 80 masqué)" value="-p 8080:80 (Standard Web)"}
+
+##### [Envoyer Requête HTTP (curl)]{.btn .bi-send-fill #btnsendhttp} {.tab-right .no-pane}
+::::
+
+:::: {#port-sim-terminal .terminal}
+#### Console Réseau & Proxy Docker {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_portTester = {
+  port_rule_select;
+  btn_send_http;
+
+  const term = aptitek.createTerminal("#port-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (port_rule_select.includes("8080:80")) {
+    term.writeLine("$ curl -I http://localhost:8080", { type: "info" });
+    if (btn_send_http > 0) {
+      term.writeLine("[+] docker-proxy intercepts request on host 0.0.0.0:8080", { type: "muted" });
+      term.writeLine("[+] NAT Forwarding -> Container IP 172.17.0.2:80", { type: "info" });
+      term.writeLine("HTTP/1.1 200 OK\nServer: nginx/1.25.3\nContent-Type: text/html", { type: "success" });
+      term.writeLine("✅ Connexion réussie via le port hôte 8080 !", { type: "success" });
+    } else {
+      term.writeLine("Règle configurée : http://localhost:8080 -> Conteneur:80. Cliquez sur 'Envoyer Requête HTTP'.", { type: "muted" });
+    }
+  } else if (port_rule_select.includes("3000:3000")) {
+    term.writeLine("$ curl -I http://localhost:3000", { type: "info" });
+    if (btn_send_http > 0) {
+      term.writeLine("[+] NAT Forwarding -> Container IP 172.17.0.3:3000", { type: "info" });
+      term.writeLine("HTTP/1.1 200 OK\nX-Powered-By: Express", { type: "success" });
+      term.writeLine("✅ Serveur Node.js joint avec succès !", { type: "success" });
+    } else {
+      term.writeLine("Règle configurée : http://localhost:3000 -> Conteneur:3000.", { type: "muted" });
+    }
+  } else if (port_rule_select.includes("5432:5432")) {
+    term.writeLine("$ psql -h localhost -p 5432 -U postgres", { type: "info" });
+    if (btn_send_http > 0) {
+      term.writeLine("[+] TCP Handshake successful on localhost:5432", { type: "info" });
+      term.writeLine("PostgreSQL 15.4 (Debian) - Connected to container ma-db", { type: "success" });
+    } else {
+      term.writeLine("Règle configurée : Port DB 5432 exposé sur l'hôte.", { type: "muted" });
+    }
+  } else {
+    term.writeLine("$ curl -I http://localhost:8080", { type: "info" });
+    if (btn_send_http > 0) {
+      term.writeLine("curl: (7) Failed to connect to localhost port 8080: Connection refused", { type: "danger" });
+      term.writeLine("❌ ÉCHEC : Aucun port hôte n'a été publié (-p). Le conteneur écoute sur 80 en privé.", { type: "danger" });
+    } else {
+      term.writeLine("Aucune redirection configurée. Testez la connexion pour observer l'échec.", { type: "warning" });
+    }
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🌐 Les Drivers Réseau Docker
+
+Docker propose plusieurs pilotes réseau préconfigurés adaptés à des besoins d'isolation différents :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.1. Bridge (Par défaut) {.bi-diagram-2}
+Crée un réseau virtuel sous forme de sous-réseau privé (`172.17.0.0/16`).
+
+- **Principe :** Chaque conteneur reçoit une IP interne privée.
+- **Idéal pour :** La majorité des conteneurs s'exécutant sur un même hôte.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.2. Host {.bi-ethernet}
+Supprime l'isolation réseau entre le conteneur et la machine hôte.
+
+- **Principe :** Le conteneur utilise directement l'adresse IP et la pile réseau de l'hôte.
+- **Idéal pour :** Des performances réseau maximales (pas de surcoût NAT).
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### 3.0.3. None {.bi-slash-circle}
+Désactive intégralement toutes les interfaces réseau du conteneur.
+
+- **Principe :** Seule l'interface de boucle locale `loopback (127.0.0.1)` existe.
+- **Idéal pour :** Les traitements ultrasécurisés ou hors-ligne (batchs, calculs isolés).
+:::::
+::::
+:::
+
+## 📡 Topology & Communication Inter-Conteneurs
+
+Visualisez comment le trafic réseau circule entre l'ordinateur hôte et plusieurs conteneurs interconnectés :
+
+::: {.card-window .mb-4}
+#### Topologie Réseau & Routage Docker {.bi-diagram-3}
+
+:::: {#network-topology-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_netTopology = {
+  const nodes = [
+    { id: "client", label: "🌐 Client (Navigateur)", shape: "rounded rect", fx: 60, fy: 150 },
+    { id: "host", label: "🖥️ Machine Hôte (Port 8080)", shape: "rounded rect", fx: 250, fy: 150 },
+    { id: "bridge", label: "🌉 Docker Bridge (docker0)", shape: "circle", fx: 430, fy: 150 },
+    { id: "web", label: "📦 Conteneur Web (172.18.0.2:80)", shape: "pill", fx: 610, fy: 80 },
+    { id: "db", label: "📦 Conteneur DB (172.18.0.3:5432)", shape: "pill", fx: 610, fy: 220 }
+  ];
+
+  const links = [
+    { source: "client", target: "host", label: "HTTP :8080" },
+    { source: "host", target: "bridge", label: "docker-proxy / iptables" },
+    { source: "bridge", target: "web", label: "Forward -> :80" },
+    { source: "web", target: "db", label: "DNS interne: 'db_service'" }
+  ];
+
+  aptitek.renderStateMachineGraph("#network-topology-graph", { nodes, links }, {
+    nodeRadius: 26,
+    fontSize: 10,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 330
+  });
+}
+```
+
+## 💡 Le Réseau Personnalisé & la Résolution DNS
+
+Dans le réseau `bridge` par défaut, les conteneurs ne peuvent communiquer entre eux que par leur adresse IP. Or, les IP des conteneurs changent à chaque redémarrage !
+
+Pour résoudre ce problème, **créez un réseau personnalisé** (*User-Defined Bridge*) :
+
+```bash
+# 1. Créer un réseau bridge personnalisé
+docker network create mon-reseau
+
+# 2. Lancer la base de données sur ce réseau avec un nom
+docker run -d --name ma-db --network mon-reseau postgres:15
+
+# 3. Lancer l'application web sur le MÊME réseau
+docker run -d --name mon-app --network mon-reseau -p 3000:3000 mon-app-image
+
+```
+
+::: {.callout-success}
+## 🎯 Le DNS Interne Automatique
+Sur un réseau personnalisé, Docker active un **serveur DNS embarqué**. L'application `mon-app` peut se connecter à la base de données simplement en utilisant le nom du conteneur comme hôte : `postgres://ma-db:5432/ma_base`. Plus besoin de hardcoder des IP !
+:::
+
+## 🛠️ Commandes de Gestion Réseau CLI
+
+```bash
+# Lister tous les réseaux Docker existants
+docker network ls
+
+# Créer un nouveau réseau bridge
+docker network create reseau-prod
+
+# Inspecter les conteneurs connectés à un réseau et leurs adresses IP
+docker network inspect reseau-prod
+
+# Connecter un conteneur déjà existant à un réseau
+docker network connect reseau-prod mon-serveur
+
+# Déconnecter un conteneur d'un réseau
+docker network disconnect reseau-prod mon-serveur
+
+# Supprimer un réseau (doit être vide)
+docker network rm reseau-prod
+
+```

@@ -1,6 +1,10 @@
 ---
-title: "Le Design Token"
-subtitle: "L'atome de liaison entre Design et Tech"
+title: Le Design Token
+subtitle: L'atome de liaison entre Design et Tech
+categories:
+- UI/UX Design
+- Design System
+description: Module et exercices interactifs sur Le Design Token.
 ---
 
 Un **design token** est un nom symbolique (un alias) qui stocke une valeur graphique brute. C'est le contrat immuable entre le Design et la Tech, éliminant définitivement les valeurs codées en dur (*hard-coding*).

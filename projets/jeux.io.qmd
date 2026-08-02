@@ -1,23 +1,27 @@
+---
+title: Jeux.Io
+description: Module et exercices interactifs sur Jeux.Io.
+categories:
+- Projets
+- Vibe Coding
+---
+
 # 🎮 Projet Vibe Coding : Développement Agentique d'un Jeu Multijoueur ".io"
 
-### 1. Contexte & Objectifs
+### 1.0.1. Contexte & Objectifs
 
 Bienvenue dans l'ère du **Vibe Coding**. L'objectif de ce projet n'est pas seulement d'écrire du code, mais de **diriger des agents IA** (Cursor, Copilot, Cline, etc.) pour concevoir, architecturer et déployer une application complexe de A à Z.
 
 Vous allez créer un jeu web multijoueur en temps réel inspiré des classiques ".io" (comme *Agar.io*, *Slither.io*). Le défi ? Obtenir de l'IA un code **élégant, modulaire et testé**, en la guidant avec des pratiques d'ingénierie logicielle strictes.
 
----
-
-### 2. Modalités de Rendu
+### 1.0.2. Modalités de Rendu
 
 * **Groupe :** 1 à 3 personnes maximum.
 * **Livrable :** Un lien vers un dépôt **GitHub Public**.
 * **Déploiement :** Une URL de production accessible (le jeu doit être jouable en ligne).
 * **Organisation :** Utilisez des Labels Git (ex: `ui`, `network`, `engine`, `docs`) sur vos Issues/Pull Requests pour structurer votre développement.
 
----
-
-### 3. Spécifications Techniques Obligatoires
+### 1.0.3. Spécifications Techniques Obligatoires
 
 L'IA a tendance à produire du "code spaghetti" si elle n'est pas bien guidée. Vous devez lui imposer les standards suivants tout au long du développement :
 
@@ -26,16 +30,13 @@ L'IA a tendance à produire du "code spaghetti" si elle n'est pas bien guidée. 
 * **Design Atomique :** Pour l'interface entourant le jeu (Menus, HUD, Leaderboard, Modales).
 * **Expérience Utilisateur :** UI propre, responsive, et retours visuels clairs.
 
-
 * **Qualité du Code (Clean Code) :**
 * **SRP (Single Responsibility Principle) :** Chaque classe/fonction ne fait qu'une chose (séparer la logique de rendu, la logique physique et la logique réseau).
 * **DRY (Don't Repeat Yourself) & KISS (Keep It Simple, Stupid) :** Code concis, élégant et sans complexité accidentelle.
 
-
 * **Moteur & Multijoueur :**
 * Boucle de jeu fluide, gestion de la physique et des entités (joueurs, bonus/malus).
 * Synchronisation en temps réel entre les clients (WebSockets, WebRTC, ou backend serverless adapté).
-
 
 * **DevOps & QA :**
 * **Linting & Formatage :** Présence d'outils configurés (Prettier, ESLint, etc.).
@@ -43,11 +44,7 @@ L'IA a tendance à produire du "code spaghetti" si elle n'est pas bien guidée. 
 * **Soit CI/CD :** Pipeline automatisé déployant le client sur **GitHub Pages** ou **Cloudflare Pages**.
 * **Soit Sécurité & Robustesse :** Audit de sécurité du code généré par l'IA.
 
-
-
----
-
-### 4. Le Rapport Analytique (README.md)
+### 1.0.4. Le Rapport Analytique (README.md)
 
 Le README est le livrable central de votre démarche "Vibe Coding". Il doit être un véritable **rapport d'autopsie** de votre collaboration avec l'IA :
 
@@ -57,18 +54,12 @@ Le README est le livrable central de votre démarche "Vibe Coding". Il doit êtr
 * Quels serveurs **MCP (Model Context Protocol)** avez-vous activés ou développés pour donner du contexte à l'IA ?
 * Quelles "Skills" ou instructions système (fichiers `.cursorrules`) avez-vous fournies pour imposer vos choix architecturaux ?
 
-
-3. **Ingénierie de Prompt :**
+1. **Ingénierie de Prompt :**
 * Partagez 2 ou 3 "Master Prompts" qui ont permis de débloquer une architecture complexe.
 
-
-4. **Analyse Critique & Hallucinations :**
+1. **Analyse Critique & Hallucinations :**
 * **Où l'IA a-t-elle brillé ?**
 * **Où l'IA s'est-elle trompée ?** Documentez les erreurs d'architecture, les hallucinations, le code spaghetti généré qu'il a fallu refactoriser. Comment avez-vous repris le contrôle ?
-
-
-
----
 
 # 📝 Fiche de Notation (20 Points)
 
@@ -76,42 +67,40 @@ Le README est le livrable central de votre démarche "Vibe Coding". Il doit êtr
 
 *Si l'une des cases ci-dessous est cochée "NON", le projet n'est pas corrigé (Note = 0 ou rattrapage).*
 
-| **Critère** | **OUI** | **NON** |
-| --- | --- | --- |
-| Présence du fichier `README.md` avec Noms et Prénoms clairs | ☐ | ☐ |
-| Les interactions multijoueurs (min. 2 joueurs) fonctionnent | ☐ | ☐ |
-
----
+| **Critère**                                                 | **OUI** | **NON** |
+| :---------------------------------------------------------- | :------ | :------ |
+| Présence du fichier `README.md` avec Noms et Prénoms clairs | ☐       | ☐       |
+| Les interactions multijoueurs (min. 2 joueurs) fonctionnent | ☐       | ☐       |
 
 ## 📊 Grille Détaillée
 
-### 1. Architecture & Qualité du Code (6 pts)
+### 2.2.1. Architecture & Qualité du Code (6 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **UI & Design Atomique** | Interface soignée. Utilisation de Design Tokens et séparation claire des composants selon l'Atomic Design. | **/ 2** |
-| **SRP, DRY, KISS** | Le code métier est modulaire, découplé (rendu/réseau/physique) et sans répétitions. Le code généré est "élégant". | **/ 3** |
-| **Propreté & Linting** | Le code est linté, formaté et exempt de fichiers inutiles dans le dépôt. | **/ 1** |
+| **Critère**              | **Détail**                                                                                                        | **Note** |
+| :----------------------- | :---------------------------------------------------------------------------------------------------------------- | :------- |
+| **UI & Design Atomique** | Interface soignée. Utilisation de Design Tokens et séparation claire des composants selon l'Atomic Design.        | **/ 2**  |
+| **SRP, DRY, KISS**       | Le code métier est modulaire, découplé (rendu/réseau/physique) et sans répétitions. Le code généré est "élégant". | **/ 3**  |
+| **Propreté & Linting**   | Le code est linté, formaté et exempt de fichiers inutiles dans le dépôt.                                          | **/ 1**  |
 
-### 2. Produit Final & Réseau (5 pts)
+### 2.2.2. Produit Final & Réseau (5 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Gameplay .io** | La boucle de jeu est fluide et les règles sont fonctionnelles (déplacements, collisions, score). | **/ 2** |
-| **Synchronisation Multi** | La gestion du temps réel est robuste (latence gérée, pas de désynchronisation majeure entre les clients). | **/ 3** |
+| **Critère**               | **Détail**                                                                                                | **Note** |
+| :------------------------ | :-------------------------------------------------------------------------------------------------------- | :------- |
+| **Gameplay .io**          | La boucle de jeu est fluide et les règles sont fonctionnelles (déplacements, collisions, score).          | **/ 2**  |
+| **Synchronisation Multi** | La gestion du temps réel est robuste (latence gérée, pas de désynchronisation majeure entre les clients). | **/ 3**  |
 
-### 3. DevOps & Automatisation (4 pts)
+### 2.2.3. DevOps & Automatisation (4 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Tests Automatisés** | Présence de tests pertinents (unitaires ou E2E) générés/validés par l'IA sur la logique critique. | **/ 2** |
-| **Soit CI/CD** | Le pipeline de déploiement (GitHub Actions vers Pages/Cloudflare) est fonctionnel et s'exécute à chaque push. | **/ 2** |
-| **OU Sinon** | **Sécurité & Robustesse :** Audit de sécurité du code généré par l'IA. | **2 pts** |
+| **Critère**           | **Détail**                                                                                                    | **Note**  |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------ | :-------- |
+| **Tests Automatisés** | Présence de tests pertinents (unitaires ou E2E) générés/validés par l'IA sur la logique critique.             | **/ 2**   |
+| **Soit CI/CD**        | Le pipeline de déploiement (GitHub Actions vers Pages/Cloudflare) est fonctionnel et s'exécute à chaque push. | **/ 2**   |
+| **OU Sinon**          | **Sécurité & Robustesse :** Audit de sécurité du code généré par l'IA.                                        | **2 pts** |
 
-### 4. Post-Mortem Vibe Coding (5 pts)
+### 2.2.4. Post-Mortem Vibe Coding (5 pts)
 
-| **Critère** | **Détail** | **Note** |
-| --- | --- | --- |
-| **Configuration Agentique** | Explication claire des serveurs MCP, Rulesets et de la stratégie de guidage utilisée. | **/ 1.5** |
-| **Analyse des Échecs IA** | La section sur les erreurs de l'IA (hallucinations, refactoring nécessaire) est détaillée, critique et pertinente. | **/ 2** |
-| **Ingénierie de Prompt** | Les prompts présentés montrent une réelle capacité à formuler des contraintes techniques complexes. | **/ 1.5** |
+| **Critère**                 | **Détail**                                                                                                         | **Note**  |
+| :-------------------------- | :----------------------------------------------------------------------------------------------------------------- | :-------- |
+| **Configuration Agentique** | Explication claire des serveurs MCP, Rulesets et de la stratégie de guidage utilisée.                              | **/ 1.5** |
+| **Analyse des Échecs IA**   | La section sur les erreurs de l'IA (hallucinations, refactoring nécessaire) est détaillée, critique et pertinente. | **/ 2**   |
+| **Ingénierie de Prompt**    | Les prompts présentés montrent une réelle capacité à formuler des contraintes techniques complexes.                | **/ 1.5** |

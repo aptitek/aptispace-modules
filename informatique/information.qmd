@@ -1,5 +1,9 @@
 ---
-title: "📡 L'Information"
+title: 📡 L'Information
+categories:
+- Informatique
+- Fondations
+description: Module et exercices interactifs sur 📡 L'Information.
 ---
 
 ::: {.portrait}

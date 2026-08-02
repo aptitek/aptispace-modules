@@ -1,0 +1,169 @@
+---
+title: "Classes & Instances"
+categories:
+  - Programmation Orientée Objet
+  - Développement
+description: "Comprendre le cœur de la POO : la classe (le moule) vs l'instance (l'objet), les constructeurs, l'encapsulation et la mémoire Stack/Heap."
+---
+
+La Programmation Orientée Objet (POO) est un paradigme qui organise le code autour d'**objets du monde réel** (ou concepts abstraits) plutôt que de simples suites de fonctions.
+
+Pour maîtriser la POO, la distinction la plus importante à intégrer est la différence entre la **Classe** et l'**Instance (l'Objet)**.
+
+## 🪙 L'Analogie Fondamentale : Le Moule et la Pièce
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### La Classe = Le Moule (Plan) {.bi-journal-code}
+
+Une **Classe** est un modèle abstrait, une recette ou un **moule de fabrication**.
+
+- Elle ne consomme pas de mémoire pour stocker des données réelles.
+- Elle définit la structure (quels attributs existeront) et les capacités (quelles méthodes pourront être exécutées).
+
+```python
+# La Classe (Le Moule à Pièces)
+class PieceDeMonnaie:
+    def __init__(self, valeur, devise):
+        self.valeur = valeur    # Attribut
+        self.devise = devise    # Attribut
+
+    def afficher(self):         # Méthode
+        return f"{self.valeur} {self.devise}"
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### L'Instance = La Pièce (L'Objet) {.bi-coin}
+
+Une **Instance** est un **objet concret frappé à partir du moule**.
+
+- Elle existe réellement en mémoire (Heap).
+- Elle possède sa propre identité et ses propres valeurs pour chaque attribut.
+
+```python
+# Instanciation (Fabrication de 2 pièces distinctes)
+piece1 = PieceDeMonnaie(1, "EUR")
+piece2 = PieceDeMonnaie(2, "EUR")
+
+print(piece1.afficher())  # "1 EUR"
+print(piece2.afficher())  # "2 EUR"
+```
+:::::
+::::
+:::
+
+## ⚙️ Usine à Instances Interactive
+
+Créez vos propres objets virtuels en ajustant les paramètres ci-dessous :
+
+::: {.card-window}
+#### Fabrique d'Objets Virtuels {.bi-gear-wide-connected}
+
+:::: {.row gap=4}
+::::: {.col span=6}
+
+- [Nom de l'Objet]{.text #inp-obj-name value="CompteCourant"}
+- [Valeur du Solde]{.number #inp-obj-balance value=1500 min=0 max=10000 step=100}
+- [Devise]{.select #inp-obj-currency options="EUR,USD,CHF,GBP" value="EUR"}
+- [Est Verrouillé]{.checkbox #inp-obj-locked}
+:::::
+
+::::: {.col span=6}
+:::::: {.terminal}
+#### État de l'Instance en Mémoire Heap {.bi-cpu}
+
+Instance ID: **#OBJ-${inp-obj-currency}-042**
+Classe d'origine: `CompteBancaire`
+Attribut `.solde`: **${inp-obj-balance} ${inp-obj-currency}**
+Attribut `.verrouille`: **${inp-obj-locked}**
+Statut mémoire: **Allocated (Heap RAM)**
+::::::
+:::::
+::::
+:::
+
+## 🧠 La Mémoire : Stack vs Heap
+
+Comprendre où vivent vos variables est essentiel pour éviter les fuites de mémoire et les bugs de référence.
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Stack (La Pile d'Exécution) {.bi-layers}
+
+- Stocke les variables locales d'une fonction et les **références (adresses mémoire)** vers les objets.
+- Gestion ultra-rapide en LIFO (*Last In, First Out*).
+- Taille limitée.
+
+[Charge d'exécution Stack: 35%]{.progressbar color='info'}
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Heap (Le Tas Mémoire) {.bi-database}
+
+- Stocke le **corps complet des objets et instances** créés dynamiquement.
+- Taille beaucoup plus grande.
+- Géré automatiquement par le **Garbage Collector** (Ramasse-miettes) en Python/Java/JS.
+
+[Allocation Heap Objets: 68%]{.progressbar color='success' animated='true'}
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+### 🔍 Le Piège Classique : Passage par Valeur vs par Référence
+
+- **Types Primitifs (Entiers, Booléens) :** Copiés par **valeur**. Modifier la copie ne touche pas à l'original.
+- **Objets / Instances :** Copiés par **référence (adresse mémoire)**. Deux variables pointant vers la même instance modifient le **même objet sous-jacent** !
+:::
+
+## 🛡️ Les Trois Piliers d'une Instance
+
+::: {.tabs}
+##### 4.0.0.1. Encapsulation {.bi-shield-lock}
+
+L'**encapsulation** consiste à cacher les détails d'implémentation internes d'un objet et à ne laisser l'extérieur interagir qu'à travers une interface contrôlée (méthodes publiques ou *getters/setters*).
+
+```python
+class CompteSecurise:
+    def __init__(self, solde_initial):
+        self.__solde = solde_initial  # Attribut privé (masqué)
+
+    def deposer(self, montant):
+        if montant > 0:
+            self.__solde += montant
+
+    def get_solde(self):
+        return self.__solde
+```
+
+##### 4.0.0.2. Héritage {.bi-diagram-2}
+
+L'**héritage** permet à une classe enfant d'hériter automatiquement des attributs et méthodes d'une classe parent, tout en pouvant les enrichir ou les redéfinir (*override*).
+
+```python
+class Vehicule:  # Parent
+    def rouler(self):
+        print("Vroum !")
+
+class VoitureElectrique(Vehicule):  # Enfant
+    def recharger(self):
+        print("Recharge en cours...")
+```
+
+##### 4.0.0.3. Polymorphisme {.bi-shuffle}
+
+Le **polymorphisme** ("plusieurs formes") permet de traiter des objets d'espèces différentes via une même interface commune sans se soucier de leur classe exacte.
+
+```python
+def faire_travailler(employes):
+    for emp in employes:
+        emp.travailler()  # Chaque sous-classe répond à sa façon !
+```
+:::

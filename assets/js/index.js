@@ -619,6 +619,13 @@ const setupExerciseObserver = () => {
       decorateExerciseHeader(header);
       translateExerciseButtons(header);
     });
+
+    // Move quarto listing search filter into card-window header if present
+    const cardHeader = document.querySelector('.card-window .card-header');
+    const listingFilter = document.querySelector('.quarto-listing-filter');
+    if (cardHeader && listingFilter && !cardHeader.contains(listingFilter)) {
+      cardHeader.appendChild(listingFilter);
+    }
   };
 
   // Run immediately
