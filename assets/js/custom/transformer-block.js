@@ -1,4 +1,4 @@
-import * as THREE from "https://esm.sh/three@0.160.0";
+import * as THREE from "https://esm.sh/three@0.160.0?bundle";
 import { resolveCssValue } from "../core.js";
 import { SOL_FALLBACKS } from "../networks.js";
 

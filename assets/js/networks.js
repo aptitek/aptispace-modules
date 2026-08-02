@@ -2,8 +2,8 @@
 // networks.js - Composants de Réseaux et de Graphes
 // ==========================================
 import ForceGraph from "https://esm.sh/force-graph";
-import ForceGraph3D from "https://esm.sh/3d-force-graph?deps=three@0.160.0";
-import SpriteText from "https://esm.sh/three-spritetext?deps=three@0.160.0";
+import ForceGraph3D from "https://esm.sh/3d-force-graph?bundle";
+import SpriteText from "https://esm.sh/three-spritetext?bundle";
 import TagCloud from "https://esm.sh/TagCloud";
 import { resolveCssValue, utils } from "./core.js";
 

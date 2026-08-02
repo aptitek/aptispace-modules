@@ -2,10 +2,15 @@
 title: "Catalogue des Cours"
 subtitle: "Explorez et recherchez l'ensemble des modules interactifs et simulateurs d'Aptispace."
 page-layout: full
+lang: fr
+language:
+  listing-page-order-by: "Trier par"
+  listing-page-order-by-default: "Par défaut"
+  listing-page-filter-placeholder: "Filtrer les cours..."
 toc: false
 sidebar: false
 listing:
-  - id: course-catalog
+  - id: catalog-all
     contents:
       - "**/*.qmd"
       - "!index.qmd"
@@ -15,7 +20,66 @@ listing:
       - "!archive/**"
     type: table
     sort: "title asc"
-    categories: cloud
+    filter-ui: true
+    sort-ui: true
+    fields: [title, categories, description]
+    field-display-names:
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+
+  - id: catalog-data
+    contents:
+      - "datascience/*.qmd"
+      - "ml/*.qmd"
+      - "llm/*.qmd"
+      - "maths/*.qmd"
+      - "outils/ia/*.qmd"
+    type: table
+    sort: "title asc"
+    filter-ui: true
+    sort-ui: true
+    fields: [title, categories, description]
+    field-display-names:
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+
+  - id: catalog-systeme
+    contents:
+      - "architecture/*.qmd"
+      - "infra/*.qmd"
+      - "systeme-reseau/**/*.qmd"
+    type: table
+    sort: "title asc"
+    filter-ui: true
+    sort-ui: true
+    fields: [title, categories, description]
+    field-display-names:
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+
+  - id: catalog-dev
+    contents:
+      - "developpement/**/*.qmd"
+      - "informatique/*.qmd"
+      - "projets/*.qmd"
+    type: table
+    sort: "title asc"
+    filter-ui: true
+    sort-ui: true
+    fields: [title, categories, description]
+    field-display-names:
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+
+  - id: catalog-uiux
+    contents:
+      - "ui-ux/*.qmd"
+    type: table
+    sort: "title asc"
     filter-ui: true
     sort-ui: true
     fields: [title, categories, description]
@@ -26,8 +90,32 @@ listing:
 ---
 
 ::: {.card-window}
-#### Explorer les parcours & modules {.bi-compass}
+#### Explorer par Domaine {.bi-compass}
 
-:::: {#course-catalog}
+:::: {.tabs}
+##### Tous les Cours {.bi-collection}
+
+::: {#catalog-all}
+:::
+
+##### Data & IA {.bi-robot}
+
+::: {#catalog-data}
+:::
+
+##### Système & Réseau {.bi-hdd-network}
+
+::: {#catalog-systeme}
+:::
+
+##### Développement {.bi-code-slash}
+
+::: {#catalog-dev}
+:::
+
+##### UI/UX Design {.bi-palette}
+
+::: {#catalog-uiux}
+:::
 ::::
 :::

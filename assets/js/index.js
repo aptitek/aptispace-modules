@@ -610,6 +610,127 @@ const decorateExerciseHeader = (header) => {
   translateExerciseButtons(header);
 };
 
+const formatCategoryCells = () => {
+  if (typeof document === "undefined") return;
+
+  const catCells = document.querySelectorAll(".quarto-listing-table .listing-categories");
+  catCells.forEach(cell => {
+    if (cell.dataset.formatted === "true") return;
+    const text = cell.textContent.trim();
+    if (!text) return;
+
+    const categories = text.split(",").map(c => c.trim()).filter(Boolean);
+    if (categories.length === 0) return;
+
+    cell.dataset.formatted = "true";
+    cell.innerHTML = "";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-wrap gap-1 align-items-center";
+
+    categories.forEach(cat => {
+      const badge = document.createElement("span");
+      badge.className = "listing-category";
+      badge.dataset.category = cat;
+      badge.textContent = cat;
+      wrapper.appendChild(badge);
+    });
+
+    cell.appendChild(wrapper);
+  });
+};
+
+const setupCatalogListingControls = () => {
+  if (typeof document === "undefined") return;
+
+  const cardHeader = document.querySelector(".card-window .card-header");
+  const tabsets = document.querySelectorAll(".panel-tabset, .tabset-container");
+
+  tabsets.forEach(tabset => {
+    const navTabs = tabset.querySelector("ul.nav-tabs");
+    const tabPanes = tabset.querySelectorAll(".tab-pane");
+    if (tabPanes.length === 0) return;
+
+    let controlsWrapper = cardHeader
+      ? cardHeader.querySelector(".catalog-controls-container")
+      : (navTabs ? navTabs.querySelector(".catalog-controls-container") : null);
+
+    if (!controlsWrapper) {
+      controlsWrapper = document.createElement(cardHeader ? "div" : "li");
+      controlsWrapper.className = cardHeader
+        ? "catalog-controls-container d-flex align-items-center gap-2 ms-auto"
+        : "nav-item ms-auto d-flex align-items-center gap-2 catalog-controls-container";
+
+      if (cardHeader) {
+        cardHeader.appendChild(controlsWrapper);
+      } else if (navTabs) {
+        navTabs.appendChild(controlsWrapper);
+      }
+    }
+
+    tabPanes.forEach((pane, idx) => {
+      const paneId = pane.id || `tab-pane-${idx}`;
+      const actionsGroup = pane.querySelector(".listing-actions-group");
+      if (actionsGroup && !actionsGroup.dataset.paneId) {
+        actionsGroup.dataset.paneId = paneId;
+
+        const input = actionsGroup.querySelector(".quarto-listing-filter input.search");
+        if (input) {
+          input.placeholder = "Rechercher…";
+          input.addEventListener("input", () => setTimeout(formatCategoryCells, 50));
+        }
+
+        const select = actionsGroup.querySelector(".quarto-listing-sort select");
+        if (select) {
+          const firstOpt = select.querySelector("option[disabled]");
+          if (firstOpt) firstOpt.textContent = "Trier par";
+          const defaultOpt = select.querySelector('option[value="index"]');
+          if (defaultOpt) defaultOpt.textContent = "Par défaut";
+          select.addEventListener("change", () => setTimeout(formatCategoryCells, 50));
+        }
+
+        controlsWrapper.appendChild(actionsGroup);
+      }
+    });
+
+    const updateVisibility = () => {
+      const activePane = tabset.querySelector(".tab-pane.active, .tab-pane.show");
+      const activePaneId = activePane ? activePane.id : null;
+
+      const allGroups = controlsWrapper.querySelectorAll(".listing-actions-group");
+      allGroups.forEach(group => {
+        const isActive = Boolean(activePaneId && group.dataset.paneId === activePaneId);
+        group.classList.toggle("d-none", !isActive);
+      });
+    };
+
+    updateVisibility();
+
+    if (!tabset.dataset.catalogControlsBound) {
+      tabset.dataset.catalogControlsBound = "true";
+      if (navTabs) {
+        navTabs.addEventListener("click", () => {
+          setTimeout(() => {
+            updateVisibility();
+            formatCategoryCells();
+          }, 50);
+        });
+      }
+    }
+  });
+
+  if (!document.body.dataset.catalogPaginationBound) {
+    document.body.dataset.catalogPaginationBound = "true";
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".quarto-listing, .pagination, .page, .sort, .nav-tabs")) {
+        setTimeout(formatCategoryCells, 50);
+      }
+    });
+  }
+
+  formatCategoryCells();
+};
+
 const setupExerciseObserver = () => {
   if (typeof document === "undefined") return;
   
@@ -619,28 +740,17 @@ const setupExerciseObserver = () => {
       decorateExerciseHeader(header);
       translateExerciseButtons(header);
     });
-
-    // Move quarto listing search filter into card-window header if present
-    const cardHeader = document.querySelector('.card-window .card-header');
-    const listingFilter = document.querySelector('.quarto-listing-filter');
-    if (cardHeader && listingFilter && !cardHeader.contains(listingFilter)) {
-      cardHeader.appendChild(listingFilter);
-    }
   };
 
-  // Run immediately
   runDecoration();
   
-  // 1. Observe DOM mutations (for performance and responsiveness)
   const observer = new MutationObserver(runDecoration);
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    characterData: true
+  const exerciseEditors = document.querySelectorAll(".card.exercise-editor");
+  exerciseEditors.forEach(ed => {
+    observer.observe(ed, { childList: true, subtree: true, characterData: true });
   });
 
-  // 2. Poll periodically (fail-proof fallback against React/Preact Virtual DOM overrides on status/run changes)
-  setInterval(runDecoration, 150);
+  setupCatalogListingControls();
 };
 
 // Robust initial execution

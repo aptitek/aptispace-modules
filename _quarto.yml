@@ -32,6 +32,12 @@ website:
     left:
       - text: "🔍 Explorer les Cours"
         href: /index.qmd
+      - text: "🤖 Panorama Outils IA"
+        href: /outils/ia/ia.qmd
+      - text: "🐳 Docker"
+        href: /docker/cheatsheet.qmd
+      - text: "💻 POO Avancée"
+        href: /modules/developpement/poo-avance/classes-et-instances.qmd
 
 format:
   html:
