@@ -1,9 +1,10 @@
 ---
-title: 🧠 Mémoire & Contexte
+title: "Mémoire & Fenêtre de Contexte"
+icon: "💾"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur 🧠 Mémoire & Contexte.
+  - LLM & IA
+  - Deep Learning
+description: "Gérer la fenêtre d'attention, la mémoire contextuelle et les stratégies d'extension pour les modèles de langage."
 ---
 
 Un LLM n'a pas de mémoire persistante entre deux conversations. **Tout ce qu'il "sait" au cours d'un échange vit dans une zone tampon de taille fixe** : la fenêtre de contexte. Comprendre ses limites et ses stratégies d'extension, c'est comprendre l'architecture profonde de ces modèles.

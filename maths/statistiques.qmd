@@ -1,9 +1,10 @@
 ---
-title: 📐 Statistiques
+title: "Statistiques Descriptives"
+icon: "📐"
 categories:
-- Statistiques
-- Data & IA
-description: Module et exercices interactifs sur 📐 Statistiques.
+  - Statistiques
+  - Data & IA
+description: "Explorer les métriques fondamentales (moyenne, médiane, variance, écart-type) pour résumer et interpréter des distributions."
 ---
 
 Les statistiques descriptives servent à **résumer une série de valeurs** sans perdre l'essentiel.

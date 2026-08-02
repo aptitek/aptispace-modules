@@ -1,9 +1,10 @@
 ---
-title: Poids, Biais et Fonction de Perte
+title: "Entraînement & Fonction de Perte"
+icon: "🎯"
 categories:
-- Machine Learning
-- Data & IA
-description: Module et exercices interactifs sur Poids, Biais et Fonction de Perte.
+  - Machine Learning
+  - Data & IA
+description: "Comprendre l'ajustement des poids et biais par la mesure et la minimisation de l'erreur globale."
 ---
 
 Pour qu'un modèle apprenne, il ajuste deux types de paramètres en se guidant sur une mesure d'erreur. Les **poids** et le **biais** définissent ce qu'il fait ; la **fonction de perte** et le **gradient** lui indiquent comment s'améliorer.

@@ -1,9 +1,10 @@
 ---
-title: 🧠 Hiérarchie Mémoire
+title: "Hiérarchie des Mémoires"
+icon: "🧠"
 categories:
-- Architecture
-- Système
-description: Module et exercices interactifs sur 🧠 Hiérarchie Mémoire.
+  - Architecture
+  - Système
+description: "Explorer la vitesse, la capacité et le rôle des registres CPU, caches L1/L2/L3, RAM et stockage de masse."
 ---
 
 Un processeur calcule à une vitesse vertigineuse, mais il n'est rapide que si la donnée est **à portée de main**. La mémoire d'un ordinateur est organisée en une pyramide : plus on monte, plus c'est rapide — mais plus c'est petit et coûteux.

@@ -1,9 +1,10 @@
 ---
-title: ⚡ Aide-Mémoire
+title: "Aide-Mémoire Docker"
+icon: "⚡"
 categories:
-- Docker
-- Aide-Mémoire
-description: Synthèse des commandes Docker indispensables.
+  - Docker
+  - Aide-Mémoire
+description: "Synthèse complète et guide de référence rapide des commandes indispensables de la CLI Docker."
 ---
 
 Cet aide-mémoire rassemble les commandes Docker les plus utilisées au quotidien par les développeurs et administrateurs système, classées par thématique avec leurs options courantes.

@@ -1,9 +1,10 @@
 ---
-title: 📄 Dockerfile
+title: "Création d'Images avec Dockerfile"
+icon: "📄"
 categories:
-- Docker
-- Système & Réseau
-description: Construction d'images sur mesure et bonnes pratiques d'optimisation.
+  - Docker
+  - Système & Réseau
+description: "Rédiger des Dockerfiles optimisés et sécurisés pour automatiser la construction d'images personnalisées."
 ---
 
 Un **Dockerfile** est un fichier texte contenant la suite d'instructions exécutées par le Docker Daemon pour construire automatiquement une image personnalisée.

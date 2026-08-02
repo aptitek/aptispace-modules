@@ -1,9 +1,10 @@
 ---
-title: Descente de Gradient et Optimiseurs
+title: "Descente de Gradient & Optimiseurs"
+icon: "📉"
 categories:
-- Machine Learning
-- Data & IA
-description: Module et exercices interactifs sur Descente de Gradient et Optimiseurs.
+  - Machine Learning
+  - Data & IA
+description: "Explorer les algorithmes d'optimisation (SGD, Adam) pour trouver le minimum de la fonction de coût."
 ---
 
 La **descente de gradient** est le mécanisme central de l'apprentissage : à chaque étape, on ajuste les paramètres dans le sens qui réduit l'erreur. Imaginez la fonction de perte comme un **paysage montagneux** — le but est d'atteindre le point le plus bas. On lâche une "boule" sur la pente, et elle roule vers le bas guidée par le gradient.

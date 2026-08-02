@@ -1,9 +1,10 @@
 ---
-title: 🛡️ Injection de Prompt
+title: "Sécurité des LLM & Injections"
+icon: "🛡️"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur 🛡️ Injection de Prompt.
+  - LLM & IA
+  - Deep Learning
+description: "Identifier les vulnérabilités majeures (prompt injection, jailbreak) et appliquer des gardes-fous efficaces."
 ---
 
 L'intégration des Modèles de Langage (LLM) dans des environnements d'entreprise (banque, santé, service client) ne se limite pas à écrire de bons prompts. Ces modèles présentent des vulnérabilités inédites.

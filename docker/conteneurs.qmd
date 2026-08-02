@@ -1,9 +1,10 @@
 ---
-title: 📦 Conteneurs
+title: "Gestion des Conteneurs"
+icon: "📦"
 categories:
-- Docker
-- Système & Réseau
-description: Introduction à la conteneurisation et comparaison avec les machines virtuelles.
+  - Docker
+  - Système & Réseau
+description: "Découvrir les principes de la conteneurisation, exécuter et inspecter des conteneurs isolés."
 ---
 
 Avant l'arrivée de la conteneurisation, le déploiement d'applications était régulièrement confronté au célèbre **"enfer des dépendances"** (*Dependency Hell*). Une application fonctionnait parfaitement sur la machine d'un développeur, mais tombait en panne en production à cause d'une différence mineure de version de bibliothèque ou de configuration du système d'exploitation.

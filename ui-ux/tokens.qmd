@@ -1,10 +1,11 @@
 ---
-title: Le Design Token
-subtitle: L'atome de liaison entre Design et Tech
+title: "Design Tokens & Système de Variables"
+subtitle: "L'atome de liaison entre Design et Tech"
+icon: "💎"
 categories:
-- UI/UX Design
-- Design System
-description: Module et exercices interactifs sur Le Design Token.
+  - UI/UX Design
+  - Design System
+description: "Centraliser les décisions de style (couleurs, espaces, typographie) sous forme de variables agnostiques."
 ---
 
 Un **design token** est un nom symbolique (un alias) qui stocke une valeur graphique brute. C'est le contrat immuable entre le Design et la Tech, éliminant définitivement les valeurs codées en dur (*hard-coding*).

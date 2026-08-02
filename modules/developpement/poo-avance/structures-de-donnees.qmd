@@ -1,9 +1,10 @@
 ---
 title: "Structures de Données"
+icon: "🏷️"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Découvrir les structures de données fondamentales : Enums, Structs/Tuples, Listes/Arrays, Dictionnaires/Maps."
+description: "Découvrir et manipuler les collections de données essentielles : énumérations, structures, listes et dictionnaires."
 ---
 
 En programmation, manipuler des variables isolées (`age`, `nom`, `prix`) devient très vite ingérable lorsque le volume d'informations augmente. Les **structures de données** permettent d'organiser, de regrouper et de stocker des collections de données de manière efficace.

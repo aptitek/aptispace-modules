@@ -1,9 +1,10 @@
 ---
-title: 📊 DataFrame
+title: "Manipulation de DataFrames"
+icon: "📈"
 categories:
-- Data Science
-- Data & IA
-description: Module et exercices interactifs sur 📊 DataFrame.
+  - Data Science
+  - Data & IA
+description: "Manipuler, filtrer, grouper et analyser des jeux de données structurés en tables 2D interactives."
 ---
 
 Un **DataFrame** est une table organisée pour enquêter sur des données.

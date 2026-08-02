@@ -1,9 +1,10 @@
 ---
-title: Jeux.Io
-description: Module et exercices interactifs sur Jeux.Io.
+title: "Architecture d'un Jeu Multi-Joueurs"
+icon: "🎮"
+description: "Conception et sécurisation des boucles de communication temps réel pour jeux web multi-joueurs."
 categories:
-- Projets
-- Vibe Coding
+  - Projets
+  - Vibe Coding
 ---
 
 # 🎮 Projet Vibe Coding : Développement Agentique d'un Jeu Multijoueur ".io"

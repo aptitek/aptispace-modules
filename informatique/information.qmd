@@ -1,9 +1,10 @@
 ---
-title: 📡 L'Information
+title: "Théorie de l'Information"
+icon: "📡"
 categories:
-- Informatique
-- Fondations
-description: Module et exercices interactifs sur 📡 L'Information.
+  - Informatique
+  - Fondations
+description: "Comprendre la mesure de l'information (bits, entropie de Shannon) et les principes de compression et transmission."
 ---
 
 ::: {.portrait}

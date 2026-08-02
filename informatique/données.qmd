@@ -1,9 +1,10 @@
 ---
-title: 🗄️ La Donnée
+title: "Bases et Représentation de la Donnée"
+icon: "🗄️"
 categories:
-- Informatique
-- Fondations
-description: Module et exercices interactifs sur 🗄️ La Donnée.
+  - Informatique
+  - Fondations
+description: "Découvrir comment les nombres, textes et fichiers sont codés en binaire et représentés en mémoire."
 ---
 
 Une donnée est un **fait brut mesurable** — une observation élémentaire de la réalité attachée à une entité. Seule, elle ne dit rien. C'est la combinaison de sa **nature**, son **type**, son **unité** et son **domaine** qui lui confère sa valeur analytique.

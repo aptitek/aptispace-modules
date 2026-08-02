@@ -1,9 +1,10 @@
 ---
-title: La Typographie dans le Design System
+title: "Typographie & Hiérarchie Visuelle"
+icon: "🔤"
 categories:
-- UI/UX Design
-- Design System
-description: Module et exercices interactifs sur La Typographie dans le Design System.
+  - UI/UX Design
+  - Design System
+description: "Choisir et associer des polices de caractères pour établir un rythme de lecture fluide et lisible."
 ---
 
 La typographie est l'un des piliers visuels les plus puissants d'une interface utilisateur (UI). Bien plus qu'un simple choix décoratif, elle structure l'information, définit la hiérarchie visuelle, guide la lecture de l'utilisateur et véhicule l'identité de marque. Une typographie maîtrisée garantit la clarté et le confort de lecture (*lisibilité*), tout en optimisant la vitesse d'assimilation des données.

@@ -1,9 +1,10 @@
 ---
-title: Le Scaled Dot-Product Attention
+title: "Architecture Transformer & Attention"
+icon: "⚡"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur Le Scaled Dot-Product Attention.
+  - LLM & IA
+  - Deep Learning
+description: "Visualiser et comprendre le mécanisme de self-attention (Scaled Dot-Product) au cœur de l'architecture Transformer."
 ---
 
 Un **Transformer** ne lit pas seulement une phrase de gauche à droite. Il regarde les mots ensemble et construit une **carte de relations**.

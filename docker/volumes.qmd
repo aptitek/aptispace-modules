@@ -1,9 +1,10 @@
 ---
-title: 💾 Volumes & Persistance
+title: "Stockage et Volumes Persistants"
+icon: "💾"
 categories:
-- Docker
-- Système & Réseau
-description: Stockage persistant, bind mounts et gestion des volumes Docker.
+  - Docker
+  - Système & Réseau
+description: "Gérer la persistance des données avec les volumes Docker gérés et les montages liés (bind mounts)."
 ---
 
 Par défaut, **les données générées au sein d'un conteneur sont temporaires et éphémères**. Lorsqu'un conteneur est supprimé (`docker rm`), tous les fichiers créés ou modifiés pendant son exécution sont définitivement perdus.

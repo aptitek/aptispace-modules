@@ -1,9 +1,10 @@
 ---
-title: 🌐 Ports & Réseaux
+title: "Réseaux et Communication Docker"
+icon: "🌐"
 categories:
-- Docker
-- Système & Réseau
-description: Redirection de ports, réseaux bridge et communication entre conteneurs.
+  - Docker
+  - Système & Réseau
+description: "Configurer les drivers de réseau Docker (bridge, host) et assurer la communication sécurisée inter-conteneurs."
 ---
 
 L'un des avantages majeurs de la conteneurisation est l'**isolation réseau**. Par défaut, un conteneur vit dans son propre espace de noms réseau (*Network Namespace*) et ne possède aucune exposition vers le monde extérieur ou les autres conteneurs.

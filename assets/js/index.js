@@ -643,79 +643,84 @@ const formatCategoryCells = () => {
 const setupCatalogListingControls = () => {
   if (typeof document === "undefined") return;
 
-  const cardHeader = document.querySelector(".card-window .card-header");
-  const tabsets = document.querySelectorAll(".panel-tabset, .tabset-container");
+  const listings = document.querySelectorAll(".quarto-listing");
 
-  tabsets.forEach(tabset => {
-    const navTabs = tabset.querySelector("ul.nav-tabs");
-    const tabPanes = tabset.querySelectorAll(".tab-pane");
-    if (tabPanes.length === 0) return;
+  listings.forEach(listing => {
+    listing.classList.add("apt-datatable");
 
-    let controlsWrapper = cardHeader
-      ? cardHeader.querySelector(".catalog-controls-container")
-      : (navTabs ? navTabs.querySelector(".catalog-controls-container") : null);
-
-    if (!controlsWrapper) {
-      controlsWrapper = document.createElement(cardHeader ? "div" : "li");
-      controlsWrapper.className = cardHeader
-        ? "catalog-controls-container d-flex align-items-center gap-2 ms-auto"
-        : "nav-item ms-auto d-flex align-items-center gap-2 catalog-controls-container";
-
-      if (cardHeader) {
-        cardHeader.appendChild(controlsWrapper);
-      } else if (navTabs) {
-        navTabs.appendChild(controlsWrapper);
+    const toolbars = listing.querySelectorAll(".apt-dt-toolbar, .listing-actions-group");
+    if (toolbars.length > 1) {
+      for (let i = 1; i < toolbars.length; i++) {
+        toolbars[i].remove();
       }
     }
 
-    tabPanes.forEach((pane, idx) => {
-      const paneId = pane.id || `tab-pane-${idx}`;
-      const actionsGroup = pane.querySelector(".listing-actions-group");
-      if (actionsGroup && !actionsGroup.dataset.paneId) {
-        actionsGroup.dataset.paneId = paneId;
+    const toolbar = listing.querySelector(".apt-dt-toolbar, .listing-actions-group");
+    if (toolbar && !toolbar.dataset.decorated) {
+      toolbar.dataset.decorated = "true";
+      toolbar.className = "apt-dt-toolbar";
 
-        const input = actionsGroup.querySelector(".quarto-listing-filter input.search");
-        if (input) {
-          input.placeholder = "Rechercher…";
-          input.addEventListener("input", () => setTimeout(formatCategoryCells, 50));
+      const filterDiv = toolbar.querySelector(".quarto-listing-filter, .apt-dt-search-wrap");
+      if (filterDiv) {
+        filterDiv.className = "apt-dt-search-wrap";
+
+        const inputs = filterDiv.querySelectorAll("input");
+        if (inputs.length > 1) {
+          for (let i = 1; i < inputs.length; i++) {
+            inputs[i].remove();
+          }
         }
 
-        const select = actionsGroup.querySelector(".quarto-listing-sort select");
+        const input = filterDiv.querySelector("input");
+        if (input) {
+          input.type = "text";
+          input.className = "apt-dt-search-input search";
+          input.placeholder = "Rechercher…";
+
+          const icons = filterDiv.querySelectorAll(".apt-dt-search-icon, .bi-search");
+          icons.forEach(ic => ic.remove());
+
+          const icon = document.createElement("i");
+          icon.className = "bi bi-search apt-dt-search-icon";
+          icon.setAttribute("aria-hidden", "true");
+          filterDiv.insertBefore(icon, input);
+
+          if (!input.dataset.bound) {
+            input.dataset.bound = "true";
+            input.addEventListener("input", () => setTimeout(formatCategoryCells, 50));
+          }
+        }
+      }
+
+      const sortDiv = toolbar.querySelector(".quarto-listing-sort");
+      if (sortDiv) {
+        const select = sortDiv.querySelector("select");
         if (select) {
+          select.className = "apt-dt-filter";
           const firstOpt = select.querySelector("option[disabled]");
           if (firstOpt) firstOpt.textContent = "Trier par";
           const defaultOpt = select.querySelector('option[value="index"]');
           if (defaultOpt) defaultOpt.textContent = "Par défaut";
-          select.addEventListener("change", () => setTimeout(formatCategoryCells, 50));
+
+          if (!select.dataset.bound) {
+            select.dataset.bound = "true";
+            select.addEventListener("change", () => setTimeout(formatCategoryCells, 50));
+          }
+
+          sortDiv.replaceWith(select);
         }
-
-        controlsWrapper.appendChild(actionsGroup);
       }
-    });
 
-    const updateVisibility = () => {
-      const activePane = tabset.querySelector(".tab-pane.active, .tab-pane.show");
-      const activePaneId = activePane ? activePane.id : null;
+      toolbar.querySelectorAll(".input-group-text").forEach(el => el.remove());
+    }
 
-      const allGroups = controlsWrapper.querySelectorAll(".listing-actions-group");
-      allGroups.forEach(group => {
-        const isActive = Boolean(activePaneId && group.dataset.paneId === activePaneId);
-        group.classList.toggle("d-none", !isActive);
-      });
-    };
-
-    updateVisibility();
-
-    if (!tabset.dataset.catalogControlsBound) {
-      tabset.dataset.catalogControlsBound = "true";
-      if (navTabs) {
-        navTabs.addEventListener("click", () => {
-          setTimeout(() => {
-            updateVisibility();
-            formatCategoryCells();
-          }, 50);
-        });
-      }
+    const table = listing.querySelector("table.quarto-listing-table");
+    if (table && !table.parentElement.classList.contains("apt-dt-wrapper")) {
+      table.classList.add("table", "apt-dt-table");
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-responsive apt-dt-wrapper";
+      table.parentElement.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
     }
   });
 

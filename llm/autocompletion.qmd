@@ -1,9 +1,10 @@
 ---
-title: ✨ Autocomplétion
+title: "Autocomplétion & Génération de Code"
+icon: "✨"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur ✨ Autocomplétion.
+  - LLM & IA
+  - Deep Learning
+description: "Comprendre les mécanismes de génération de jetons et d'autocomplétion contextuelle par les modèles de langage."
 ---
 
 De la simple correction syntaxique à l'agent autonome capable de coder une application entière, l'assistance au développement a connu plusieurs révolutions. Voici les cinq grandes ères de cette évolution, du simple outil à l'assistant virtuel proactif.

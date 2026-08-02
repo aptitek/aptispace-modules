@@ -1,9 +1,10 @@
 ---
-title: L'Iconographie dans le Design System
+title: "Iconographie & Métaphores Visuelles"
+icon: "🔣"
 categories:
-- UI/UX Design
-- Design System
-description: Module et exercices interactifs sur L'Iconographie dans le Design System.
+  - UI/UX Design
+  - Design System
+description: "Utiliser des symboles visuels universels pour renforcer la lisibilité, la navigation et l'ergonomie."
 ---
 
 L'iconographie est le langage visuel universel de votre interface. En traduisant des concepts complexes en métaphores visuelles immédiates, les icônes guident l'utilisateur, structurent la navigation et accélèrent la prise de décision. Une intégration cohérence et normée au sein d'un Design System garantit une expérience utilisateur fluide et accessible sur tous les supports.

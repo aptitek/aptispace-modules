@@ -1,9 +1,10 @@
 ---
-title: ✍️ Prompt Engineering
+title: "Ingénierie de Prompts"
+icon: "✍️"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur ✍️ Prompt Engineering.
+  - LLM & IA
+  - Deep Learning
+description: "Maîtriser les techniques de prompting (few-shot, chain-of-thought, system prompts) pour guider les réponses du modèle."
 ---
 
 Un LLM ne cherche pas la "vraie" réponse dans une base de données. À chaque token généré, il **tire au sort** dans une distribution de probabilité sur tout son vocabulaire. Le Prompt Engineering consiste à orienter cette distribution vers la zone de réponse souhaitée — c'est de la physique probabiliste, pas de la magie.

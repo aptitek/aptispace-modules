@@ -1,10 +1,11 @@
 ---
-title: 🌌 Autoencodeurs & VAE
+title: "Autoencodeurs & VAE"
+icon: "🌌"
 bibliography: bibliography.bib
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur 🌌 Autoencodeurs & VAE.
+  - LLM & IA
+  - Deep Learning
+description: "Explorer les espaces latents, la compression d'information et les modèles génératifs variationnels."
 ---
 
 La modélisation générative cherche à comprendre la structure sous-jacente des données pour en créer de nouvelles. Plutôt que de manipuler des images ou des sons directement dans leur espace d'origine très complexe, nous utilisons des **autoencodeurs** pour compresser cette information dans un espace réduit, appelé **espace latent**.

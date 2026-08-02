@@ -1,9 +1,10 @@
 ---
-title: 🔌 MCP
+title: "Model Context Protocol (MCP)"
+icon: "🔌"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur 🔌 MCP.
+  - LLM & IA
+  - Deep Learning
+description: "Connecter les agents LLM aux outils externes, bases de données et API via le protocole universel MCP."
 ---
 
 Intégrer un LLM dans une application d'entreprise, c'est comme changer de pays avec ses appareils électroniques : chaque connecteur est différent. Le **Model Context Protocol (MCP)** est la réponse de l'industrie — le port USB-C universel de l'IA.

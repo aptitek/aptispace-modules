@@ -1,41 +1,42 @@
 // =============================================================================
-// COURSE CATALOG LISTING STYLES (Clean & Standardized Design Tokens)
+// COURSE CATALOG LISTING STYLES (Reusing Panorama Datatable & Tokens)
 // =============================================================================
 
-.quarto-listing {
-  margin-top: 1rem;
+.card-window,
+.panel-tabset,
+.tab-pane,
+.quarto-listing,
+.apt-datatable {
+  font-style: normal !important;
 
-  // Search Filter Controls (Standardized input using design tokens)
-  .quarto-listing-filter {
-    margin-bottom: 1rem;
+  *,
+  *::before,
+  *::after,
+  table, th, td, tr, a, span, p, div, li {
+    font-style: normal !important;
+  }
 
-    input.search {
-      width: 100%;
-      padding: 0.45rem 0.75rem 0.45rem 2.2rem;
-      font-size: 0.875rem;
-      font-family: var(--font-sans);
-      color: var(--sol-base00);
-      background-color: var(--sol-base3);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232aa198' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 0.65rem center;
-      border: 1px solid rgba(var(--sol-base01-rgb), 0.2);
-      border-radius: 6px;
-      transition: border-color 0.15s, box-shadow 0.15s;
+  // Ensure table text is clean and never italic
+  table.quarto-listing-table,
+  .apt-dt-table {
+    font-style: normal !important;
 
-      &:focus {
-        outline: none;
-        border-color: var(--sol-cyan);
-        box-shadow: 0 0 0 2px rgba(var(--sol-cyan-rgb), 0.15);
-      }
+    th, td, a, span, p, div {
+      font-style: normal !important;
+    }
 
-      &::placeholder {
-        color: var(--sol-base1);
-      }
+    th.listing-icon,
+    td.listing-icon {
+      width: 45px;
+      text-align: center;
+      font-size: 1.25rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      vertical-align: middle;
     }
   }
 
-  // Category Badges & Pills (Factorized with standard var(--sol-*) tokens)
+  // Category Badges & Pills (Using Panorama badge style tokens)
   .category,
   .listing-category,
   .listing-categories,
@@ -52,6 +53,7 @@
     background: rgba(var(--sol-cyan-rgb), 0.12);
     border: 1px solid rgba(var(--sol-cyan-rgb), 0.25);
     white-space: nowrap;
+    font-style: normal !important;
 
     // Standard Category Color Mappings (Consuming Solarized Tokens)
     &[data-category="Docker"],
@@ -114,12 +116,13 @@
     }
   }
 
-  // Empty State Message
-  .no-matching-documents {
+  // Empty state message without italic
+  .no-matching-documents,
+  .apt-dt-empty {
     padding: 2rem 1rem;
     text-align: center;
     color: var(--sol-base1);
     font-size: 0.95rem;
-    font-style: italic;
+    font-style: normal !important;
   }
 }

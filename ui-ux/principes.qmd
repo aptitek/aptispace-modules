@@ -1,9 +1,10 @@
 ---
-title: Mes Principes de Design
+title: "Principes Fondamentaux de l'UX"
+icon: "💡"
 categories:
-- UI/UX Design
-- Design System
-description: Module et exercices interactifs sur Mes Principes de Design.
+  - UI/UX Design
+  - Design System
+description: "Appliquer les lois d'affordance, de charge cognitive et de retour d'information dans l'expérience utilisateur."
 ---
 
 Cinq convictions sur ce que devrait être une interface bien conçue, illustrées par des situations concrètes.

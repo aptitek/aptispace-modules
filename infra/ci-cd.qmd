@@ -1,10 +1,11 @@
 ---
-title: Introduction au CI/CD
-subtitle: Automatiser les vérifications et le déploiement de vos projets
+title: "Intégration et Déploiement Continus (CI/CD)"
+subtitle: "Automatiser les vérifications et le déploiement de vos projets"
+icon: "🚀"
 categories:
-- DevOps
-- Système & Réseau
-description: Module et exercices interactifs sur Introduction au CI/CD.
+  - DevOps
+  - Système & Réseau
+description: "Automatiser les tests, la compilation et la livraison de code grâce aux pipelines de CI/CD modernes."
 ---
 
 Le **CI/CD** est le cœur de l'ingénierie logicielle moderne. Il transforme un processus manuel, lent et risqué en un flux de travail entièrement automatisé et sécurisé.

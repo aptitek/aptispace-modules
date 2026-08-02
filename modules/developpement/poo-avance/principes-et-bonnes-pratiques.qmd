@@ -1,9 +1,10 @@
 ---
-title: "Principes & Bonnes Pratiques"
+title: "Principes & Qualité du Code"
+icon: "🧹"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Apprendre à écrire un code propre, lisible et maintenable grâce aux principes KISS, DRY, YAGNI et SOLID."
+description: "Concevoir un code propre, lisible et maintenable grâce aux principes fondamentaux KISS, DRY, YAGNI et SOLID."
 ---
 
 Écrire du code que seul un ordinateur comprend est à la portée de n'importe quel débutant. L'art du développeur expérimenté consiste à écrire du code que les **êtres humains** peuvent comprendre et maintenir facilement.

@@ -1,9 +1,10 @@
 ---
-title: Régularisation et Généralisation
+title: "Régularisation & Généralisation"
+icon: "🎛️"
 categories:
-- Machine Learning
-- Data & IA
-description: Module et exercices interactifs sur Régularisation et Généralisation.
+  - Machine Learning
+  - Data & IA
+description: "Appliquer des méthodes de régularisation (L1, L2, Dropout) pour préserver la capacité de généralisation."
 ---
 
 Si le sur-apprentissage est la maladie, la **régularisation** en est le remède. Elle impose une contrainte mathématique de "lissage" pour favoriser la généralisation en pénalisant la complexité excessive du modèle.

@@ -1,9 +1,10 @@
 ---
-title: 🐙 Docker Compose
+title: "Orchestration avec Docker Compose"
+icon: "🐙"
 categories:
-- Docker
-- Système & Réseau
-description: Orchestration multi-conteneurs et définition de services découpés.
+  - Docker
+  - Système & Réseau
+description: "Définir et exécuter des applications multi-conteneurs complexes grâce au fichier déclaratif docker-compose.yml."
 ---
 
 Jusqu'à présent, pour déployer une application composée d'un serveur web, d'un backend et d'une base de données, nous devions exécuter plusieurs longues commandes `docker run`, créer manuellement des réseaux et des volumes, et gérer soigneusement l'ordre de démarrage à la main.

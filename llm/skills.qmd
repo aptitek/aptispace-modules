@@ -1,9 +1,10 @@
 ---
-title: ⚡ Skills de Codage
+title: "Compétences & Outillage des Agents"
+icon: "🛠️"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur ⚡ Skills de Codage.
+  - LLM & IA
+  - Deep Learning
+description: "Définir des outils exécutables et des compétences structurées pour étendre l'autonomie des agents d'IA."
 ---
 
 Dans le Vibe Coding, le développeur ne tape plus de code ligne par ligne — il transmet une *intention* et l'agent exécute. Mais déléguer sans contraintes produit un code fonctionnel... et architecturalement chaotique. La clé : deux couches complémentaires.

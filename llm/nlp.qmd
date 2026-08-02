@@ -1,9 +1,10 @@
 ---
-title: 📖 Langage Naturel
+title: "Traitement du Langage Naturel (NLP)"
+icon: "📖"
 categories:
-- LLM & IA
-- Deep Learning
-description: Module et exercices interactifs sur 📖 Langage Naturel.
+  - LLM & IA
+  - Deep Learning
+description: "Découvrir la tokenisation, la vectorisation de texte et l'évolution des modèles statistiques vers le Deep Learning."
 ---
 
 Un ordinateur ne comprend que des nombres. Pour analyser une phrase, il faut d'abord la **traduire en vecteurs numériques**. Ce module explore les trois premières grandes stratégies de cette traduction : du simple comptage à la pondération par importance, et jusqu'au problème structurel qu'elles soulèvent.

@@ -1,9 +1,10 @@
 ---
-title: Grille et Systèmes d'Espacement
+title: "Grilles & Systèmes d'Espacement"
+icon: "📐"
 categories:
-- UI/UX Design
-- Design System
-description: Module et exercices interactifs sur Grille et Systèmes d'Espacement.
+  - UI/UX Design
+  - Design System
+description: "Mettre en page des interfaces réactives et harmonieuses grâce aux grilles et systèmes de modules."
 ---
 
 Dans une interface utilisateur, l'espacement n'est pas un simple vide : c'est la structure invisible qui donne du rythme et de la respiration à votre design. Un système d'espacement rigoureux lie les mathématiques de l'affichage à la psychologie de la perception visuelle. Il permet de guider l'œil, de regrouper les informations logiques et d'assurer une lisibilité optimale.

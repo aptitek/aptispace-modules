@@ -1,9 +1,10 @@
 ---
 title: "Blocs, Portée & Flux de Contrôle"
+icon: "🔀"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Maîtriser la portée des variables, l'empilement des blocs de code, les boucles et les fonctions/lambdas."
+description: "Maîtriser la portée des variables (scope), la pile d'exécution, les structures conditionnelles et les boucles."
 ---
 
 Un programme informatique n'est pas une simple liste d'instructions exécutées de haut en bas sans détour. Pour résoudre des problèmes complexes, le programme doit prendre des décisions, répéter des tâches et organiser ses données dans des **espaces de visibilité scellés**.

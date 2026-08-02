@@ -1,9 +1,10 @@
 ---
-title: ⏳ Histoire de l'Informatique
+title: "Histoire de l'Informatique"
+icon: "⏳"
 categories:
-- Informatique
-- Fondations
-description: Module et exercices interactifs sur ⏳ Histoire de l'Informatique.
+  - Informatique
+  - Fondations
+description: "Retracer l'évolution des machines à calculer, de l'architecture de Von Neumann aux processeurs modernes."
 ---
 
 De la roue dentée grecque au modèle de langage, l'informatique est une longue accumulation de ruptures — chacune impensable sans la précédente.

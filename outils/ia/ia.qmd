@@ -1,9 +1,10 @@
 ---
-title: Panorama des Outils IA
+title: "Panorama des Outils IA"
+icon: "🤖"
 categories:
-- Outils IA
-- Data & IA
-description: Module et exercices interactifs sur Panorama des Outils IA.
+  - Outils IA
+  - Data & IA
+description: "Tableau récapitulatif interactif des principaux outils d'intelligence artificielle, classés par modalité et cas d'usage."
 ---
 
 Référence des principaux outils d'intelligence artificielle disponibles en 2026, classés par catégorie. Cliquez sur le nom d'un outil pour ouvrir son site officiel. Utilisez la barre de recherche pour filtrer instantanément l'ensemble des colonnes.

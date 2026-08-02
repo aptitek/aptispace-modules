@@ -1,9 +1,10 @@
 ---
-title: "Fiche Synthèse & Ressources"
+title: "Synthèse & Fiche Récapitulative"
+icon: "📋"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Fiche récapitulative pour identifier les entités de programmation et ressources complémentaires."
+description: "Guide de référence rapide pour identifier la nature des entités et consulter les ressources complémentaires du cours."
 ---
 
 Cette fiche synthèse vous sert de **guide de référence rapide** pour identifier immédiatement chaque entité de programmation lorsque vous lisez ou rédigez du code source dans n'importe quel langage.

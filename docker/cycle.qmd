@@ -1,9 +1,10 @@
 ---
-title: 🔄 Cycle de Vie
+title: "Cycle de Vie & Architecture"
+icon: "🔄"
 categories:
-- Docker
-- Système & Réseau
-description: Gestion des états des conteneurs (run, stop, rm) et boucle d'exécution.
+  - Docker
+  - Système & Réseau
+description: "Comprendre l'architecture daemon-client Docker et maîtriser les états de transition des conteneurs."
 ---
 
 Un conteneur Docker n'est pas un serveur permanent : c'est un **environnement éphémère** conçu pour exécuter une tâche ou un service spécifique, puis s'arrêter proprement une fois sa mission accomplie.

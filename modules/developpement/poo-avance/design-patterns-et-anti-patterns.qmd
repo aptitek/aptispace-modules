@@ -1,9 +1,10 @@
 ---
-title: "Design Patterns & Anti-Patterns"
+title: "Patrons de Conception & Anti-Patterns"
+icon: "🏗️"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Reconnaître et corriger les anti-patterns courants tout en tirant parti des patterns de conception éprouvés (Factory, Strategy, Singleton, Observer)."
+description: "Reconnaître les pièges d'architecture courants et appliquer les design patterns éprouvés (Factory, Strategy, Singleton, Observer)."
 ---
 
 Dans le monde de l'architecture logicielle, les développeurs rencontrent régulièrement les mêmes types de défis. Au fil des décennies, deux catégories de solutions ont été formalisées :

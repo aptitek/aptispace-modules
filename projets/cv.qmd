@@ -1,9 +1,10 @@
 ---
-title: Cv
-description: Module et exercices interactifs sur Cv.
+title: "CV Interactif & Portfolio"
+icon: "📄"
+description: "Développement et mise en page réactive d'un CV professionnel avec composants dynamiques."
 categories:
-- Projets
-- Vibe Coding
+  - Projets
+  - Vibe Coding
 ---
 
 # 📄 Projet Vibe Coding : Générateur de CV "As Code"

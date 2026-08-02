@@ -1,9 +1,10 @@
 ---
-title: 🧱 Stockage Colonnaire
+title: "Stockage Colonnaire"
+icon: "📊"
 categories:
-- Data Science
-- Data & IA
-description: Module et exercices interactifs sur 🧱 Stockage Colonnaire.
+  - Data Science
+  - Data & IA
+description: "Comprendre le formatage mémoire par colonne (Apache Arrow, Parquet) pour accélérer les requêtes analytiques sur gros volumes."
 ---
 
 Quand un jeu de données grandit, la question n'est plus seulement : **quelles valeurs contient-il ?**

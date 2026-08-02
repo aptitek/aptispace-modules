@@ -1,9 +1,10 @@
 ---
 title: "Classes & Instances"
+icon: "🪙"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Comprendre le cœur de la POO : la classe (le moule) vs l'instance (l'objet), les constructeurs, l'encapsulation et la mémoire Stack/Heap."
+description: "Comprendre le cœur de la POO : la classe (le moule) vs l'instance (l'objet), les constructeurs et la mémoire Stack/Heap."
 ---
 
 La Programmation Orientée Objet (POO) est un paradigme qui organise le code autour d'**objets du monde réel** (ou concepts abstraits) plutôt que de simples suites de fonctions.

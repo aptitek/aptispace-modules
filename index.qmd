@@ -22,8 +22,9 @@ listing:
     sort: "title asc"
     filter-ui: true
     sort-ui: true
-    fields: [title, categories, description]
+    fields: [icon, title, categories, description]
     field-display-names:
+      icon: " "
       title: "Module / Cours"
       categories: "Discipline"
       description: "Description"
@@ -39,8 +40,9 @@ listing:
     sort: "title asc"
     filter-ui: true
     sort-ui: true
-    fields: [title, categories, description]
+    fields: [icon, title, categories, description]
     field-display-names:
+      icon: " "
       title: "Module / Cours"
       categories: "Discipline"
       description: "Description"
@@ -54,8 +56,9 @@ listing:
     sort: "title asc"
     filter-ui: true
     sort-ui: true
-    fields: [title, categories, description]
+    fields: [icon, title, categories, description]
     field-display-names:
+      icon: " "
       title: "Module / Cours"
       categories: "Discipline"
       description: "Description"
@@ -69,8 +72,9 @@ listing:
     sort: "title asc"
     filter-ui: true
     sort-ui: true
-    fields: [title, categories, description]
+    fields: [icon, title, categories, description]
     field-display-names:
+      icon: " "
       title: "Module / Cours"
       categories: "Discipline"
       description: "Description"
@@ -82,8 +86,9 @@ listing:
     sort: "title asc"
     filter-ui: true
     sort-ui: true
-    fields: [title, categories, description]
+    fields: [icon, title, categories, description]
     field-display-names:
+      icon: " "
       title: "Module / Cours"
       categories: "Discipline"
       description: "Description"

@@ -1,9 +1,10 @@
 ---
-title: "Syntaxes & Entités"
+title: "Grammaire & Entités de Code"
+icon: "🧱"
 categories:
   - Programmation Orientée Objet
   - Développement
-description: "Comprendre les composantes fondamentales de tout code source : instructions, expressions, types, nommage et littéraux."
+description: "Identifier les briques fondamentales de tout langage : mots-clés, identifiants, littéraux, instructions et expressions."
 ---
 
 Lorsque l'on apprend à programmer, la tentation est grande de se focaliser sur la syntaxe spécifique d'un langage (un point-virgule ici, des crochets là). Pourtant, **tous les langages de programmation partagent la même grammaire fondamentale**.
