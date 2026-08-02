@@ -1,0 +1,231 @@
+// ==========================================
+// _docker-layers.scss — Style des Couches Docker
+// ==========================================
+
+.docker-layer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-family: var(--font-code, Consolas, monospace);
+
+  .docker-stack-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0;
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(var(--sol-base01-rgb), 0.3);
+    }
+
+    .divider-badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--sol-blue);
+      background: rgba(var(--sol-blue-rgb), 0.1);
+      border: 1px dashed rgba(var(--sol-blue-rgb), 0.4);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+  }
+
+  .docker-layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .docker-layer {
+    background: rgba(var(--sol-base03-rgb), 0.35);
+    border: 1px solid rgba(var(--sol-base01-rgb), 0.25);
+    border-radius: var(--bs-border-radius, 8px);
+    padding: 0.85rem 1.1rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--sol-blue);
+      transition: background 0.2s ease;
+    }
+
+    &:hover {
+      background: rgba(var(--sol-base03-rgb), 0.6);
+      border-color: rgba(var(--sol-blue-rgb), 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    &[data-status="read-write"] {
+      background: rgba(var(--sol-orange-rgb), 0.08);
+      border-color: rgba(var(--sol-orange-rgb), 0.4);
+
+      &::before {
+        background: var(--sol-orange);
+      }
+
+      &:hover {
+        background: rgba(var(--sol-orange-rgb), 0.14);
+        border-color: var(--sol-orange);
+      }
+
+      .badge-rw {
+        background: var(--sol-orange);
+        color: var(--sol-base03);
+        border: 1px solid var(--sol-orange);
+        font-weight: 700;
+      }
+    }
+
+    &[data-status="base"] {
+      &::before {
+        background: var(--sol-cyan);
+      }
+    }
+
+    .docker-layer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .docker-layer-meta,
+    .docker-layer-cmd-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .docker-step-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--sol-base3);
+      background: var(--sol-base01);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .docker-cmd-tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+
+      &.cmd-from {
+        background: var(--sol-cyan);
+        color: var(--sol-base03);
+      }
+      &.cmd-run {
+        background: var(--sol-yellow);
+        color: var(--sol-base03);
+      }
+      &.cmd-copy {
+        background: var(--sol-green);
+        color: var(--sol-base03);
+      }
+      &.cmd-cmd {
+        background: var(--sol-violet);
+        color: var(--sol-base3);
+      }
+    }
+
+    .docker-cmd-code {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--sol-base2);
+      background: transparent;
+      padding: 0;
+    }
+
+    .docker-layer-title {
+      font-weight: 700;
+      color: var(--sol-base2);
+      font-size: 0.9rem;
+    }
+
+    .docker-layer-stats {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .docker-layer-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      &.badge-ro {
+        background: var(--sol-blue);
+        color: var(--sol-base3);
+        border: 1px solid var(--sol-blue);
+      }
+    }
+
+    .docker-layer-size {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--sol-base2);
+      background: rgba(var(--sol-base02-rgb), 0.85);
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      border: 1px solid rgba(var(--sol-base01-rgb), 0.35);
+    }
+
+    .docker-layer-body {
+      margin-top: 0.4rem;
+
+      .docker-layer-desc {
+        margin: 0;
+        font-size: 0.82rem;
+        color: var(--sol-base1);
+        font-family: var(--font-sans, "Outfit", sans-serif);
+      }
+
+      .docker-layer-subtext {
+        font-size: 0.75rem;
+        color: var(--sol-orange);
+        display: block;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .docker-layer-footer {
+      display: none;
+      margin-top: 0.5rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed rgba(var(--sol-base01-rgb), 0.2);
+      font-size: 0.75rem;
+
+      .docker-hash-tag {
+        color: var(--sol-base0);
+      }
+    }
+
+    &.is-expanded {
+      .docker-layer-footer {
+        display: block;
+      }
+    }
+  }
+}

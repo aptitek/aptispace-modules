@@ -15,14 +15,48 @@ Pour héberger des applications d'État (*Stateful*) — comme une base de donn�
 
 Une image Docker est constituée de plusieurs couches en **lecture seule** (*Read-Only Layers*). Lorsqu'un conteneur démarre, Docker ajoute une mince couche supérieure en **lecture-écriture** (*Writable Layer* ou *Container Layer*).
 
-```text
-+-------------------------------------------------+
-|  Couche Conteneur (Read-Write)  <-- ÉPHÉMÈRE    |  <- Effacée lors du 'docker rm'
-+-------------------------------------------------+
-|  Couche Image N (Read-Only)                     |
-|  Couche Image 1 (Read-Only)                     |
-+-------------------------------------------------+
+::: {.card-window .mb-4}
+#### Superposition des Couches d'Image et de la Couche Conteneur Éphémère {.bi-layers}
+
+:::: {#docker-storage-layers-container}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_dockerStorageLayersRender = {
+  aptitek.renderDockerLayers("#docker-storage-layers-container", {
+    showContainerLayer: true,
+    containerLayer: {
+      title: "Couche Conteneur (Read-Write / Éphémère)",
+      desc: "Toutes les modifications, créations de fichiers et suppressions temporaires effectuées à la volée pendant l'exécution.",
+      size: "&lt; 1 Mo",
+      status: "read-write"
+    },
+    layers: [
+      {
+        step: "N",
+        command: "Couche Image Supérieure (Read-Only)",
+        desc: "Dernière couche immuable de l'image contenant le code applicatif et ses dépendances.",
+        type: "copy",
+        size: "12.4 MB",
+        status: "read-only",
+        hash: "sha256:e3b0c44298fc"
+      },
+      {
+        step: "1",
+        command: "Couche Image de Base (Read-Only)",
+        desc: "Système de fichiers racine immuable fourni par l'image parent de départ (ex: Alpine, Ubuntu).",
+        type: "from",
+        size: "52.3 MB",
+        status: "base",
+        hash: "sha256:7f9011a0c8b2"
+      }
+    ]
+  });
+}
 ```
+
 
 Toutes les écritures (création de fichier, modification) s'effectuent dans cette couche éphémère grâce au système **Copy-on-Write (CoW)**.
 

@@ -1,24 +1,13 @@
 /*-- scss:rules --*/
 
 // =============================================================================
-// 1. GOOGLE FONTS IMPORT
+// 1. LOCAL OPTIMIZED FONTS
 // =============================================================================
-@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap");
-
 @font-face {
     font-family: "Milkshake";
-    src: url("/assets/fonts/Milkshake.ttf") format("truetype");
+    src: url("/assets/fonts/Milkshake.woff2") format("woff2");
     font-weight: normal;
     font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Recursive";
-    src: url("/assets/fonts/Recursive_VF_1.085.woff2") format("woff2"),
-         url("/assets/fonts/Recursive_VF_1.085.ttf") format("truetype");
-    font-weight: 300 1000;
-    font-style: oblique -15deg 0deg;
     font-display: swap;
 }
 
@@ -60,6 +49,12 @@
     --sol-green-rgb: #{red($sol-green)}, #{green($sol-green)}, #{blue($sol-green)};
     --font-sans: #{$font-family-base};
     --font-code: #{$font-family-code};
+    --font-brand: #{$font-family-brand};
+    --font-serif: #{$font-family-serif};
+    --font-sans-alt: #{$font-family-sans-alt};
+    --font-slab: #{$font-family-slab};
+    --font-cursive: #{$font-family-cursive};
+    --font-display: #{$font-family-display};
     --accent-primary: var(--sol-blue);
     --accent-danger: var(--sol-red);
     --accent-success: var(--sol-green);

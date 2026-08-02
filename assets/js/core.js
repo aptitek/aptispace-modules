@@ -36,9 +36,10 @@ export const theme = {
   radius: "8px",
   radiusSmall: "4px",
   
-  // Typographie (Alignée sur le _quarto.yml)
-  fontSans: '"Recursive", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontMono: '"Recursive", SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  // Typographie (Single source of truth via CSS Custom Properties)
+  fontSans: 'var(--font-sans, "Outfit", sans-serif)',
+  fontMono: 'var(--font-code, "Recursive", monospace)',
+  fontBrand: 'var(--font-brand, "Milkshake", cursive)'
 };
 
 /**

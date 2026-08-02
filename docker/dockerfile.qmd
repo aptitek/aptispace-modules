@@ -17,17 +17,59 @@ Une image Docker n'est pas un bloc monolithique : c'est un **mille-feuille de co
 
 Chaque instruction (`FROM`, `RUN`, `COPY`) crée une nouvelle couche de système de fichiers superposée aux précédentes.
 
-```text
-+-------------------------------------------------+
-|  CMD ["python", "app.py"]                       | <- Couche 4
-+-------------------------------------------------+
-|  COPY . /app                                    | <- Couche 3
-+-------------------------------------------------+
-|  RUN pip install -r requirements.txt            | <- Couche 2
-+-------------------------------------------------+
-|  FROM python:3.11-alpine                        | <- Couche 1 (Base)
-+-------------------------------------------------+
+::: {.card-window .mb-4}
+#### Visualiseur d'Empilement des Couches Docker {.bi-layers-half}
+
+:::: {#docker-file-layers-container}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_dockerFileLayersRender = {
+  aptitek.renderDockerLayers("#docker-file-layers-container", {
+    layers: [
+      {
+        step: 4,
+        command: 'CMD ["python", "app.py"]',
+        desc: "Point d'entrée du conteneur (Métadonnées de démarrage & commande par défaut).",
+        type: "cmd",
+        size: "0 B",
+        status: "read-only",
+        hash: "sha256:d8a5719e83b4"
+      },
+      {
+        step: 3,
+        command: "COPY . /app",
+        desc: "Copie du code source applicatif local vers le répertoire de travail dans l'image.",
+        type: "copy",
+        size: "1.2 MB",
+        status: "read-only",
+        hash: "sha256:c2b19280a91f"
+      },
+      {
+        step: 2,
+        command: "RUN pip install -r requirements.txt",
+        desc: "Exécution de l'installateur de dépendances pour ajouter les bibliothèques Python.",
+        type: "run",
+        size: "45.8 MB",
+        status: "read-only",
+        hash: "sha256:a98104ff2e11"
+      },
+      {
+        step: 1,
+        command: "FROM python:3.11-alpine",
+        desc: "Image parent de base (Système d'exploitation Linux Alpine minimal avec runtime Python).",
+        type: "from",
+        size: "52.3 MB",
+        status: "base",
+        hash: "sha256:7f9011a0c8b2"
+      }
+    ]
+  });
+}
 ```
+
 
 ## 📖 Référence des Instructions Essentielles
 
@@ -64,8 +106,8 @@ Testez l'impact du type de fichier modifié sur les performances de votre `docke
 ##### Scénario 2 : Ordre optimisé {.bi-check-circle}
 `COPY requirements.txt .` est placé avant `RUN pip install`.
 
-##### [Modifier `app.py` (Code)]{.btn .bi-code-slash #btneditcode} {.tab-right .no-pane}
-##### [Modifier `requirements.txt` (Lib)]{.btn .bi-journal-code #btneditreq} {.tab-right .no-pane}
+##### [Modifier `app.py` (Code)]{.btn .bi-code-slash #btn-edit-code} {.tab-right .no-pane}
+##### [Modifier `requirements.txt` (Lib)]{.btn .bi-journal-code #btn-edit-req} {.tab-right .no-pane}
 ::::
 
 :::: {#cache-sim-terminal .terminal}

@@ -147,10 +147,37 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     .linkDirectionalArrowLength(options.linkArrowLength)
     .linkDirectionalArrowRelPos(1);
 
-  // Set dimensions: use explicit options, or fall back to the container's actual size
+  // Set dimensions — when zoomToFit is enabled, dynamically compute
+  // the height from the node bounding box so the canvas never exceeds
+  // its container (which may have overflow:hidden via .card-window).
   const containerRect = targetEl.getBoundingClientRect();
-  graph.width(options.width || containerRect.width || 600);
-  graph.height(options.height || containerRect.height || 300);
+  const containerWidth = options.width || containerRect.width || 600;
+
+  // Visual extent: largest shape half-width (pill = 3.0 × nodeRadius)
+  const shapeExtent = options.nodeRadius * 3.0;
+
+  let graphHeight = options.height || containerRect.height || 300;
+
+  if (options.zoomToFit && graphData.nodes.length > 0) {
+    // Compute bounding box from fixed positions (fx/fy) or initial x/y
+    let minY = Infinity, maxY = -Infinity;
+    for (const n of graphData.nodes) {
+      const ny = n.fy ?? n.y ?? 0;
+      if (ny < minY) minY = ny;
+      if (ny > maxY) maxY = ny;
+    }
+    if (isFinite(minY) && isFinite(maxY)) {
+      // Content height = vertical span + visual extent on each side + padding
+      const padding = options.zoomToFitPadding || 50;
+      const contentHeight = (maxY - minY) + shapeExtent * 2 + padding * 2;
+      graphHeight = Math.max(contentHeight, graphHeight);
+      // Resize the container so overflow:hidden parents don't clip
+      targetEl.style.setProperty("height", `${graphHeight}px`);
+    }
+  }
+
+  graph.width(containerWidth);
+  graph.height(graphHeight);
   graph.minZoom(options.minZoom);
   graph.maxZoom(options.maxZoom);
 
@@ -249,6 +276,18 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     }
   };
 
+  // Text-width-to-radius ratio per shape — inverse of the multipliers
+  // used below. Allows computing the minimum radius to fit a given text.
+  const textRatioForShape = {
+    circle: 1.8,
+    rect: 2.3,
+    "rounded rect": 2.3,
+    pill: 2.6,
+    oval: 2.2,
+    square: 1.8,
+    diamond: 1.8
+  };
+
   graph.nodeCanvasObject((node, ctx, globalScale) => {
     const status = options.getNodeStatus(node);
     const shape = options.getNodeShape(node);
@@ -261,8 +300,21 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     const nodeBg = resolveColor(rawBg, SOL_FALLBACKS.base2);
     const nodeBorder = resolveColor(rawBorder, SOL_FALLBACKS.base01);
     const nodeText = resolveColor(rawText, SOL_FALLBACKS.base00);
-    
-    const r = options.nodeRadius;
+
+    // --- Auto-size: measure text, compute minimum radius to fit label ---
+    const label = options.getNodeLabel(node);
+    const fSize = options.fontSize;
+    ctx.font = `bold ${fSize}px ${options.fontFamily}`;
+    const ratio = textRatioForShape[shape] || 1.8;
+    let r = options.nodeRadius;
+
+    if (label) {
+      const textWidth = ctx.measureText(label).width;
+      const minRadius = (textWidth + 8) / ratio; // +8px inner padding
+      r = Math.max(r, minRadius);
+    }
+    // Cache the effective radius for bounding box / hit area calculations
+    node.__r = r;
 
     ctx.save();
 
@@ -294,31 +346,12 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     ctx.strokeStyle = nodeBorder;
     ctx.stroke();
 
-    // Text Label inside Node
-    const label = options.getNodeLabel(node);
+    // Text Label inside Node — always displayed in full (no truncation)
     if (label) {
-      const fSize = options.fontSize;
-      ctx.font = `bold ${fSize}px ${options.fontFamily}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = nodeText;
-      
-      let maxTextWidth = r * 1.8;
-      if (shape === "rect" || shape === "rounded rect") maxTextWidth = r * 2.3;
-      if (shape === "pill") maxTextWidth = r * 2.6;
-      if (shape === "oval") maxTextWidth = r * 2.2;
-      
-      let text = label;
-      
-      let textWidth = ctx.measureText(text).width;
-      if (textWidth > maxTextWidth) {
-        while (text.length > 3 && textWidth > maxTextWidth) {
-          text = text.slice(0, -1);
-          textWidth = ctx.measureText(text + "…").width;
-        }
-        text = text + "…";
-      }
-      ctx.fillText(text, node.x, node.y);
+      ctx.fillText(label, node.x, node.y);
     }
 
     ctx.restore();
@@ -439,9 +472,29 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
     });
   }
 
-  // Zoom to Fit — wait for the force simulation to fully settle
-  // maxZoom is enforced on the d3-zoom behavior so zoomToFit
-  // cannot exceed it (d3-zoom clamps internally).
+  // Zoom to Fit — safe padding enforcement.
+  // zoomToFit uses node center positions for its bounding box, but nodes
+  // have visual extent that depends on their auto-sized radius (__r).
+  // We wrap zoomToFit so ALL calls enforce a minimum safe padding.
+  // After the first render, use the largest per-node __r; before that,
+  // fall back to shapeExtent (nodeRadius × 3.0).
+  const _originalZoomToFit = graph.zoomToFit.bind(graph);
+  graph.zoomToFit = (ms, padding, ...rest) => {
+    // Find the largest effective node radius after auto-sizing
+    let maxNodeExtent = shapeExtent; // fallback before first render
+    const nodes = graph.graphData().nodes;
+    for (const n of nodes) {
+      if (n.__r) {
+        // pill shape half-width = __r * 3.0, but __r is already the auto-sized radius
+        // The largest visual extent from center = __r × max shape multiplier (pill=1.5 half-height)
+        maxNodeExtent = Math.max(maxNodeExtent, n.__r * 1.5);
+      }
+    }
+    const minSafePadding = maxNodeExtent + 10;
+    const safePadding = Math.max(padding ?? options.zoomToFitPadding, minSafePadding);
+    return _originalZoomToFit(ms, safePadding, ...rest);
+  };
+
   if (options.zoomToFit) {
     let hasFitted = false;
     graph.onEngineStop(() => {
@@ -454,6 +507,31 @@ export function createGraph(container, graphData, optionsOr3d = {}) {
       }
     });
   }
+
+  // Responsive resize — update graph width and re-fit when container changes.
+  // Uses ResizeObserver with a debounce to avoid layout thrash.
+  let resizeTimer = null;
+  const resizeObserver = new ResizeObserver((entries) => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      for (const entry of entries) {
+        const newWidth = entry.contentRect.width;
+        if (newWidth > 0 && Math.abs(newWidth - graph.width()) > 1) {
+          graph.width(newWidth);
+          if (options.zoomToFit) {
+            try { graph.zoomToFit(200); } catch (_) {}
+          }
+        }
+      }
+    }, 150);
+  });
+  resizeObserver.observe(targetEl);
+
+  // Expose cleanup for OJS invalidation: graph._dispose()
+  graph._dispose = () => {
+    clearTimeout(resizeTimer);
+    resizeObserver.disconnect();
+  };
 
   return graph;
 }

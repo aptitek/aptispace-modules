@@ -22,10 +22,17 @@ $sol-cyan:    #2aa198;
 $sol-green:   #859900;
 
 // =============================================================================
-// 2. TYPOGRAPHY TOKENS
+// 2. TYPOGRAPHY TOKENS (SINGLE SOURCE OF TRUTH)
 // =============================================================================
 $font-family-base: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !default;
 $font-family-code: "Recursive", "Fira Code", "Courier New", Courier, monospace !default;
+$font-family-brand: "Milkshake", cursive !default;
+$font-family-serif: "EB Garamond", serif !default;
+$font-family-sans-alt: "Inter", sans-serif !default;
+$font-family-slab: "Arvo", serif !default;
+$font-family-cursive: "Pacifico", cursive !default;
+$font-family-display: "Press Start 2P", sans-serif !default;
+
 $headings-font-weight: 700 !default;
 
 // =============================================================================

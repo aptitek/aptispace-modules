@@ -88,6 +88,7 @@ export {
 } from "./plots.js";
 
 export { registerTabset } from "./custom/card.js";
+export { renderDockerLayers } from "./custom/docker-layers.js";
 export { createMagnifyingDocument } from "./custom/document.js";
 export { createDynamicSvg, bindSvgToTabset } from "./custom/dynamic-svg.js";
 export { createLever } from "./custom/lever.js";
