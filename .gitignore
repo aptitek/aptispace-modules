@@ -4,8 +4,6 @@ _site
 /.luarc.json
 .jupyterlite.doit.db
 **/*.pyc
-/fonts/
-/assets/fonts/
 bin/act
 lab/**/*.html
 *.min.js
