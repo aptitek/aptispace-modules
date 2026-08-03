@@ -1,0 +1,18 @@
+---
+title: "Ressources et Téléchargements"
+icon: "📁"
+categories:
+  - Data Science
+  - Ressources
+description: "Retrouvez la présentation Genially, les liens de référence et les supports complémentaires pour la Data Science."
+---
+
+::: {.card-window}
+#### Supports de Cours - Data Science {.bi-folder-symlink}
+
+Retrouvez ci-dessous les supports de cours complémentaires pour le thème Data Science :
+
+- [Présentation Genially - Introduction à la Data Science](https://view.genially.com/692c310a95ba19c812c12b8b)
+- [Documentation Officielle Python](https://docs.python.org/3/)
+- [Guide scikit-learn Machine Learning](https://scikit-learn.org/stable/)
+:::

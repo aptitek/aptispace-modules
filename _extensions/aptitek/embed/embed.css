@@ -4,8 +4,9 @@
 
 .ratio-embed {
     width: 100% !important;
-    height: 480px !important;
-    max-height: 65vh !important;
+    aspect-ratio: 16 / 9 !important;
+    height: auto !important;
+    max-height: 85vh !important;
     margin: 2rem auto !important;
     border: 1px solid var(--card-border, rgba(88, 110, 117, 0.12)) !important;
     border-radius: 8px !important;

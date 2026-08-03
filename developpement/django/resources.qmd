@@ -1,0 +1,30 @@
+---
+title: "Ressources et Téléchargements"
+icon: "📁"
+categories:
+  - Django
+  - Ressources
+description: "Retrouvez les fiches synthétiques, projets d'exemples et guides de référence sur Django et l'architecture MVT."
+---
+
+Retrouvez ci-dessous l'ensemble des ressources complémentaires pour approfondir la maîtrise de Django et de son architecture MVT :
+
+::: {.row gap=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Fiches Synthétiques & Mémentos {.bi-file-earmark-pdf}
+
+- [Cheat-Sheet Django MVT & ORM (PDF)](assets/django-mvt-cheatsheet.pdf)
+- [Guide de Référence des Templates DTL (PDF)](assets/django-dtl-reference.pdf)
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Projets d'Exemples & Starter Kits {.bi-file-earmark-zip}
+
+- [Projet Starter Django MVT Minimal (ZIP)](assets/django-mvt-starter.zip)
+- [Exemple d'Application Blog MVT Complète (ZIP)](assets/django-blog-example.zip)
+:::::
+::::
+:::

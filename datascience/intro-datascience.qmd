@@ -1,0 +1,134 @@
+---
+title: "Introduction à la Science des Données"
+icon: "📊"
+categories:
+  - Data Science
+  - Data & IA
+description: "Découvrez le rôle du Data Detective, l'entonnoir de raffinage de la donnée et la timeline du cycle de vie en 7 étapes (de l'Acquisition au MLOps)."
+---
+
+::: {.card-window layout="full"}
+#### Présentation Interactive {.bi-easel}
+
+[Présentation Genially](https://view.genially.com/692c310a95ba19c812c12b8b){.embed}
+:::
+
+## Mission Data Detective : L'Art du Raffinage
+
+La science des données s'est imposée comme le pivot central des architectures d'information modernes. Elle n'est plus une discipline technique isolée, mais le socle méthodologique sur lequel repose l'ensemble de la circulation de l'information d'une organisation.
+
+L'objectif fondamental de la Data Science est de transformer un **signal brut**, souvent fragmenté et bruité, en un **actif stratégique** capable de guider la prise de décision métier.
+
+::: {.card-window}
+#### Entonnoir de Raffinage de la Donnée {.bi-funnel}
+
+:::: {.d-flex .align-items-center .gap-3}
+::::: {}
+[Bruit (%)]{.slider #noise-filter value=25 min=0 max=80 step=5 vertical=true direction=up}
+:::::
+
+::::: {#refining-funnel-container .chart-container-md .flex-grow-1}
+:::::
+::::
+
+:::: {.metrics}
+| Signal Brut | Données Purifiées      | Décisions Générées |
+| :---------- | :--------------------- | :----------------- |
+| 100 %       | [noise-filter]{.val} % | 12 %               |
+::::
+:::
+
+```{ojs}
+renderFunnelChart = {
+  noise_filter;
+  const signalPure = Math.max(10, 100 - noise_filter);
+  const info = Math.round(signalPure * 0.75);
+  const me = Math.round(info * 0.5);
+  const dec = Math.round(me * 0.35);
+
+  aptitek.createFunnel("refining-funnel-container",
+    {
+      text: ["1. Signal Brut", "2. Information Structurée", "3. Connaissance", "4. Décision Métier"],
+      values: [100, info, me, dec]
+    },
+    {
+      colors: [
+        aptitek.getThemeColor("--sol-red", "#dc322f"),
+        aptitek.getThemeColor("--sol-yellow", "#b58900"),
+        aptitek.getThemeColor("--sol-blue", "#268bd2"),
+        aptitek.getThemeColor("--sol-green", "#859900")
+      ]
+    }
+  );
+}
+```
+
+::: {.callout-note collapse="true"}
+### Comprendre la Métaphore du Raffinage
+
+De même que le pétrole brut doit être raffiné pour devenir du carburant utilisable, la donnée brute subit des traitements successifs. À chaque niveau de l'entonnoir, la quantité de données diminue mais sa **valeur stratégique** augmente de façon exponentielle.
+:::
+
+## Cycle de Vie de la Donnée : De l'Acquisition au MLOps
+
+L'Intelligence Artificielle et l'Analyse de Données ne relèvent pas d'une intuition magique : elles reposent sur un processus industriel structuré. Ce pipeline, souvent inspiré de standards comme CRISP-DM ou OSEMN, suit **7 étapes séquentielles et itératives**.
+
+::: {.card}
+#### Concept Clé : Un Processus Industriel {.bi-diagram-3}
+
+L'IA n'est pas une magie instantanée. Pour éviter qu'un projet ne devienne un gouffre financier ou ne produise des résultats absurdes, tout projet de Data Science suit une méthodologie rigoureuse.
+:::
+
+### Les 7 Étapes de l'Investigation
+
+::: {.timeline .vertical}
+
+:::: {.event data-label="Étape 1"}
+**Acquisition (L'Extraction)**
+
+L'objectif est d'extraire le signal brut depuis diverses sources (API, Web Scraping, Capteurs IoT). C'est ici que l'on choisit l'architecture d'ingestion : **Batch** pour l'historique, ou **Streaming** pour le temps réel.
+::::
+
+:::: {.event data-label="Étape 2"}
+**Nettoyage (Le Décrassage)**
+
+Étape la plus chronophage (**80 % du temps**). Une donnée "sale" (doublons, formats invalides) condamne l'algorithme au principe du **Garbage In, Garbage Out (GIGO)**.
+::::
+
+:::: {.event data-label="Étape 3"}
+**Visualisation (Le Témoignage)**
+
+Transformer les chiffres bruts en signaux visuels actionnables et compréhensibles en maîtrisant la grammaire des graphiques.
+::::
+
+:::: {.event data-label="Étape 4"}
+**Analyse Exploratoire (L'Interrogatoire)**
+
+Phase d'investigation statistique approfondie où l'on cherche des motifs, des corrélations ou des anomalies (*Outliers*) en s'appuyant sur des représentations graphiques claires.
+::::
+
+:::: {.event data-label="Étape 5"}
+**Modélisation (Le Profilage)**
+
+C'est ici que le Machine Learning entre en scène. Les algorithmes apprennent à prédire, classer ou regrouper des données à partir de variables enrichies par le **Feature Engineering**.
+::::
+
+:::: {.event data-label="Étape 6"}
+**Évaluation & MLOps (L'Audit & La Surveillance)**
+
+Le modèle est audité via des métriques rigoureuses (F1-Score, RMSE). Une fois déployé, des processus de **MLOps** assurent une surveillance continue pour prévenir le crash silencieux de la dérive des performances (**Drift**).
+::::
+
+:::: {.event data-label="Étape 7"}
+**Communication (La Restitution)**
+
+Traduire des analyses complexes en récits métier clairs et impactants (**Data Storytelling**) et en outils web interactifs (**Dashboards** / Rapports).
+::::
+
+:::
+
+::: {.callout-warning}
+### Danger : L'Itération Infinie
+
+Comme le montre ce pipeline, le cycle n'est pas strictement linéaire. Si une dérive (**Drift**) est détectée en production lors de l'étape 6, des processus MLOps ré-enclenchent immédiatement l'acquisition de nouvelles données pour ré-entraîner le modèle.
+:::

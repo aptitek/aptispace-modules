@@ -57,7 +57,6 @@ _dockerStorageLayersRender = {
 }
 ```
 
-
 Toutes les écritures (création de fichier, modification) s'effectuent dans cette couche éphémère grâce au système **Copy-on-Write (CoW)**.
 
 ## 💾 Les 3 Types de Montages Docker

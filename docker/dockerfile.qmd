@@ -70,7 +70,6 @@ _dockerFileLayersRender = {
 }
 ```
 
-
 ## 📖 Référence des Instructions Essentielles
 
 | Instruction      | Description                                                         | Exemple                       |

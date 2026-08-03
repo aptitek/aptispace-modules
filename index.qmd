@@ -100,27 +100,27 @@ listing:
 :::: {.tabs}
 ##### Tous les Cours {.bi-collection}
 
-::: {#catalog-all}
-:::
+::::: {#catalog-all}
+:::::
 
 ##### Data & IA {.bi-robot}
 
-::: {#catalog-data}
-:::
+::::: {#catalog-data}
+:::::
 
 ##### Système & Réseau {.bi-hdd-network}
 
-::: {#catalog-systeme}
-:::
+::::: {#catalog-systeme}
+:::::
 
 ##### Développement {.bi-code-slash}
 
-::: {#catalog-dev}
-:::
+::::: {#catalog-dev}
+:::::
 
 ##### UI/UX Design {.bi-palette}
 
-::: {#catalog-uiux}
-:::
+::::: {#catalog-uiux}
+:::::
 ::::
 :::
