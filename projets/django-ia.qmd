@@ -1,0 +1,189 @@
+---
+title: "Plateforme Web Django & Intelligence Artificielle"
+icon: "🤖"
+description: "Conception libre, intégration d'un moteur IA (LLM, Vision, Génératif ou Prédictif) et déploiement cloud d'une plateforme Django."
+categories:
+  - Projets
+  - Django
+  - Intelligence Artificielle
+  - Docker
+  - DevOps
+---
+
+# 🤖 Projet Libre Django : Application Web & IA Déployée
+
+### 1.0.1. Contexte & Objectifs
+
+Ce projet est un **projet majeur et libre** vous invitant à concevoir une application web complète sous **Django**, intégrant une brique d'**Intelligence Artificielle** (générative ou prédictive) et **déployée en ligne accessible publiquement**.
+
+Vous avez toute liberté sur la thématique et le type d'IA intégrée. L'objectif est d'allier la puissance de l'écosystème Django à des capacités IA modernes (via des API tierces ou des modèles hébergés), le tout habillé par un **Design System soigné (UI/UX)** et poussé en **production cloud**.
+
+::: {.callout-note collapse="true" title="Exemples d'orientations IA au choix"}
+- **LLM & Génération de Texte** : Assistant RAG (*Retrieval-Augmented Generation*) sur documents, générateur de code ou de synthèses via **Mistral AI**, **HuggingFace** ou **NVIDIA NIM**.
+- **Vision par Ordinateur & OCR** : Détection d'objets, classification d'images médicales/industrielles ou analyse de documents (YOLO, ResNet, HuggingFace Vision).
+- **Génération Média (Image, Audio, Vidéo, 3D)** : Générateur d'illustrations (Stable Diffusion/Flux), synthèse vocale (Text-to-Speech) ou génération d'art 3D.
+- **Machine Learning Prédictif & Tabulaire** : Moteur de recommandation, prédiction financière ou estimation de risques (scikit-learn, XGBoost, PyTorch).
+:::
+
+### 1.0.2. Modalités de Rendu & Déploiement
+
+* **Groupe :** 1 à 3 personnes maximum.
+* **Livrables :**
+  1. Un lien vers un dépôt **GitHub Public** (avec commits atomiques et réguliers).
+  2. Une **URL de Production accessible en ligne** (ex: Render, Railway, Fly.io, Hugging Face Spaces ou serveur VPS).
+* **Fichier README.md (CRITÈRE ÉLIMINATOIRE) :** Le README doit obligatoirement comporter les **Noms et Prénoms** de tous les membres du groupe dès l'en-tête, l'URL de production, ainsi que le guide d'exécution.
+
+---
+
+### 1.0.3. Spécifications Techniques Obligatoires
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### 🧠 Moteur IA & Backend Django {.bi-cpu}
+
+* **Intégration du Modèle IA :**
+  * Connexion propre à un fournisseur IA (**HuggingFace**, **Mistral AI**, **NVIDIA NIM**, **Replicate**, OpenAI) ou exécution d'un modèle local/embarqué (`torch`, `onnx`, `scikit-learn`).
+  * Gestion asynchrone des requêtes longues (Celery / Redis / Django Channels ou tâches en arrière-plan) pour ne pas bloquer l'interface.
+* **Modélisation ORM & Persistence :**
+  * Historique des prédictions/générations, gestion des utilisateurs (`User`), profils et stockage sécurisé des promts ou datasets d'entrée.
+  * Stockage sécurisé des fichiers générés ou analysés (images, audio, PDF) via volumes ou stockage objet (S3/Cloudinary).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### 🎨 UI/UX & Expérience Utilisateur IA {.bi-palette}
+
+* **Design System & Tokens :**
+  * Centralisation des variables CSS (couleurs, indicateurs de chargement, typographie, thèmes sombre/clair).
+* **Composants & Retours d'État IA :**
+  * **États d'attente (Loaders / Skeletons)** : Retours visuels immédiats pendant l'inférence ou la génération du modèle IA.
+  * **Affichage réactif** : Streaming de réponses texte (pour les LLM) ou prévisualisation dynamique (pour l'image/audio).
+  * **Gestion des erreurs IA** : Alertes explicites en cas de dépassement de quota d'API ou d'échec de génération.
+:::::
+::::
+:::
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### ☁️ Déploiement Cloud & Isolation Infra {.bi-cloud-check}
+
+* **Mise en Production Accessible :**
+  * Déploiement fonctionnel sur une plateforme cloud (**Render**, **Railway**, **Fly.io**, **Hugging Face Spaces**) avec HTTPS actif.
+* **Gestion des Sécrets & Sécurité :**
+  * **Interdiction absolue** de pusher des clés d'API (Mistral, HuggingFace, OpenAI) ou des mots de passe en dur sur Git.
+  * Utilisation stricte des variables d'environnement (`.env` local et variables Cloud en prod).
+* **Conteneurisation Docker :**
+  * `Dockerfile` optimisé pour la production avec Gunicorn/Uvicorn.
+  * Orchestration `docker-compose.yml` multi-services (Web, PostgreSQL, Redis/Worker).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### 🧪 DevOps, QA & Qualité {.bi-shield-check}
+
+* **Tests Automatisés :**
+  * Tests unitaires sur les vues, les formulaires et le mock des appels API IA (utilisation de `unittest.mock` pour éviter les coûts d'API pendant les tests).
+* **Pipeline CI/CD :**
+  * Pipeline GitHub Actions exécutant les tests et le linteur (`ruff`/`flake8`/`black`) à chaque commit.
+* **Monitoring & Logs :**
+  * Journalisation propre des appels IA et des erreurs d'inférence.
+:::::
+::::
+:::
+
+### 1.0.4. Le Rapport Technique (README.md)
+
+Le fichier `README.md` est le document central d'évaluation du projet. Il doit obligatoirement inclure :
+
+1. **En-tête & Déploiement (OBLIGATOIRE) :**
+   * **Noms et Prénoms** de tous les membres du groupe (Critère éliminatoire).
+   * **URL de l'application en ligne** (accessible au correcteur).
+   * Thématique du projet et cas d'usage de l'IA retenu.
+2. **Guide d'Exécution Locale :** Instructions pour lancer le projet localement avec `docker compose up` et injecter ses clés d'API (`.env.example` fourni).
+3. **Architecture Technique & Pipeline IA :**
+   * Schéma d'architecture expliquant le flux de données entre Django, la base de données et l'API/Moteur IA.
+   * Modèle ORM (Diagramme ERD).
+4. **Choix UI/UX & Gestion du Temps d'Inférence :** Explication des retours visuels mis en place pour gérer la latence de l'IA.
+5. **Rapport d'Ingénierie & Post-Mortem :** Analyse critique des performances du modèle, gestion des coûts/quotas API et difficultés de déploiement résolues.
+
+---
+
+# 📝 Fiche de Notation (40 Points — 2 Notes sur 20)
+
+## 🚫 Critères Éliminatoires (Go / No-Go)
+
+*Si l'une des cases ci-dessous est cochée "NON", le projet n'est pas corrigé (Note = 0 ou rattrapage).*
+
+| **Critère**                                                                                         | **OUI** | **NON** |
+| :-------------------------------------------------------------------------------------------------- | :------ | :------ |
+| Présence du fichier `README.md` avec les **Noms et Prénoms** de tous les membres du groupe           | ☐       | ☐       |
+| Application déployée et accessible en ligne via une URL publique fonctionnelle                       | ☐       | ☐       |
+| L'intégration IA fonctionnelle (le modèle génère, prédit ou traite les données de façon effective) | ☐       | ☐       |
+| Aucune clé d'API ou secret n'est exposé en clair dans le dépôt Git public                           | ☐       | ☐       |
+
+---
+
+## 📊 PARTIE 1 : Application Web Django, UI/UX & Intégration IA (Note 1 / 20)
+
+Cette première note évalue la qualité de la plateforme web, la robustesse du backend Django et la valeur ajoutée de l'expérience utilisateur liée à l'IA.
+
+### 2.1.1. Architecture Django, ORM & Moteur IA (8 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Intégration du Moteur IA**      | Pipeline IA fonctionnel (API ou local), traitement propre des données et gestion des réponses.             | **/ 3**  |
+| **Modélisation ORM & Storage**    | Modèles Django structurés (`User`, `History`, `Result`), persistance des résultats et des médias.            | **/ 3**  |
+| **Architecture Asynchrone / SRP** | Séparation claire du moteur IA et des vues Django. Traitement des requêtes longues sans blocage de l'app.   | **/ 2**  |
+
+### 2.1.2. Ergonomie UI/UX & Retours d'État IA (6 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Design System & Tokens**        | Thème visuel propre, utilisation de tokens CSS (couleurs, typographie) et layout réactif.                   | **/ 2**  |
+| **Gestion des Latences IA**       | Interfaces d'attente soignées (Loaders, Skeletons, Streaming) adaptées aux temps de réponse du modèle IA.  | **/ 2**  |
+| **Gestion des Erreurs & Quotas**  | Messages d'erreur et retours utilisateur explicites en cas d'échec du modèle ou de problème réseau.          | **/ 2**  |
+
+### 2.1.3. Valeur Métier & Originalité du Projet (6 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Utilité & Pertinence du Cas**   | L'application répond à un vrai besoin ou cas d'usage pertinent tirant parti des capacités de l'IA.         | **/ 3**  |
+| **Qualité du Prompt / Modèle**    | Prompt engineering poussé ou bon paramétrage du modèle IA (hyperparamètres, RAG, température).             | **/ 3**  |
+
+---
+
+## 📊 PARTIE 2 : Cloud, Infrastructure, DevOps & Documentation (Note 2 / 20)
+
+Cette seconde note évalue la mise en production, la conteneurisation Docker, la sécurité des secrets, la qualité de code et la documentation.
+
+### 2.2.1. Déploiement Cloud & Production (7 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **URL de Production Live**        | Site déployé et pleinement fonctionnel en ligne (Render, Railway, Fly.io, HF Spaces) avec HTTPS.             | **/ 4**  |
+| **Gestion des Secrets & SecOps**  | Aucune clé d'API sur Git. Isolation stricte via variables d'environnement Cloud et `.env.example`.          | **/ 3**  |
+
+### 2.2.2. Conteneurisation Docker & Infrastructure (5 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Dockerfile de Prod**            | Image légère, exécution non-root, collecte des statiques et entrypoint propre.                               | **/ 2.5**|
+| **Orchestration Compose**         | `docker-compose.yml` multi-services (Web, PostgreSQL, Redis/Worker) avec volumes nommés et healthchecks.     | **/ 2.5**|
+
+### 2.2.3. Tests, CI/CD & Qualité de Code (4 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Tests Automatisés & Mocks**     | Suite de tests Django testant les vues et simulant les API IA avec `mock` sans consommer de tokens.         | **/ 2**  |
+| **CI/CD & Linting**               | Workflow GitHub Actions exécutant les tests et le formatage (`ruff`/`black`) à chaque commit.                | **/ 2**  |
+
+### 2.2.4. Rapport Technique README.md & Post-Mortem (4 pts)
+
+| **Critère**                       | **Détail**                                                                                                   | **Note** |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------- | :------- |
+| **Présentation & Noms**          | En-tête avec **Noms et Prénoms**, URL de prod et instructions d'installation locale claires.                | **/ 2**  |
+| **Architecture & Post-Mortem**    | Diagrammes d'architecture, analyse critique de l'IA et bilan du déploiement en ligne.                       | **/ 2**  |
