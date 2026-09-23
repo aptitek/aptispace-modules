@@ -1,0 +1,208 @@
+---
+title: "Gestionnaires Bibliographiques"
+icon: "🗂️"
+categories:
+  - Recherche
+  - Méthodologie
+description: "Automatiser sa veille et ses références avec Zotero, JabRef et Mendeley dans un flux de travail moderne (Quarto, Word, LaTeX)."
+---
+
+Tenter de gérer manuellement ses références académiques dans un document texte est une source majeure d'erreurs et de perte de temps. À chaque nouvel article inséré, il faudrait réordonner les numéros, corriger manuellement les initiales et vérifier le respect scrupuleux des normes typographiques de l'éditeur (virgules, italiques, ordre des auteurs).
+
+Un **logiciel de gestion bibliographique** agit comme une bibliothèque personnelle numérique : il extrait automatiquement les métadonnées depuis le navigateur, stocke et annote les fichiers PDF, et injecte les citations formatées dans vos documents de recherche ou vos supports de cours.
+
+::: {.callout-note collapse="true"}
+## 💡 L'atout sécurité : la détection des articles rétractés
+Les meilleurs gestionnaires (comme Zotero) sont reliés à des bases de veille scientifique comme *Retraction Watch*. Si vous tentez de citer un article qui a été officiellement annulé par la communauté scientifique (pour fraude méthodologique ou données falsifiées), une alerte visuelle rouge vous prévient immédiatement.
+:::
+
+## ⚖️ Comparatif des Trois Solutions Majeures
+
+Trois outils dominent le paysage académique mondial, chacun répondant à une philosophie distincte :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### Zotero {.bi-box-seam}
+
+Le standard universel open-source (George Mason University).
+
+- **Modèle :** Logiciel libre et gratuit, respectueux de la vie privée.
+- **Points forts :** Extension de navigateur *Zotero Connector* ultra-efficace (capture en 1 clic des métadonnées et du PDF), écosystème de plugins riche, stockage cloud synchronisable sans surcoût via WebDAV (Nextcloud, Google Drive).
+- **Public cible :** Recommandé pour 95 % des étudiants, enseignants et chercheurs.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### JabRef {.bi-filetype-raw}
+
+Le puriste BibTeX pour l'écosystème texte brut et code.
+
+- **Modèle :** Open-source, orienté code.
+- **Points forts :** Pas de base de données propriétaire opaque : il manipule directement un fichier texte brut `.bib`. Idéal pour nettoyer, trier et vérifier les clés de citation de documents compilés en LaTeX ou Quarto.
+- **Public cible :** Développeurs, informaticiens et mathématiciens travaillant exclusivement en Markdown / LaTeX.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### Mendeley {.bi-building}
+
+La plateforme commerciale d'Elsevier.
+
+- **Modèle :** Propriétaire (groupe Elsevier).
+- **Points forts :** Stockage cloud gratuit initial plus généreux (2 Go), lecteur d'annotation PDF collaboratif historique.
+- **Limites :** Fermeture progressive de l'écosystème, abandon des applications mobiles et crainte de verrouillage propriétaire (*vendor lock-in*).
+:::::
+::::
+:::
+
+### Synthèse Comparative
+
+| Critère | Zotero | JabRef | Mendeley |
+| :--- | :--- | :--- | :--- |
+| **Licence** | Open-source (GPL) | Open-source (MIT) | Propriétaire (Elsevier) |
+| **Capture Web** | Excellente (*Connector*) | Limitée (import `.bib`) | Bonne (*Web Importer*) |
+| **Format natif** | Base SQLite locale | Fichier `.bib` brut | Base cloud Elsevier |
+| **Intégration Word/GDocs** | Native et fluide | Non adaptée | Native |
+| **Intégration Quarto/LaTeX** | Excellente (via *Better BibTeX*) | Immédiate et native | Complexe |
+| **Stockage Cloud** | 300 Mo gratuits (illimité via WebDAV) | Local / Git | 2 Go gratuits |
+
+::: {.callout-note collapse="true"}
+## 🤝 Le duo gagnant en informatique : Zotero + JabRef
+Ces deux outils ne s'excluent pas ! De nombreux chercheurs utilisent **Zotero** pour capturer sans effort les articles depuis leur navigateur web, puis exportent automatiquement la base vers un fichier `.bib` synchronisé. Ils utilisent ensuite **JabRef** pour auditer, renommer ou affiner leurs clés de citation avant compilation Quarto ou LaTeX.
+:::
+
+---
+
+## 🛠️ Intégration dans les Flux de Travail
+
+Le mode d'utilisation d'un gestionnaire s'adapte selon que vous rédigiez dans un traitement de texte visuel (WYSIWYG) ou dans un environnement basé sur du texte brut et du code.
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Traitement de Texte (Word, LibreOffice, Google Docs) {.bi-file-word}
+
+L'intégration repose sur le plugin officiel Zotero installé dans la barre d'outils du traitement de texte :
+
+1. **Insérer une citation :** Placez votre curseur, cliquez sur **"Add/Edit Citation"**. Une barre de recherche rouge apparaît : tapez le nom de l'auteur ou du projet et validez.
+2. **Générer la bibliographie :** En fin de document, cliquez sur **"Add/Edit Bibliography"**. La liste complète des références citées se génère automatiquement.
+3. **Changer de style :** Dans les préférences du document, basculez d'un clic entre le style **IEEE** (numérique : `[1]`) et le style **APA** (auteur-date : `(Turing, 1950)`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Texte Brut & Développeur (Quarto, Pandoc, LaTeX) {.bi-code-slash}
+
+Pour les documents techniques interactifs compilés en ligne de commande, le plugin Word ne s'applique pas. Le lien s'effectue via un fichier texte intermédiaire `.bib` :
+
+1. Installez le plugin **Better BibTeX (BBT)** dans Zotero.
+2. Configurez l'export de votre collection vers votre projet en cochant **"Keep updated"** : Zotero maintient en temps réel un fichier `references.bib` à jour dans votre dossier.
+3. Déclarez la bibliographie dans l'en-tête YAML de votre fichier `.qmd` :
+   ```yaml
+   ---
+   title: "Mon Cours d'Architecture"
+   bibliography: references.bib
+   csl: ieee.csl
+   ---
+   ```
+4. Citez directement dans le texte avec la syntaxe Pandoc :
+   - Citation entre crochets : `Comme démontré dans [@vaswani2017attention]...`
+   - Citation intégrée : `Selon @vaswani2017attention, l'attention...`
+:::::
+::::
+:::
+
+---
+
+## 🎯 Simulateur d'Orientation : Quel Outil Choisir ?
+
+Sélectionnez vos habitudes d'écriture et vos contraintes pour déterminer la solution bibliographique optimale :
+
+::: {.card-window .mb-4}
+#### Sélecteur de Stratégie Bibliographique {.bi-compass}
+
+```{ojs}
+//| echo: false
+viewof writingEnv = Inputs.select([
+  "Markdown / Quarto / Pandoc (Projets Web et Data)",
+  "LaTeX pur (Articles de recherche académique)",
+  "Microsoft Word ou LibreOffice (Rapports classiques)",
+  "Google Docs (Rédaction collaborative d'équipe)"
+], { label: "Votre environnement d'écriture principal :" })
+
+viewof storagePref = Inputs.radio([
+  "Cloud personnel / Local (Open-source et souverain)",
+  "Cloud clé en main (Sans configuration)"
+], {
+  value: "Cloud personnel / Local (Open-source et souverain)",
+  label: "Préférence de stockage :"
+})
+```
+
+:::: {#recommendation-result .card .mt-3}
+::::
+:::
+
+```{ojs}
+//| echo: false
+recLogic = {
+  let tool = "";
+  let badgeClass = "tag-info";
+  let explanation = "";
+  let setupSteps = [];
+
+  if (writingEnv.includes("Markdown / Quarto") || writingEnv.includes("LaTeX pur")) {
+    tool = "Zotero couplé à l'extension Better BibTeX (BBT)";
+    badgeClass = "tag-success";
+    explanation = "La configuration idéale pour les développeurs et data scientists : vous bénéficiez de la capture web de Zotero et de l'export automatique d'un fichier .bib synchronisé dans votre dépôt Git.";
+    setupSteps = [
+      "Installer Zotero et l'extension Zotero Connector dans votre navigateur.",
+      "Installer le plugin Better BibTeX (BBT) pour générer des clés [auth][year].",
+      "Exporter votre collection au format Better BibTeX avec l'option 'Keep updated'.",
+      "Déclarer `bibliography: references.bib` dans l'en-tête YAML de vos fichiers .qmd."
+    ];
+  } else if (writingEnv.includes("Google Docs")) {
+    tool = "Zotero avec Zotero Connector";
+    badgeClass = "tag-info";
+    explanation = "Zotero s'intègre nativement à Google Docs via l'extension navigateur. Créez un Groupe Zotero partagé pour que tous vos collaborateurs puissent insérer les mêmes références.";
+    setupSteps = [
+      "Installer l'application Zotero Desktop (doit rester ouverte en arrière-plan).",
+      "Installer Zotero Connector dans Chrome/Firefox.",
+      "Créer une 'Bibliothèque de groupe' sur zotero.org pour votre équipe."
+    ];
+  } else {
+    tool = "Zotero avec plugin Word / LibreOffice";
+    badgeClass = "tag-primary";
+    explanation = "Le flux standard pour la bureautique classique : le plugin s'installe automatiquement et offre une barre d'insertion instantanée avec bascule de style CSL.";
+    setupSteps = [
+      "Vérifier la présence de l'onglet Zotero dans le ruban Microsoft Word.",
+      "Utiliser 'Add/Edit Citation' pour placer des références dynamiques.",
+      "Cliquer sur 'Document Preferences' pour choisir votre style (APA, IEEE, Vancouver)."
+    ];
+  }
+
+  const el = document.querySelector("#recommendation-result");
+  if (el) {
+    el.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="mb-0 text-primary fw-bold"><i class="bi bi-check-circle-fill text-success me-2"></i>Recommandation : ${tool}</h5>
+        <span class="concept-badge ${badgeClass}">Solution Recommandée</span>
+      </div>
+      <p class="text-muted small mb-3">${explanation}</p>
+      <div class="section-label">Étapes de mise en place :</div>
+      <ol class="small mb-0 ps-3">
+        ${setupSteps.map(s => `<li class="mb-1">${s}</li>`).join("")}
+      </ol>
+    `;
+  }
+}
+```
+
+::: {.callout-note collapse="true"}
+## 🚀 Astuce de productivité : les clés de citation mémorisables
+Par défaut, Better BibTeX peut formater les clés de citation sous la forme `[auth:lower][year][shorttitle:lower]`. Ainsi, le fameux article sur les transformateurs devient automatiquement `@vaswani2017attention`. Vous pouvez alors citer vos sources de mémoire dans votre code sans même quitter votre éditeur.
+:::

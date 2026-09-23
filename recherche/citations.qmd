@@ -1,0 +1,243 @@
+---
+title: "L'Art de la Citation & Styles CSL"
+icon: "🖋️"
+categories:
+  - Recherche
+  - Méthodologie
+description: "Maîtriser les règles déontologiques de citation, la hiérarchie des sources en informatique et les formats CSL (IEEE, AAAI, ACM, APA)."
+---
+
+Que l'on rédige un mémoire d'ingénieur, une publication scientifique ou un support de formation technique, la citation n'est pas une simple formalité administrative. Elle répond à deux principes cardinaux : **l'honnêteté intellectuelle** (reconnaître la paternité des idées) et **la traçabilité** (permettre au lecteur de remonter à la source exacte pour vérifier les faits ou reproduire une expérience).
+
+En informatique, la variété des supports (articles, pré-publications, RFCs, dépôts GitHub) impose de connaître précisément **quand**, **quoi** et **comment** citer.
+
+::: {.callout-note collapse="true"}
+## 💡 La citation comme outil de reproductibilité
+En informatique, une bibliographie bien conçue n'est pas un catalogue d'érudition passive : c'est le **mode d'emploi des dépendances conceptuelles** de votre travail. Si un lecteur a besoin d'un document pour comprendre ou réexécuter votre code, ce document doit impérativement figurer dans vos sources.
+:::
+
+## 🎯 Quand Faut-il Citer ? (Les Déclencheurs)
+
+Il n'est pas nécessaire de citer pour des notions universellement acquises (ex: *"l'architecture de von Neumann sépare la mémoire du processeur"* ou *"le bit est l'unité d'information"*). En revanche, la citation est **strictement obligatoire** dans quatre situations :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Origine d'un Concept ou Algorithme {.bi-bezier2}
+
+Dès que vous mobilisez une architecture logicielle spécifique, une structure de données novatrice ou un mécanisme mathématique précis (ex: le mécanisme d'Attention, l'algorithme Paxos, l'arbre de Merkle).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Affirmation Quantitative ou Comparative {.bi-graph-up-arrow}
+
+Toute revendication métrique telle que *"ce modèle compresse les données avec 35 % de pertes en moins"* ou *"ce protocole résiste à une tolérance de pannes byzantines de 33 %"* exige la source de la mesure.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Réutilisation Visuelle {.bi-image}
+
+Si vous intégrez dans votre document un diagramme d'architecture, un schéma de circuit ou un graphique issu d'un tiers, la légende doit obligatoirement mentionner la source (ex: *Source : [3]*).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Poursuite d'Étude & Pédagogie {.bi-book}
+
+Dans un contexte de cours ou de rapport technique, pour guider les lecteurs désireux d'approfondir les démonstrations formelles ou les fondements théoriques.
+:::::
+::::
+:::
+
+---
+
+## 🏛️ Quoi Citer ? La Hiérarchie des Sources en Informatique
+
+Contrairement à d'autres disciplines, l'informatique s'appuie sur une pyramide documentaire plus diversifiée :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Socle d'Or : Conférences & Journaux {.bi-award}
+
+- **Actes de conférences sélectives (A*/A) et revues indexées sur DBLP.**
+- Ce sont les seules sources validées formellement par un comité de pairs (*peer-review*). Elles fondent la légitimité théorique de vos affirmations.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Pré-publications arXiv {.bi-lightning}
+
+- Incontournables en IA pour leur fraîcheur.
+- **Règle absolue :** Vous pouvez les citer, mais **vérifiez toujours si l'article n'a pas été publié officiellement depuis**. Si un papier arXiv de 2022 est paru à NeurIPS 2023, c'est la version NeurIPS qui doit être citée.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Standards & Spécifications Industrielles {.bi-file-earmark-check}
+
+- **RFC de l'IETF, recommandations du W3C, normes ISO/IEEE.**
+- En réseaux, web ou cryptographie, une RFC (ex: RFC 9000 pour QUIC) possède une valeur de référence égale ou supérieure à un article académique.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Dépôts Git & Documentation Officielle {.bi-github}
+
+- Pour citer des frameworks, conteneurs ou bibliothèques (Kubernetes, PyTorch), citez la documentation officielle de l'organisation ou le dépôt Git avec sa version et date de consultation.
+- **À bannir :** Les blogs personnels grand public (Medium, articles anonymes) et Wikipedia comme source de vérité scientifique.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+## ⚖️ L'autocitation : légitimité vs dérive éthique
+- **L'autocitation légitime (Continuité) :** Si votre nouveau module s'appuie directement sur un outil ou une bibliothèque que vous avez publiée précédemment, vous **devez** vous autociter pour documenter la chaîne de développement.
+- **L'autocitation abusive (*Padding*) :** Insérer artificiellement des dizaines de renvois vers ses propres papiers antérieurs sans rapport direct, uniquement pour gonfler son compteur de citations et son *h-index*, est sévèrement sanctionné par la communauté académique.
+:::
+
+---
+
+## 🎨 Les Styles CSL : Le "CSS des Références"
+
+Le **CSL (Citation Style Language)** est un standard international basé sur XML qui formalise les règles de mise en page des références.
+
+Tout comme le CSS sépare le style de la structure HTML, **le CSL sépare le fond (les métadonnées brutes de votre fichier `.bib`) de la forme (l'apparence visuelle dans le document final)**.
+
+Il existe deux grandes philosophies de styles :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Famille Numérique (IEEE, ACM, Nature) {.bi-123}
+
+Les références sont signalées dans le texte par un simple numéro entre crochets : `[1]` ou en exposant $^1$.
+
+- **Points forts :** Ne coupe pas le rythme de lecture des phrases denses en équations ou en code.
+- **Domaines de prédilection :** Systèmes, réseaux, génie logiciel, électronique.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Famille Auteur-Date (AAAI, APA, Harvard) {.bi-calendar-event}
+
+Les références sont signalées par le nom de famille et l'année : `(Vaswani et al., 2017)`.
+
+- **Points forts :** Contextualise immédiatement l'historique et la paternité des idées sans obliger à consulter la fin de page.
+- **Domaines de prédilection :** Intelligence Artificielle, Machine Learning, Data Science.
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Comparateur de Styles CSL
+
+Sélectionnez une norme bibliographique pour observer en direct la transformation d'une même référence informatique majeure (le papier fondateur des Transformers) :
+
+::: {.card-window .mb-4}
+#### Visualiseur Dynamique de Style Bibliographique {.bi-palette}
+
+```{ojs}
+//| echo: false
+viewof selectedCsl = Inputs.radio([
+  "IEEE (Numérique standard ingénierie)",
+  "ACM (Numérique standard informatique)",
+  "AAAI (Auteur-Date standard IA)",
+  "APA (Auteur-Date universitaire)",
+  "Nature (Numérique ultra-compact)"
+], {
+  value: "IEEE (Numérique standard ingénierie)",
+  label: "Norme CSL sélectionnée :"
+})
+```
+
+:::: {#csl-preview .card .mt-3}
+::::
+:::
+
+```{ojs}
+//| echo: false
+cslRenderer = {
+  selectedCsl;
+  let inText = "";
+  let biblio = "";
+  let family = "";
+  let notes = "";
+
+  if (selectedCsl.startsWith("IEEE")) {
+    family = "Numérique";
+    inText = "Les mécanismes d'auto-attention permettent de paralléliser l'entraînement des modèles de langage [1].";
+    biblio = "[1] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, \"Attention is all you need,\" in <em>Advances in Neural Information Processing Systems (NeurIPS)</em>, 2017, pp. 5998–6008.";
+    notes = "Numérotation chronologique selon l'ordre d'apparition dans le texte. Initiales du prénom avant le nom.";
+  } else if (selectedCsl.startsWith("ACM")) {
+    family = "Numérique";
+    inText = "Les mécanismes d'auto-attention permettent de paralléliser l'entraînement des modèles de langage [1].";
+    biblio = "[1] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. In <em>Advances in Neural Information Processing Systems (NeurIPS '17)</em>, 5998–6008.";
+    notes = "Prénoms complets des auteurs, année immédiatement après les auteurs, titre en minuscules.";
+  } else if (selectedCsl.startsWith("AAAI")) {
+    family = "Auteur-Date";
+    inText = "Les mécanismes d'auto-attention permettent de paralléliser l'entraînement des modèles de langage (Vaswani et al. 2017).";
+    biblio = "Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A. N.; Kaiser, Ł.; and Polosukhin, I. 2017. Attention Is All You Need. In <em>Advances in Neural Information Processing Systems</em>, 5998–6008.";
+    notes = "Appel direct Auteur-Date sans virgule. Tri alphabétique par nom d'auteur en bibliographie.";
+  } else if (selectedCsl.startsWith("APA")) {
+    family = "Auteur-Date";
+    inText = "Les mécanismes d'auto-attention permettent de paralléliser l'entraînement des modèles de langage (Vaswani et al., 2017).";
+    biblio = "Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. <em>Advances in Neural Information Processing Systems</em>, 30, 5998–6008.";
+    notes = "Auteur-Date avec virgule. Utilise l'esperluette (&) devant le dernier auteur.";
+  } else {
+    family = "Numérique compact";
+    inText = "Les mécanismes d'auto-attention permettent de paralléliser l'entraînement des modèles de langage<sup>1</sup>.";
+    biblio = "1. Vaswani, A. et al. Attention is all you need. <em>Adv. Neural Inf. Process. Syst.</em> 5998–6008 (2017).";
+    notes = "Appel en exposant pour économiser les pixels. Auteurs résumés dès le premier auteur par 'et al.'.";
+  }
+
+  const el = document.querySelector("#csl-preview");
+  if (el) {
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="concept-badge tag-info">Famille : ${family}</span>
+        <span class="small text-muted">${notes}</span>
+      </div>
+      <div class="mb-3">
+        <div class="section-label">1. Rendu dans le corps du texte (In-Text) :</div>
+        <div class="p-2 border rounded bg-body-tertiary font-monospace small">${inText}</div>
+      </div>
+      <div>
+        <div class="section-label">2. Rendu dans la section Bibliographie :</div>
+        <div class="p-2 border rounded bg-body-tertiary small">${biblio}</div>
+      </div>
+    `;
+  }
+}
+```
+
+---
+
+## 💻 Syntaxe Pratique dans Quarto & Pandoc
+
+Pour appliquer ces styles dans votre projet de cours Quarto :
+
+1. Téléchargez la feuille de style souhaitée (ex: `ieee.csl` ou `aaai.csl`) sur le **Zotero Style Repository** (`zotero.org/styles`).
+2. Placez le fichier `.csl` et votre fichier `references.bib` à la racine de votre projet.
+3. Déclarez-les dans l'en-tête YAML de votre document :
+   ```yaml
+   ---
+   title: "Mon Rapport d'Architecture"
+   bibliography: references.bib
+   csl: ieee.csl
+   ---
+   ```
+4. Utilisez les trois variantes d'appel Pandoc :
+   - **Citation parenthétique :** `[@vaswani2017attention]` $\to$ génère `[1]` ou `(Vaswani et al., 2017)`.
+   - **Citation textuelle :** `@vaswani2017attention` $\to$ génère `Vaswani et al. [1]` ou `Vaswani et al. (2017)`.
+   - **Citations groupées :** `[@vaswani2017attention; @devlin2018bert]` $\to$ génère `[1, 2]` ou `(Vaswani et al., 2017; Devlin et al., 2018)`.
+
+Lors de la compilation (`quarto render`), le processeur `citeproc` applique automatiquement l'ensemble des règles de ponctuation et de tri définies par le CSL.

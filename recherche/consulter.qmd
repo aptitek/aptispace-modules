@@ -1,0 +1,274 @@
+---
+title: "Accès & Lecture Critique"
+icon: "📖"
+categories:
+  - Recherche
+  - Méthodologie
+description: "Identifier les publications avec le DOI, débloquer les PDFs légalement et maîtriser la méthode des 3 passes pour une lecture efficace et reproductible."
+---
+
+Trouver une référence prometteuse n'est que la première étape. Face à la barrière financière des éditeurs (*paywalls*) et à la densité technique des publications, deux compétences sont indispensables à tout ingénieur ou chercheur : **savoir localiser le document source grâce à son identifiant universel**, et **adopter une méthodologie de lecture sélective** pour ne pas s'épuiser sur des détails secondaires.
+
+::: {.callout-note collapse="true"}
+## 💡 L'erreur classique du débutant
+Lire un article scientifique de façon linéaire, du premier au dernier mot comme un roman, est la garantie de perdre plusieurs heures sans en retenir l'essence. Un papier académique est un document hautement structuré conçu pour être **interrogé de manière stratégique**.
+:::
+
+## 🆔 Le DOI : L'Identifiant Pérenne Universel
+
+Sur le web classique, les adresses URL sont éphémères : un éditeur qui restructure son site web, change de CMS ou fusionne avec un autre groupe brise immédiatement les hyperliens existants (le phénomène de *link rot* ou décomposition des liens).
+
+Pour garantir la citation à l'échelle des décennies, la communauté scientifique a instauré le **DOI (Digital Object Identifier)**.
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Le "Numéro de Sécurité Sociale" de la Publication {.bi-fingerprint}
+
+Le DOI est un identifiant permanent et mondialement unique attribué à chaque article, rapport technique ou jeu de données publié.
+
+- **Persistance :** Même si l'article change d'hébergeur ou d'URL publique, l'autorité centrale de résolution met à jour la redirection en arrière-plan sans jamais modifier le DOI.
+- **Résolution universelle :** Tout DOI peut être résolu en le préfixant par `https://doi.org/`.
+- **Format standardisé :** Il débute systématiquement par `10.` suivi d'un préfixe éditeur et d'un suffixe d'article :
+  $$\underbrace{\text{10.1145}}_{\text{Préfixe ACM}} \,/\, \underbrace{\text{3359591.3359737}}_{\text{Suffixe unique}}$$
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Décomposeur Interactif de DOI {.bi-search}
+
+Choisissez une référence célèbre en informatique et visualisez l'anatomie de son DOI :
+
+```{ojs}
+//| echo: false
+viewof selectedDoi = Inputs.select([
+  "10.1145/3064176 (MapReduce - ACM)",
+  "10.1038/nature14539 (Deep Q-Networks - Nature)",
+  "10.1109/CVPR.2016.90 (ResNet - IEEE)",
+  "10.1145/3359591 (Attention Is All You Need - ACM Proceedings)"
+], { label: "Sélectionnez un DOI célèbre :" })
+```
+
+:::: {#doi-breakdown .mt-3}
+::::
+:::::
+::::
+:::
+
+```{ojs}
+//| echo: false
+doiDetails = {
+  const parts = selectedDoi.split(" ")[0].split("/");
+  const prefix = parts[0];
+  const suffix = parts[1];
+  const fullUrl = `https://doi.org/${selectedDoi.split(" ")[0]}`;
+
+  const el = document.querySelector("#doi-breakdown");
+  if (el) {
+    el.innerHTML = `
+      <div class="p-2 border rounded bg-body-tertiary">
+        <div class="small text-muted mb-1"><i class="bi bi-link-45deg me-1"></i>URL de résolution officielle :</div>
+        <div class="font-monospace text-primary mb-2">${fullUrl}</div>
+        <div class="d-flex gap-2">
+          <span class="concept-badge tag-info">Préfixe éditeur : ${prefix}</span>
+          <span class="concept-badge tag-success">Suffixe publication : ${suffix}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+```
+
+---
+
+## 🔓 Accéder aux Articles : Paywalls vs Open Access
+
+Lorsqu'on clique sur le lien officiel d'un DOI (chez Elsevier, Springer, ACM ou IEEE), on se heurte souvent à un **paywall** réclamant 35 $ à 50 $ pour télécharger un PDF de quelques pages. 
+
+Pourtant, la recherche publique est déjà financée par la collectivité et les auteurs de l'article ne touchent aucun droit d'auteur sur ces ventes. C'est pourquoi le mouvement de l'**Open Access** offre plusieurs alternatives légales directes.
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### L'Extension Unpaywall {.bi-browser-chrome}
+
+Une extension gratuite et légale pour navigateurs web.
+
+- **Principe :** Dès que vous visitez la page payante d'un éditeur, Unpaywall analyse le DOI et interroge des milliers de dépôts institutionnels ouverts dans le monde.
+- **Résultat :** Si une version légale en accès libre existe (par exemple déposée par le laboratoire sur HAL ou arXiv), un cadenas vert apparaît pour télécharger le PDF en un clic.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### Serveurs de Pre-prints & HAL {.bi-archive}
+
+Les archives ouvertes institutionnelles.
+
+- **arXiv, HAL, bioRxiv :** Les chercheurs y déposent très souvent la version *post-print* (le manuscrit relu et accepté, avant la mise en page commerciale de l'éditeur).
+- **ResearchGate / Academia.edu :** Les auteurs y partagent leurs publications ou les fournissent sur simple demande via la messagerie du site.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### Le Contact Direct par E-mail {.bi-envelope-check}
+
+La solution la plus humaine et redoutablement efficace.
+
+- **Droit des auteurs :** Les contrats d'édition autorisent presque toujours les chercheurs à partager individuellement des copies de leurs propres articles pour un usage pédagogique ou de recherche.
+- **En pratique :** Les chercheurs sont flattés que l'on s'intéresse à leurs travaux et répondent très favorablement avec le PDF en pièce jointe.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+## 🏴‍☠️ Le cas particulier de Sci-Hub : coulisses techniques et réalité juridique
+**Sci-Hub** est une bibliothèque clandestine (*shadow library*) automatisée qui fournit un accès gratuit à plus de 85 millions d'articles scientifiques.
+
+- **Mécanisme technique :** L'utilisateur colle le DOI. Si le PDF n'est pas déjà dans le cache de Sci-Hub, le script utilise des identifiants proxy universitaires légitimes (donnés ou compromis) pour aller aspirer le PDF directement sur le serveur de l'éditeur officiel, avant de le stocker pour les prochains visiteurs.
+- **Contexte juridique :** Sci-Hub opère en violation caractérisée des lois sur le droit d'auteur. Il fait l'objet de condamnations répétées et d'un blocage DNS par les fournisseurs d'accès à Internet dans de multiples pays (dont la France). Ses noms de domaine sont régulièrement révoqués.
+- **Recommandation :** Privilégiez systématiquement les voies de l'Open Access officiel (arXiv, Unpaywall, contact auteur) avant toute autre démarche.
+:::
+
+---
+
+## 📖 Comment Lire un Article : La Méthode des 3 Passes
+
+Formalisée par le chercheur S. Keshav (Université de Waterloo), la **méthode des 3 passes** est le standard académique pour absorber efficacement la littérature scientifique sans s'épuiser. Chaque passe poursuit un objectif distinct avec une contrainte temporelle stricte.
+
+::: {.card-window .mb-4}
+#### Guide Interactif de la Méthode des 3 Passes {.bi-journal-check}
+
+:::: {.tabs .passes-tabset}
+##### Survol Stratégique (5-10 min) {.bi-binoculars}
+Décider si l'article est pertinent et mérite un investissement de temps.
+
+##### Structure & Résultats (1 heure) {.bi-diagram-2}
+Comprendre le fonctionnement d'ensemble sans se perdre dans les démonstrations de détail.
+
+##### Immersion & Reproductibilité (2-5 heures) {.bi-code-square}
+Maîtriser l'article au point de pouvoir le reconstruire ou reproduire son code.
+::::
+
+:::: {#passes-detail-panel .p-3 .bg-body-tertiary .border .rounded}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable activePass = "pass1"
+
+_passWatcher = {
+  const w = createTabsetWatcher(
+    ".passes-tabset",
+    {
+      "Survol Stratégique (5-10 min)": "pass1",
+      "Structure & Résultats (1 heure)": "pass2",
+      "Immersion & Reproductibilité (2-5 heures)": "pass3"
+    },
+    (val) => { mutable activePass = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_renderPass = {
+  activePass;
+  const el = document.querySelector("#passes-detail-panel");
+  if (!el) return;
+
+  if (activePass === "pass1") {
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-primary fw-bold"><i class="bi bi-binoculars me-2"></i>Passe 1 : Le Filtre du Survol</h5>
+        <span class="concept-badge tag-info">Durée : 5 à 10 minutes</span>
+      </div>
+      <div class="row" gap="3">
+        <div class="col" span="6">
+          <div class="section-label">Ce qu'il faut lire :</div>
+          <ul class="small mb-0">
+            <li><strong>Le titre</strong> et <strong>l'abstract</strong> (résumé condensé).</li>
+            <li><strong>L'introduction</strong> pour situer le problème général.</li>
+            <li><strong>Les titres de sections et sous-sections</strong> pour voir le squelette.</li>
+            <li><strong>La conclusion</strong> pour connaître les résultats annoncés.</li>
+            <li><strong>La bibliographie :</strong> repérer si des papiers familiers y sont cités.</li>
+          </ul>
+        </div>
+        <div class="col" span="6">
+          <div class="section-label">Objectif décisif :</div>
+          <p class="small text-muted mb-2">À la fin de cette passe, vous devez être capable de répondre aux 5C de Keshav :</p>
+          <div class="p-2 border rounded bg-body small">
+            <strong>Catégorie :</strong> De quel type de papier s'agit-il (mesure, architecture, algo) ?<br>
+            <strong>Contexte :</strong> À quels autres travaux se rattache-t-il ?<br>
+            <strong>Correctitude :</strong> Les hypothèses semblent-elles plausibles ?<br>
+            <strong>Contributions :</strong> Quelles sont les innovations revendiquées ?<br>
+            <strong>Clarté :</strong> Le document est-il bien rédigé ?
+          </div>
+          <div class="small text-warning mt-2"><i class="bi bi-slash-circle me-1"></i>Verdict : si le papier est hors sujet ou mal ficelé, <strong>arrêtez-vous là</strong>.</div>
+        </div>
+      </div>
+    `;
+  } else if (activePass === "pass2") {
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-warning fw-bold"><i class="bi bi-diagram-2 me-2"></i>Passe 2 : Saisir la Contribution</h5>
+        <span class="concept-badge tag-warning">Durée : ~1 heure</span>
+      </div>
+      <div class="row" gap="3">
+        <div class="col" span="6">
+          <div class="section-label">L'étape clé en informatique : les visuels</div>
+          <p class="small mb-2">Les informaticiens communiquent d'abord par les schémas d'architecture et les graphiques expérimentaux :</p>
+          <ul class="small mb-0">
+            <li>Étudiez les <strong>diagrammes de flux de données</strong> et architectures de modèles.</li>
+            <li>Examinez minutieusement les <strong>axes des graphiques</strong> (échelles linéaires vs logarithmiques, barres d'erreur, baselines comparées).</li>
+            <li>Identifiez les termes méconnus pour les éclaircir plus tard.</li>
+          </ul>
+        </div>
+        <div class="col" span="6">
+          <div class="section-label">Ce qu'il faut volontairement ignorer :</div>
+          <ul class="small text-muted mb-3">
+            <li>Les longues preuves mathématiques formelles en annexe.</li>
+            <li>Les détails techniques ultra-spécifiques d'implémentation.</li>
+          </ul>
+          <div class="p-2 border rounded bg-body small">
+            <strong>Livrable attendu :</strong> Vous devez être capable d'expliquer la méthode globale et les résultats principaux à un autre ingénieur ou étudiant.
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-success fw-bold"><i class="bi bi-code-square me-2"></i>Passe 3 : Immersion & Reproductibilité</h5>
+        <span class="concept-badge tag-success">Durée : 2 à 5 heures</span>
+      </div>
+      <div class="row" gap="3">
+        <div class="col" span="6">
+          <div class="section-label">Reconstruction Virtuelle</div>
+          <p class="small mb-2">La règle d'or : <em>"Tentez de recréer mentalement le système de l'auteur sous les mêmes hypothèses."</em></p>
+          <ul class="small mb-0">
+            <li>Décortiquez chaque équation et chaque algorithme en pseudo-code.</li>
+            <li>Repérez les hypothèses implicites non dites et les angles morts de scalabilité.</li>
+          </ul>
+        </div>
+        <div class="col" span="6">
+          <div class="section-label">En Informatique & IA : L'audit du Code</div>
+          <p class="small mb-2">La troisième passe se fait souvent <strong>hors du PDF</strong> :</p>
+          <div class="p-2 border rounded bg-body small">
+            <i class="bi bi-github me-1"></i> Cloner le dépôt GitHub fourni.<br>
+            <i class="bi bi-box-seam me-1"></i> Vérifier le <code>Dockerfile</code> ou <code>requirements.txt</code>.<br>
+            <i class="bi bi-play-circle me-1"></i> Lancer l'inférence ou les tests sur les jeux de données témoins pour vérifier la reproductibilité réelle.
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+```
+
+::: {.callout-note collapse="true"}
+## 💡 Quand faut-il aller jusqu'à la Passe 3 ?
+Moins de **10 % des articles** que vous consulterez justifient d'aller jusqu'à la Passe 3. Réservez cette immersion profonde uniquement aux papiers qui constituent le socle direct de votre propre projet logiciel, de votre modèle d'IA, ou d'un module d'enseignement technique.
+:::

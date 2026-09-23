@@ -1,0 +1,75 @@
+---
+title: "Ressources & Guides Mémo"
+icon: "📚"
+categories:
+  - Recherche
+  - Méthodologie
+description: "Portails officiels (CORE, DBLP, arXiv, Zotero), dépôts de styles CSL et fiches mémo de méthodologie scientifique."
+---
+
+Retrouvez ci-dessous les accès directs aux plateformes scientifiques incontournables et les fiches mémo synthétiques pour vos travaux de recherche et de rédaction technique.
+
+## 🌐 Portails & Moteurs Officiels
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### Portails Bibliographiques {.bi-database}
+
+- [DBLP Computer Science Bibliography](https://dblp.org) : Base certifiée d'actes et d'auteurs en informatique.
+- [Google Scholar](https://scholar.google.com) : Moteur universel et graphe de citations "Cité par".
+- [arXiv.org (Cornell University)](https://arxiv.org) : Archive ouverte des pré-publications (CS, AI, Maths).
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Évaluation & Accès Ouvert {.bi-shield-check}
+
+- [CORE Conference Portal](https://portal.core.edu.au/conf-ranks/) : Classement officiel des conférences (A*, A, B, C).
+- [Unpaywall Extension](https://unpaywall.org) : Détecteur légal de PDFs en Open Access via le DOI.
+- [Retraction Watch Database](https://retractionwatch.com) : Base de suivi des publications rétractées.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Outils de Gestion & CSL {.bi-gear}
+
+- [Zotero](https://www.zotero.org) : Gestionnaire bibliographique open-source.
+- [Better BibTeX (BBT) for Zotero](https://retorque.re/zotero-better-bibtex/) : Plugin d'exportation dynamique `.bib`.
+- [Zotero Style Repository](https://www.zotero.org/styles) : Répertoire de plus de 10 000 feuilles CSL (IEEE, ACM, AAAI, APA).
+- [JabRef](https://www.jabref.org) : Éditeur natif de bases BibTeX.
+:::::
+::::
+:::
+
+---
+
+## 📋 Mémo Synthétique de la Méthode des 3 Passes
+
+::: {.card-window .mb-4}
+#### Synthèse d'Audit selon S. Keshav {.bi-check2-all}
+
+| Passe | Durée recommandée | Focus d'attention | Livrable attendu |
+| :--- | :--- | :--- | :--- |
+| **Passe 1 : Survol** | 5 à 10 minutes | Titre, Abstract, Intro, Conclusions, Titres de sections | Décision Go / No-Go (Catégorie, Contexte, Contribution) |
+| **Passe 2 : Structure** | ~ 1 heure | Diagrammes d'architecture, Graphiques, Axes, Équations clés | Capacité à réexpliquer la méthode et les résultats majeurs |
+| **Passe 3 : Immersion** | 2 à 5 heures | Algorithmes fins, Dépôt GitHub, Reproductibilité du code | Reconstruction mentale, identification des limites et failles |
+:::
+
+---
+
+## 🖋️ Mémo des Formats de Citation CSL
+
+::: {.card-window}
+#### Tableau de Référence des Styles Majeurs {.bi-journal-bookmark}
+
+| Style CSL | Famille | Appel dans le texte | Exemple bibliographique (Vaswani et al.) | Usage privilégié |
+| :--- | :--- | :--- | :--- | :--- |
+| **IEEE** | Numérique | `... [1]` | `[1] A. Vaswani et al., "Attention is all you need," in NeurIPS, 2017.` | Systèmes, réseaux, ingénierie logicielle |
+| **ACM** | Numérique | `... [1]` | `[1] Ashish Vaswani et al. 2017. Attention is all you need. In NeurIPS.` | Informatique théorique, génie logiciel |
+| **AAAI** | Auteur-Date | `... (Vaswani et al. 2017)` | `Vaswani, A. et al. 2017. Attention Is All You Need. In NeurIPS.` | Intelligence Artificielle, Machine Learning |
+| **APA** | Auteur-Date | `... (Vaswani et al., 2017)` | `Vaswani, A. et al. (2017). Attention is all you need. NeurIPS.` | Sciences générales, revues pluridisciplinaires |
+| **Nature** | Numérique | `...`$^1$ | `1. Vaswani, A. et al. Attention is all you need. NeurIPS (2017).` | Sciences dures (revues imprimées condensées) |
+:::

@@ -1,0 +1,307 @@
+---
+title: "Moteurs & Sources Académiques"
+icon: "🧭"
+categories:
+  - Recherche
+  - Méthodologie
+description: "Comprendre l'écosystème de recherche en informatique : Google Scholar, arXiv, DBLP, le pipeline de découverte et l'évaluation des conférences majeures."
+---
+
+La recherche académique en informatique possède un écosystème singulier qui la distingue nettement des sciences expérimentales traditionnelles (biologie, chimie, médecine). Tandis que ces dernières s'articulent presque exclusivement autour de revues périodiques (*journals*) avec des temps de relecture pouvant dépasser dix-huit mois, **l'informatique privilégie la vitesse et les conférences internationales sélectives**.
+
+Dans des domaines à évolution fulgurante comme l'Intelligence Artificielle, les Systèmes Distribués ou la Cybersécurité, un cycle de publication trop lent rendrait les découvertes obsolètes avant même leur parution. Pour s'orienter avec rigueur, le chercheur ou l'ingénieur s'appuie sur trois outils cardinaux.
+
+::: {.callout-note collapse="true"}
+## 💡 Conférence ou Revue : la nuance fondamentale
+En informatique, les actes de conférences de premier rang (*proceedings*) ont souvent **plus de prestige et d'impact** que la majorité des revues. Ces congrès appliquent des comités de lecture extrêmement stricts (15 % à 25 % d'acceptation) et imposent des dates limites fixes qui synchronisent l'avancée de toute la communauté scientifique.
+:::
+
+## 🧭 Les Trois Piliers de l'Écosystème
+
+Chaque moteur répond à un besoin précis et possède ses propres garanties de fiabilité.
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### Google Scholar {.bi-search}
+
+Le moteur de recherche universel pour la littérature scientifique. Il indexe l'intégralité du web académique sans barrière d'entrée.
+
+- **Le point fort :** Le graphe de citations avec le lien **"Cité par [X]"**, indispensable pour remonter la descendance d'une idée fondatrice.
+- **Usage clé :** Exploration thématique large et configuration d'alertes sur les travaux d'un auteur.
+- **Le piège :** Scholar indexe tout, y compris des revues prédatrices (publications mercantiles sans relecture) et des mémoires d'étudiants non relus.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### arXiv {.bi-lightning-charge}
+
+Le serveur de pré-publications (*pre-prints*) en libre accès hébergé par l'Université Cornell.
+
+- **Le point fort :** La vitesse absolue. Les articles y sont déposés plusieurs mois avant ou pendant leur relecture par une conférence.
+- **Usage clé :** Accès immédiat au PDF gratuit, souvent accompagné d'un lien vers le code source GitHub et les modèles entraînés.
+- **Le piège :** Les articles **ne sont pas validés par les pairs** au moment de leur dépôt. C'est au lecteur d'évaluer la rigueur méthodologique.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### DBLP {.bi-shield-check}
+
+La base de données bibliographique de référence mondiale, strictement dédiée aux sciences informatiques (Schloss Dagstuhl).
+
+- **Le point fort :** Zéro bruit. Indexe exclusivement les actes de conférences légitimes et les revues reconnues.
+- **Usage clé :** Suivi certifié de l'historique d'un chercheur et export de fichiers BibTeX irréprochables.
+- **Le piège :** Ne contient pas les textes intégraux des PDF, mais pointe vers les éditeurs officiels et les versions certifiées.
+:::::
+::::
+:::
+
+## 🔄 Le Pipeline de Recherche en Pratique
+
+Pour maximiser l'efficacité de sa veille et s'assurer de la solidité scientifique d'un papier, ces trois outils s'utilisent en synergie selon un pipeline éprouvé : **Découverte $\to$ Accès $\to$ Validation**.
+
+::: {.card-window .mb-4}
+#### Visualiseur du Pipeline de Recherche {.bi-diagram-3}
+
+:::: {.tabs .pipeline-tabset}
+##### Découverte (Scholar) {.bi-compass}
+Recherche exploratoire par mots-clés larges. Identification des articles majeurs via le volume de citations.
+
+##### Accès Libre (arXiv) {.bi-file-earmark-pdf}
+Récupération de la version auteur gratuite en contournant les murs payants (*paywalls*) des éditeurs commerciaux.
+
+##### Validation (DBLP) {.bi-patch-check}
+Vérification de l'acceptation officielle en conférence sélective et extraction de la notice bibliographique définitive.
+::::
+
+:::: {#pipeline-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable pipelineStep = "scholar"
+
+_pipelineWatcher = {
+  const w = createTabsetWatcher(
+    ".pipeline-tabset",
+    {
+      "Découverte (Scholar)": "scholar",
+      "Accès Libre (arXiv)": "arxiv",
+      "Validation (DBLP)": "dblp"
+    },
+    (val) => { mutable pipelineStep = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_pipelineRender = {
+  pipelineStep;
+  const nodes = [
+    {
+      id: "scholar",
+      label: "1. Google Scholar\n(Découverte & Citations)",
+      shape: "rounded rect",
+      fx: 130, fy: 160,
+      color: pipelineStep === "scholar" ? getThemeColor("--sol-blue", "#268bd2") : getThemeColor("--sol-base01", "#586e75")
+    },
+    {
+      id: "arxiv",
+      label: "2. arXiv Repository\n(PDF Gratuit & Pre-print)",
+      shape: "rounded rect",
+      fx: 360, fy: 160,
+      color: pipelineStep === "arxiv" ? getThemeColor("--sol-yellow", "#b58900") : getThemeColor("--sol-base01", "#586e75")
+    },
+    {
+      id: "dblp",
+      label: "3. DBLP Index\n(Validation & BibTeX)",
+      shape: "rounded rect",
+      fx: 590, fy: 160,
+      color: pipelineStep === "dblp" ? getThemeColor("--sol-green", "#859900") : getThemeColor("--sol-base01", "#586e75")
+    }
+  ];
+
+  const links = [
+    { source: "scholar", target: "arxiv", label: "Titre exact de l'article" },
+    { source: "arxiv", target: "dblp", label: "Nom d'auteur / Actes de conf" }
+  ];
+
+  aptitek.renderStateMachineGraph("#pipeline-graph", { nodes, links }, {
+    nodeRadius: 36,
+    fontSize: 10,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 30,
+    height: 280
+  });
+}
+```
+
+::: {.callout-note collapse="true"}
+## 🔍 Scénario concret : du mot-clé à la citation
+Imaginons que vous conceviez un système distribué et cherchiez des articles sur le consensus Raft :
+
+1. Sur **Google Scholar**, vous tapez `"In Search of an Understandable Consensus Algorithm"`. Vous découvrez que le papier a plus de 5 000 citations.
+2. L'article officiel est hébergé chez l'éditeur USENIX. Sur **arXiv** ou sur la page de l'université de Stanford, vous trouvez le PDF complet de la version étendue avec toutes les preuves de sécurité formelles.
+3. Sur **DBLP**, vous tapez le nom de *Diego Ongaro* et vérifiez que l'article a été formellement accepté à *USENIX Annual Technical Conference (ATC)*, une conférence majeure de rang A. Vous téléchargez le bloc BibTeX officiel pour votre bibliographie.
+:::
+
+## 🏆 Panorama des Conférences Internationales Majeures
+
+Puisque les congrès pilotent l'état de l'art en informatique, il est nécessaire de connaître les acronymes des grandes conférences de premier plan (souvent labellisées **A*** ou **A** dans les classements académiques internationaux).
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### Intelligence Artificielle & Machine Learning {.bi-cpu}
+
+- **NeurIPS** (*Neural Information Processing Systems*) : Le sommet planétaire absolu pour l'apprentissage profond et l'IA générative.
+- **ICML** (*International Conference on Machine Learning*) : Référence mondiale sur les fondements algorithmiques et statistiques.
+- **ICLR** (*International Conference on Learning Representations*) : Axé sur les architectures de réseaux profonds et représentations latentes.
+- **AAAI / IJCAI** : Les grandes conférences généralistes couvrant toutes les branches de l'IA (symbolique, planification, agents).
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Vision & Langage Naturel {.bi-chat-square-text}
+
+- **CVPR** (*Conference on Computer Vision and Pattern Recognition*) : Le mastodonte mondial pour la vision par ordinateur, la vidéo et l'imagerie.
+- **ICCV / ECCV** : Les deux autres conférences reines de vision par ordinateur en alternance biennale.
+- **ACL** (*Association for Computational Linguistics*) : Le sommet de référence pour le traitement du langage naturel (NLP) et les LLM.
+- **EMNLP / NAACL** : Conférences majeures sur les approches empiriques et computationnelles du langage.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Systèmes, Logiciel & Sécurité {.bi-terminal}
+
+- **ICSE** (*International Conference on Software Engineering*) : L'étalon-or international en génie logiciel et qualité du code.
+- **SOSP / OSDI** : Les deux sommets absolus pour les systèmes d'exploitation, l'infrastructure cloud et le calcul distribué.
+- **IEEE S&P (Oakland) / USENIX Security / CCS** : Le trio souverain pour la cryptographie appliquée et la cybersécurité.
+:::::
+::::
+:::
+
+## 📊 Évaluer la Réputation Scientifique d'une Source
+
+N'importe quel groupe peut monter un site web et organiser une pseudo-conférence commerciale sans relecture sérieuse (*predatory conference*). Pour éviter de citer des travaux méthodologiquement douteux, quatre indicateurs font autorité :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Classement International CORE {.bi-award}
+
+Géré par l'association des départements universitaires d'informatique d'Australasie et adopté mondialement, le **CORE Ranking** audite périodiquement les conférences :
+
+- [Rang A*]{.concept-badge .tag-success} : Conférences phares, impact mondial déterminant (*top 5-8 %* du domaine).
+- [Rang A]{.concept-badge .tag-info} : Très hautes exigences de relecture, excellente réputation internationale.
+- [Rang B & C]{.concept-badge .tag-warning} : Événements spécialisés, régionaux ou à sélectivité intermédiaire.
+- [Non classé]{.concept-badge .tag-danger} : Conférences récentes, ateliers informels ou conférences prédatrices.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Indicateurs Métriques & Comité {.bi-speedometer2}
+
+Trois signaux objectifs permettent d'apprécier la rigueur d'un événement :
+
+1. **Le taux d'acceptation (*Acceptance Rate*) :** Une conférence A* ou A affiche généralement un taux compris entre **15 % et 25 %**. Un taux supérieur à 50 % indique une absence quasi totale de filtre.
+2. **L'indexation DBLP :** Si la quasi-totalité des actes est indexée sur DBLP, la communauté académique informatique reconnaît formellement la légitimité du lieu de publication.
+3. **Le comité de programme (*Program Committee*) :** Les chairs et relecteurs proviennent-ils d'instituts de recherche réputés (INRIA, MIT, Stanford, FAIR, Google DeepMind) ?
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Audit de Fiabilité d'une Publication
+
+Sélectionnez le contexte de publication d'un article pour évaluer son niveau de confiance académique avant de l'exploiter dans vos travaux :
+
+::: {.card-window .mb-4}
+#### Évaluateur de Crédibilité de Source {.bi-shield-check}
+
+```{ojs}
+//| echo: false
+viewof conf_type = Inputs.select([
+  "Conférence Rang A* (ex: NeurIPS, ICSE, CVPR)",
+  "Conférence Rang A (ex: EMNLP, CIKM, EuroSys)",
+  "Conférence Rang B ou C",
+  "Pre-print arXiv sans validation ultérieure",
+  "Revue en Open Access inconnue (non indexée DBLP)"
+], { label: "Lieu de publication identifié :" })
+
+viewof has_code = Inputs.radio(["Oui (dépôt public fourni)", "Non (aucun code disponible)"], {
+  value: "Oui (dépôt public fourni)",
+  label: "Reproductibilité logicielle :"
+})
+```
+
+:::: {#audit-result .card .mt-3}
+::::
+:::
+
+```{ojs}
+//| echo: false
+evalSummary = {
+  let score = 0;
+  let verdict = "";
+  let tagClass = "tag-info";
+  let advice = "";
+
+  if (conf_type.includes("Rang A*")) {
+    score = 95;
+    verdict = "Niveau de Confiance Maximal (A*)";
+    tagClass = "tag-success";
+    advice = "Article audité par les meilleurs pairs internationaux. Les fondations théoriques et les protocoles expérimentaux sont rigoureux.";
+  } else if (conf_type.includes("Rang A")) {
+    score = 80;
+    verdict = "Très Forte Fiabilité (A)";
+    tagClass = "tag-info";
+    advice = "Excellente source académique. Utilisable en toute confiance pour fonder des choix d'architecture ou un état de l'art.";
+  } else if (conf_type.includes("Rang B")) {
+    score = 60;
+    verdict = "Fiabilité Modérée (B/C)";
+    tagClass = "tag-warning";
+    advice = "Publication légitime mais de moindre sélectivité. Vérifiez attentivement les hypothèses de travail et le contexte expérimental.";
+  } else if (conf_type.includes("arXiv")) {
+    score = 45;
+    verdict = "Pré-publication non revue (arXiv)";
+    tagClass = "tag-warning";
+    advice = "Aucune relecture formelle par des pairs. À vous de juger la rigueur de la méthode, ou de vérifier sur DBLP si une version acceptée existe.";
+  } else {
+    score = 15;
+    verdict = "Alerte : Risque de source prédatrice";
+    tagClass = "tag-danger";
+    advice = "Absence de garantie académique. Fort risque de publication payante sans relecture. Ne pas utiliser comme référence critique.";
+  }
+
+  if (has_code.startsWith("Oui") && score < 90) {
+    score += 10;
+  }
+
+  const el = document.querySelector("#audit-result");
+  if (el) {
+    el.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="concept-badge ${tagClass} fw-bold">${verdict}</span>
+        <span class="metric-value metric-info">${score} / 100</span>
+      </div>
+      <p class="mb-0 text-muted">${advice}</p>
+      ${has_code.startsWith("Oui") ? '<div class="small text-success mt-2"><i class="bi bi-check-circle me-1"></i>Bonus reproductibilité : le code permet d\'auditer directement l\'implémentation.</div>' : ''}
+    `;
+  }
+}
+```
+
+::: {.callout-note collapse="true"}
+## 📚 À retenir pour vos futures recherches
+- Ne vous arrêtez pas au résumé (*abstract*) flatteur d'un papier trouvé sur Google Scholar.
+- Cherchez immédiatement si le papier possède une entrée sur **DBLP**.
+- Si l'article provient d'**arXiv**, vérifiez la date de parution : s'il a plus d'un an sans publication en conférence A*/A, soyez deux fois plus critique envers ses conclusions.
+:::

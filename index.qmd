@@ -79,6 +79,20 @@ listing:
       categories: "Discipline"
       description: "Description"
 
+  - id: catalog-recherche
+    contents:
+      - "recherche/*.qmd"
+    type: table
+    sort: "title asc"
+    filter-ui: true
+    sort-ui: true
+    fields: [icon, title, categories, description]
+    field-display-names:
+      icon: " "
+      title: "Module / Cours"
+      categories: "Discipline"
+      description: "Description"
+
   - id: catalog-uiux
     contents:
       - "ui-ux/*.qmd"
@@ -101,6 +115,11 @@ listing:
 ##### Tous les Cours {.bi-collection}
 
 ::::: {#catalog-all}
+:::::
+
+##### Recherche & Méthode {.bi-search}
+
+::::: {#catalog-recherche}
 :::::
 
 ##### Data & IA {.bi-robot}
