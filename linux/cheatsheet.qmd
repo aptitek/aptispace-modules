@@ -1,0 +1,126 @@
+---
+title: "Aide-Mémoire Linux & Bash"
+icon: "⚡"
+categories:
+  - Linux
+  - Aide-Mémoire
+description: "Synthèse complète et guide de référence rapide des raccourcis clavier, commandes fichiers, permissions, redirections et gestion des processus sous GNU/Linux."
+---
+
+Cet aide-mémoire rassemble l'ensemble des raccourcis clavier, commandes d'administration, opérateurs de redirection et repères FHS indispensables au quotidien dans un environnement GNU/Linux (`bash`).
+
+## 🛠️ Générateur Interactif de Pipeline d'Analyse & Recherche
+
+Configurez les briques ci-dessous pour assembler en temps réel une commande d'inspection ou de filtrage sous Linux :
+
+::: {.card-window}
+#### Constructeur de Pipeline Bash (`find` / `grep` / `tee`) {.bi-gear-fill}
+
+:::: {.tabs}
+##### Configuration du Pipeline {.bi-sliders}
+
+[Source de données]{.select #pipe_source options="cat /var/log/syslog (Journal système),ps -edf (Processus actifs),ls -lah /etc (Fichiers de configuration),dmesg (Messages du noyau)" value="cat /var/log/syslog (Journal système)"}
+
+- [Filtrer les lignes avec grep (grep -i 'error')]{.checkbox .checked #pipe_grep}
+- [Limiter aux 10 dernières lignes (tail -n 10)]{.checkbox .checked #pipe_tail}
+- [Masquer les erreurs d'accès (2> /dev/null)]{.checkbox #pipe_null}
+- [Archiver dans un fichier tout en affichant à l'écran (| tee audit.log)]{.checkbox #pipe_tee}
+::::
+
+:::: {#pipe-builder-terminal .terminal}
+#### Commande Assemblée {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_pipeBuilder = {
+  pipe_source;
+  pipe_grep;
+  pipe_tail;
+  pipe_null;
+  pipe_tee;
+
+  let cmd = pipe_source.split(" (")[0];
+  if (pipe_null) cmd += " 2> /dev/null";
+  if (pipe_grep) cmd += " | grep -i 'error'";
+  if (pipe_tail) cmd += " | tail -n 10";
+  if (pipe_tee) cmd += " | tee audit.log";
+
+  const term = aptitek.createTerminal("#pipe-builder-terminal", { defaultPrompt: false, showCursor: false });
+  term.writeLine("Copiez le pipeline généré :", { type: "info" });
+  term.writeLine(`$ ${cmd}`, { type: "success" });
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## ⌨️ Console, Ergonomie Clavier & Manuel
+
+| Raccourci / Commande              | Action immédiate                                                                                     |
+| :-------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **`Tab`** *(1 fois / 2 fois)*     | Auto-complète la commande ou le chemin (1x) ou affiche toutes les possibilités (2x).                 |
+| **`Ctrl + Maj + C` / `V`**        | Copier / Coller dans le terminal (ou sélectionner à la souris + clic molette centrale).              |
+| **`Ctrl + A` / `Ctrl + E`**       | Déplace le curseur tout au **début** (`A` / `Début`) ou tout à la **fin** (`E` / `Fin`) de la ligne. |
+| **`Ctrl + Flèche Gauche/Droite`** | Saute instantanément d'un mot complet à l'autre dans la ligne de commande.                           |
+| **`Ctrl + W`**                    | Supprime le mot entier situé juste avant le curseur.                                                 |
+| **`Ctrl + U` / `Ctrl + K`**       | Efface du curseur vers le début (`U`) ou vers la fin (`K`) de la ligne.                              |
+| **`Ctrl + L`**                    | Nettoie l'écran du terminal (équivalent à `clear` sans perdre la saisie en cours).                   |
+| **`!!`**                          | Exécute à nouveau la toute dernière commande (ex: `sudo !!`).                                        |
+| **`Ctrl + R`**                    | Recherche interactive dans l'historique des commandes (`Échap` pour quitter).                        |
+| **`man [section] commande`**      | Ouvre le manuel (`1` commandes, `2` appels système, `3` bibliothèques). Naviguer avec `/`, `n`, `q`. |
+
+## 📁 Système de Fichiers, Navigation & Échappement
+
+| Commande / Symbole                  | Description                                                                               | Exemple / Options clés                         |
+| :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| **`.` / `..` / `~` / `/`**          | Dossier courant (`.`), parent (`..`), personnel (`~`) et racine unique (`/`).             | `cd ..` / `cd ~/workspace` / `cd -` (*retour*) |
+| **`pwd`**                           | Affiche le chemin absolu du répertoire de travail courant.                                | `pwd`                                          |
+| **`ls [-lahi]`**                    | Liste les fichiers (`-l` détail, `-a` cachés `.`, `-h` tailles, `-i` inodes).             | `ls -lah /var/log`                             |
+| **`stat fichier`**                  | Affiche la carte d'identité complète de l'inode (`UID`, `Links`, `mtime`...).             | `stat settings.ini`                            |
+| **`ln [-s] source cible`**          | Crée un lien physique (alias d'inode) ou un lien symbolique (`-s` raccourci).             | `ln -sfn releases/v2.0 current`                |
+| **`mkdir [-p] dossier`**            | Crée un dossier (`-p` crée toute l'arborescence parente sans erreur).                     | `mkdir -p app/{config,logs}`                   |
+| **`rmdir dossier`**                 | Supprime un dossier **vide**.                                                             | `rmdir ancien_dossier`                         |
+| **`touch fichier`**                 | Crée un fichier vide ou met à jour sa date de modification (`mtime`).                     | `touch index.html`                             |
+| **`cp` / `mv` / `rm [-R]`**         | Copie (`cp`), déplace/renomme (`mv`) ou supprime (`rm`, `-R` récursif).                   | `rm -R dossier_temp`                           |
+| **`\ ` / `"..."` / `'...'` / `--`** | Échappe un caractère (`\`), protège souple (`"..."`), fige (`'...'`), fin options (`--`). | `cat -- -fichier_piege.txt`                    |
+
+## 🔎 Lecture, Édition & Analyse de Texte
+
+| Commande                           | Description                                                                          | Exemple                         |
+| :--------------------------------- | :----------------------------------------------------------------------------------- | :------------------------------ |
+| **`cat` / `bat fichier`**          | Affiche le contenu brut (`cat`) ou avec coloration et numéros (`bat`).               | `bat /etc/passwd`               |
+| **`more` / `less fichier`**        | Affiche un fichier page par page en mode interactif (`q` pour quitter).              | `less /var/log/syslog`          |
+| **`head` / `tail [-n 5] fichier`** | Affiche les 5 premières (`head`) ou 5 dernières (`tail`) lignes d'un fichier.        | `tail -n 20 app.log`            |
+| **`micro fichier`**                | Éditeur texte moderne (`Ctrl+S` sauvegarder, `Ctrl+Q` quitter, `Ctrl+F`).            | `micro config/app.yaml`         |
+| **`file fichier`**                 | Identifie le vrai type d'un fichier via ses *Magic Bytes* (sans extension).          | `file /bin/ls`                  |
+| **`wc fichier`**                   | Donne le nombre de lignes (`-l`), de mots (`-w`) et d'octets (`-c`).                 | `wc -l access.log`              |
+| **`diff fichier1 fichier2`**       | Affiche les différences ligne par ligne entre deux fichiers.                         | `diff v1.conf v2.conf`          |
+| **`cut fichier -d ':' -f 1,3`**    | Extrait uniquement les colonnes spécifiées (`-f`) selon le délimiteur (`-d`).        | `cut /etc/passwd -d ':' -f 1,3` |
+| **`grep regexp fichier`**          | Affiche les lignes validant l'expression régulière.                                  | `grep "ERROR" serveur.log`      |
+| **`find dossier [critères]`**      | Recherche de fichiers par nom (`-name`), propriétaire (`-user`) ou taille (`-size`). | `find /etc -name "*.conf"`      |
+
+## 🔀 Redirections, Tubes & Processus
+
+| Syntaxe / Commande                     | Description                                                                       | Détail technique                    |                                                                     |        |      |               |
+| :------------------------------------- | :-------------------------------------------------------------------------------- | :---------------------------------- | :------------------------------------------------------------------ | :----- | :--- | :------------ |
+| **`commande > fichier`** *(ou `>>`)*   | Redirige `stdout` (`1`) vers un fichier (`>` écrase, `>>` ajoute à la fin).       | `echo "OK" > status.txt`            |                                                                     |        |      |               |
+| **`commande < fichier`**               | Injecte le fichier sur l'entrée standard `stdin` (`0`) de la commande.            | `wc -l < liste.txt`                 |                                                                     |        |      |               |
+| **`commande 2> /dev/null`**            | Redirige la sortie d'erreur `stderr` (`2`) vers le trou noir `/dev/null`.         | `find / -name "test" 2> /dev/null`  |                                                                     |        |      |               |
+| **`commande 2>&1`** ou **`&>`**        | Redirige simultanément `stdout` (`1`) et `stderr` (`2`) au même endroit.          | ` ./script.sh &> execution.log`     |                                                                     |        |      |               |
+| **`cmd1                                | cmd2`** & **`tee fichier`**                                                       | Tube (`                             | `) reliant `stdout` à `stdin` ; `tee` sauvegarde tout en affichant. | `dmesg | tail | tee boot.log` |
+| **`$(commande)`** & **`(cmd1; cmd2)`** | Substitution par le résultat (`$(...)`) et regroupement de commandes (`(...)`).   | `echo "Hôte : $(hostname)"`         |                                                                     |        |      |               |
+| **`ps [-edf]` / `pstree` / `top`**     | Liste les processus (`ps -edf`), affiche l'arbre (`pstree`) ou surveille (`top`). | `ps -edf`                           |                                                                     |        |      |               |
+| **`kill pid [-signal]` / `killall`**   | Envoie un signal à un `PID` ou un nom (`SIGTERM` par défaut, `-9` `SIGKILL`).     | `kill -9 1842` / `killall nginx`    |                                                                     |        |      |               |
+| **`Ctrl+C` / `Ctrl+Z` / `fg` / `bg`**  | Interrompt (`SIGINT`), met en pause (`SIGSTOP`), reprend en 1er/arrière-plan.     | `Ctrl+D` ferme la session (`quit`). |                                                                     |        |      |               |
+
+## 🔐 Permissions, Utilisateurs & Arborescence Système
+
+| Commande / Répertoire                 | Rôle & Administration                                                                                | Avertissement / Exemple                      |                                          |
+| :------------------------------------ | :--------------------------------------------------------------------------------------------------- | :------------------------------------------- | :--------------------------------------- |
+| **`chmod` & `chown`**                 | Modifie les droits (`r=4`, `w=2`, `x=1` pour `u`/`g`/`o`) et le propriétaire.                        | `chmod 755 script.sh` / `chown user:grp f`   |                                          |
+| **`whoami` / `w` / `su` / `sudo`**    | Utilisateur actif (`whoami`), sessions (`w`), changer d'user (`su`), root (`sudo`).                  | ⚠️ `sudo` peut rendre le système inopérant ! |                                          |
+| **`passwd` / `useradd` / `groupadd`** | Gère les mots de passe, crée des utilisateurs et des groupes.                                        | `usermod -a -G groupe utilisateur`           |                                          |
+| **`dmesg` / `lspci` / `lsusb`**       | Journaux matériels du noyau (`dmesg                                                                  | tail`) et périphériques PCI / USB.           | `uname -a` pour l'architecture du noyau. |
+| **`/boot`, `/etc`, `/home`, `/root`** | Démarrage (`/boot` — **ne jamais éditer !**), configs (`/etc`), maisons (`/home`, `/root`).          | `/bin`, `/usr`, `/opt` pour les programmes.  |                                          |
+| **`/var`, `/tmp`, `/dev`, `/proc`**   | Données variables & logs (`/var`), temporaire (`/tmp`), périphériques (`/dev`), noyau RAM (`/proc`). | `/dev/null` (trou noir) & `/dev/random`.     |                                          |

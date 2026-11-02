@@ -1,0 +1,316 @@
+---
+title: "Arborescence & Standard FHS"
+icon: "🌳"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Observer le système avec ls, comprendre l'arbre unique depuis la racine /, le standard FHS et la philosophie « Tout est fichier » (/dev et /proc)."
+---
+
+Sous Windows, chaque périphérique de stockage reçoit une lettre indépendante (`C:\`, `D:\`, `E:\`). Sous GNU/Linux et les systèmes UNIX, l'approche est radicalement différente : **il n'existe qu'un seul grand arbre inversé** qui débute tout en haut par la **racine `/`**, l'unique dossier du système qui ne possède aucun dossier parent.
+
+## 🔦 Observer son Environnement avec `pwd` et `ls`
+
+Avant de parcourir l'arbre du système, deux commandes fondamentales permettent de se repérer et d'inspecter le contenu d'un répertoire :
+
+```bash
+# 1. Où suis-je actuellement ? (Print Working Directory)
+pwd
+
+# 2. Lister simplement le contenu du dossier personnel (~)
+ls ~
+
+# 3. Révéler les fichiers cachés (-a : all, tout fichier commençant par un point ".")
+ls -a ~
+
+# 4. Affichage détaillé en liste (-l : long listing format)
+ls -l ~
+
+# 5. Le combo magique : tout voir (-a), en détail (-l), avec des tailles lisibles (-h : Ko, Mo, Go)
+ls -lah ~
+```
+
+### 🧪 Simulateur Interactif : L'Effet des Options de `ls`
+
+Activez ou désactivez les drapeaux (*flags*) de la commande `ls` pour observer comment la sortie s'enrichit dans votre terminal :
+
+::: {.card-window}
+#### Constructeur Visuel de la Commande `ls` {.bi-eye}
+
+:::: {.tabs}
+##### Options d'Affichage {.bi-sliders}
+
+- [Afficher les fichiers cachés (-a / --all)]{.checkbox .checked #ls_opt_a}
+- [Format liste détaillée (-l)]{.checkbox .checked #ls_opt_l}
+- [Tailles lisibles par un humain (-h : Ko, Mo, Go)]{.checkbox .checked #ls_opt_h}
+- [Afficher le numéro d'inode (-i)]{.checkbox #ls_opt_i}
+::::
+
+:::: {#ls-builder-terminal .terminal}
+#### Sortie du Terminal `ls` {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_lsBuilder = {
+  ls_opt_a;
+  ls_opt_l;
+  ls_opt_h;
+  ls_opt_i;
+
+  let flags = "";
+  if (ls_opt_i) flags += "i";
+  if (ls_opt_l) flags += "l";
+  if (ls_opt_a) flags += "a";
+  if (ls_opt_h) flags += "h";
+
+  const cmd = flags ? `ls -${flags} ~` : "ls ~";
+  const term = aptitek.createTerminal("#ls-builder-terminal", { defaultPrompt: false, showCursor: false });
+
+  term.writeLine(`student@linux:~$ ${cmd}`, { type: "info" });
+
+  if (!ls_opt_l) {
+    let items = [];
+    if (ls_opt_a) {
+      items.push(ls_opt_i ? "131073 ." : ".");
+      items.push(ls_opt_i ? "131072 .." : "..");
+      items.push(ls_opt_i ? "131089 .bashrc" : ".bashrc");
+      items.push(ls_opt_i ? "131094 .ssh" : ".ssh");
+    }
+    items.push(ls_opt_i ? "131102 notes.txt" : "notes.txt");
+    items.push(ls_opt_i ? "131105 workspace" : "workspace");
+    term.writeLine(items.join("   "), { type: "success" });
+  } else {
+    const sizeRoot = ls_opt_h ? "4.0K" : "4096";
+    const sizeBash = ls_opt_h ? "3.7K" : "3771";
+    const sizeNotes = ls_opt_h ? "1.4M" : "1482910";
+    if (ls_opt_a) {
+      term.writeLine(`${ls_opt_i ? "131073 " : ""}drwxr-x--- 4 student student ${sizeRoot} nov.  2 13:00 .`, { type: "muted" });
+      term.writeLine(`${ls_opt_i ? "131072 " : ""}drwxr-xr-x 3 root    root    ${sizeRoot} oct. 15 09:00 ..`, { type: "muted" });
+      term.writeLine(`${ls_opt_i ? "131089 " : ""}-rw-r--r-- 1 student student ${sizeBash} nov.  2 12:45 .bashrc`, { type: "info" });
+      term.writeLine(`${ls_opt_i ? "131094 " : ""}drwx------ 2 student student ${sizeRoot} nov.  1 18:20 .ssh`, { type: "warning" });
+    }
+    term.writeLine(`${ls_opt_i ? "131102 " : ""}-rw-r--r-- 1 student student ${sizeNotes} nov.  2 13:55 notes.txt`, { type: "success" });
+    term.writeLine(`${ls_opt_i ? "131105 " : ""}drwxr-xr-x 5 student student ${sizeRoot} nov.  2 14:00 workspace`, { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🏛️ La Visite Guidée du Standard FHS (`ls /`)
+
+Aux débuts d'Unix et de Linux, chaque créateur de distribution rangeait ses fichiers un peu où il voulait. Dans les années 1990, le standard **FHS** (*Filesystem Hierarchy Standard*) a posé des règles universelles afin que toutes les distributions (Ubuntu, Debian, Red Hat, Arch) partagent exactement la même géographie à partir de la racine `/`.
+
+::: {.card-window}
+#### Cartographie Interactive de l'Arborescence FHS (`/`) {.bi-diagram-3}
+
+:::: {.tabs .fhs-tree-tabset}
+##### Démarrage & Binaires {.bi-cpu}
+Le cœur exécutable du système : `/boot`, `/bin`, `/usr`, `/lib` et `/opt`.
+
+##### Configuration & Utilisateurs {.bi-people}
+Les réglages système et les espaces privés : `/etc`, `/home` et `/root`.
+
+##### Données & Dossiers Virtuels {.bi-hdd-network}
+Les journaux, les brouillons et les fichiers spéciaux du noyau : `/var`, `/tmp`, `/dev` et `/proc`.
+::::
+
+:::: {#fhs-tree-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable fhsCategory = "boot"
+
+_fhsWatcher = {
+  const w = createTabsetWatcher(
+    ".fhs-tree-tabset",
+    {
+      "Démarrage & Binaires": "boot",
+      "Configuration & Utilisateurs": "config",
+      "Données & Dossiers Virtuels": "virtual"
+    },
+    (val) => { mutable fhsCategory = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_fhsGraphRender = {
+  const dataMap = {
+    boot: {
+      nodes: [
+        { id: "root", label: "🌳 / (Racine)", shape: "circle", fx: 320, fy: 45 },
+        { id: "boot", label: "⚠️ /boot (Noyau & GRUB)", shape: "rounded rect", fx: 90, fy: 160 },
+        { id: "bin", label: "⚙️ /bin & /sbin (Outils de base)", shape: "rounded rect", fx: 250, fy: 160 },
+        { id: "usr", label: "📦 /usr (Logiciels Distribution)", shape: "rounded rect", fx: 410, fy: 160 },
+        { id: "opt", label: "🧩 /opt (Logiciels Tiers)", shape: "rounded rect", fx: 560, fy: 160 },
+        { id: "lib", label: "📚 /lib (Bibliothèques .so)", shape: "pill", fx: 330, fy: 270 }
+      ],
+      links: [
+        { source: "root", target: "boot", label: "Démarrage" },
+        { source: "root", target: "bin", label: "Lien -> /usr/bin" },
+        { source: "root", target: "usr", label: "Binaires apt" },
+        { source: "root", target: "opt", label: "Apps autonomes" },
+        { source: "usr", target: "lib", label: "Dépendances" },
+        { source: "bin", target: "lib", label: "Dépendances" }
+      ]
+    },
+    config: {
+      nodes: [
+        { id: "root", label: "🌳 / (Racine)", shape: "circle", fx: 320, fy: 45 },
+        { id: "etc", label: "📝 /etc (Configurations Texte)", shape: "rounded rect", fx: 130, fy: 165 },
+        { id: "home", label: "🏠 /home (Appartements Users)", shape: "rounded rect", fx: 320, fy: 165 },
+        { id: "rootdir", label: "👑 /root (Maison Admin root)", shape: "rounded rect", fx: 510, fy: 165 },
+        { id: "student", label: "👤 /home/student (~)", shape: "pill", fx: 320, fy: 275 }
+      ],
+      links: [
+        { source: "root", target: "etc", label: "Aucun binaire !" },
+        { source: "root", target: "home", label: "Partition dédiée" },
+        { source: "root", target: "rootdir", label: "Isolé de /home" },
+        { source: "home", target: "student", label: "Dossier $HOME" }
+      ]
+    },
+    virtual: {
+      nodes: [
+        { id: "root", label: "🌳 / (Racine)", shape: "circle", fx: 320, fy: 45 },
+        { id: "var", label: "📈 /var (Logs & BDD)", shape: "rounded rect", fx: 100, fy: 165 },
+        { id: "tmp", label: "🧹 /tmp (Brouillon Éphémère)", shape: "rounded rect", fx: 255, fy: 165 },
+        { id: "dev", label: "🔌 /dev (Périphériques)", shape: "rounded rect", fx: 415, fy: 165 },
+        { id: "proc", label: "🧠 /proc (Noyau en RAM)", shape: "rounded rect", fx: 560, fy: 165 },
+        { id: "null", label: "🕳️ /dev/null & /dev/random", shape: "pill", fx: 415, fy: 275 }
+      ],
+      links: [
+        { source: "root", target: "var", label: "Données variables" },
+        { source: "root", target: "tmp", label: "Vidé au reboot" },
+        { source: "root", target: "dev", label: "Tout est fichier" },
+        { source: "root", target: "proc", label: "Virtuel (0 octet)" },
+        { source: "dev", target: "null", label: "Fichiers spéciaux" }
+      ]
+    }
+  };
+
+  const curr = dataMap[fhsCategory];
+  aptitek.renderStateMachineGraph("#fhs-tree-graph", { nodes: curr.nodes, links: curr.links }, {
+    nodeRadius: 24,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 330
+  });
+}
+```
+
+### 🗂️ Dictionnaire Complet des Répertoires de la Racine `/`
+
+| Dossier à la racine  | Signification & Rôle officiel                                                               | La nuance du terrain (Monde réel)                                                                                                                    |
+| :------------------- | :------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`/boot`**          | Contient les fichiers vitaux du démarrage (noyau Linux, chargeur GRUB).                     | **Alerte absolue :** Ne jamais éditer ces fichiers manuellement, sinon le système ne démarre plus !                                                  |
+| **`/bin` & `/sbin`** | *Binaries / System Binaries* — Les commandes de base (`ls`, `cp`, `bash`).                  | Sur les distributions modernes, ce sont de simples liens pointant directement vers `/usr/bin` et `/usr/sbin`.                                        |
+| **`/etc`**           | *Editable Text Configuration* — Dossier d'administration et de configuration du système.    | **Tous** les réglages (utilisateurs, réseau, services) y sont stockés en **texte pur**. Aucun programme exécutable ne s'y trouve.                    |
+| **`/home`**          | *Home directories* — Les appartements privés des utilisateurs standards (`/home/student`).  | Souvent placé sur une partition ou un disque dur séparé pour préserver les données utilisateurs lors d'une réinstallation.                           |
+| **`/root`**          | Le dossier personnel exclusif du super-utilisateur `root`.                                  | Séparé de `/home` pour que l'administrateur puisse toujours se connecter en urgence même si le disque `/home` est en panne !                         |
+| **`/var`**           | *Variable data* — Données variables qui grossissent pendant que le serveur tourne.          | Contient les journaux systèmes (`/var/log`), les bases de données, les mails et les caches applicatifs.                                              |
+| **`/tmp`**           | *Temporary files* — Répertoire temporaire de travail.                                       | Le brouillon ouvert à tous les utilisateurs et programmes. Il est automatiquement vidé au redémarrage de la machine.                                 |
+| **`/usr` & `/lib`**  | *Unix System Resources & Libraries* — Ressources des programmes et bibliothèques partagées. | `/usr` héberge les logiciels installés via le gestionnaire de paquets (`apt`), et `/lib` leurs bibliothèques `.so` (équivalents des `.dll` Windows). |
+| **`/opt`**           | *Optional* — Logiciels tiers autonomes.                                                     | Réservé aux gros logiciels externes qui embarquent toutes leurs dépendances dans un seul dossier (ex: Chrome, Discord, outils métiers).              |
+| **`/dev` & `/proc`** | *Devices & Processes* — Périphériques matériels et informations temps réel du noyau.        | Ce ne sont **pas** de vrais dossiers stockés sur le disque dur ! Ils incarnent le principe fondateur d'UNIX : **« Tout est fichier »**.              |
+
+::: {.callout-warning}
+## ⚠️ Pourquoi ne faut-il jamais toucher à `/boot` ?
+Le répertoire `/boot` abrite l'image compressée du noyau (`vmlinuz`), le disque RAM initial (`initrd`) et la configuration binaire du chargeur d'amorçage. Une modification manuelle hasardeuse dans ce dossier empêche la machine de charger le système d'exploitation lors de la mise sous tension.
+:::
+
+## 🔮 La Philosophie « Tout est fichier » : `/dev` et `/proc`
+
+Sous Linux, vous n'interagissez pas avec le matériel ou le noyau via des fenêtres propriétaires opaques : le système expose vos composants physiques et ses propres structures internes sous forme de **fichiers virtuels** que l'on peut lire ou écrire avec les commandes standards !
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### `/dev` : Les Périphériques & Fichiers Spéciaux {.bi-usb-plug}
+
+Chaque disque dur (`/dev/sda`), terminal (`/dev/pts/0`) ou périphérique est représenté par un fichier dans `/dev`. On y trouve aussi deux **fichiers spéciaux** célèbres :
+
+- **`/dev/null` (Le Trou Noir) :** Absorbe et détruit instantanément tout ce qu'on y écrit. Idéal pour faire taire les messages d'erreur indésirables :
+  ```bash
+  commande_bavarde 2> /dev/null
+  ```
+
+- **`/dev/random` (et `/dev/urandom`) :** Génère un flux infini d'octets aléatoires en récoltant le bruit matériel du système (entropie cryptographique).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### `/proc` : Le Cerveau du Noyau en Direct {.bi-memory}
+
+Le dossier `/proc` n'existe même pas sur votre disque dur : il est **créé à la volée dans la mémoire RAM** par le noyau Linux.
+
+Lorsque vous lisez un fichier dans `/proc`, le noyau génère la réponse texte en temps réel :
+
+```bash
+# Inspecter le modèle exact et les cœurs de votre processeur
+cat /proc/cpuinfo
+
+# Vérifier la mémoire RAM libre et occupée à la microseconde près
+cat /proc/meminfo
+```
+:::::
+::::
+:::
+
+### 🧪 Explorateur Interactif des Fichiers Virtuels (`/proc` et `/dev`)
+
+Sélectionnez une commande d'inspection pour interroger directement les fichiers virtuels du noyau :
+
+::: {.card-window}
+#### Sonde Temps Réel `/proc` & `/dev` {.bi-activity}
+
+:::: {.tabs}
+##### Sélection du Fichier Virtuel {.bi-sliders}
+
+[Commande d'inspection]{.select #proc_cmd_select options="cat /proc/cpuinfo (Processeur en direct),cat /proc/meminfo (État de la RAM),cat /proc/uptime (Temps de fonctionnement),echo 'Secret' > /dev/null (Le trou noir /dev/null),head -c 16 /dev/urandom | xxd (Entropie aléatoire)" value="cat /proc/cpuinfo (Processeur en direct)"}
+::::
+
+:::: {#proc-sim-terminal .terminal}
+#### Sortie du Noyau Linux {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_procExplorer = {
+  proc_cmd_select;
+  const term = aptitek.createTerminal("#proc-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (proc_cmd_select.includes("cpuinfo")) {
+    term.writeLine("student@linux:~$ cat /proc/cpuinfo", { type: "info" });
+    term.writeLine("processor       : 0\nvendor_id       : AuthenticAMD\nmodel name      : AMD EPYC 7763 64-Core Processor\ncpu MHz         : 2445.402\ncache size      : 512 KB", { type: "success" });
+    term.writeLine("✓ Ce fichier fait 0 octet sur le disque : le noyau rédige cette fiche technique en direct à la lecture !", { type: "muted" });
+  } else if (proc_cmd_select.includes("meminfo")) {
+    term.writeLine("student@linux:~$ cat /proc/meminfo", { type: "info" });
+    term.writeLine("MemTotal:       16384000 kB\nMemFree:         8421120 kB\nMemAvailable:   12890400 kB\nBuffers:          412000 kB\nCached:          4057280 kB", { type: "success" });
+    term.writeLine("✓ C'est précisément dans ce fichier que les outils comme 'top' ou 'free' viennent lire l'état de la RAM.", { type: "muted" });
+  } else if (proc_cmd_select.includes("uptime")) {
+    term.writeLine("student@linux:~$ cat /proc/uptime", { type: "info" });
+    term.writeLine("148920.45 589102.12", { type: "success" });
+    term.writeLine("✓ Le premier nombre indique les secondes écoulées depuis le démarrage du système (ici ~41 heures).", { type: "muted" });
+  } else if (proc_cmd_select.includes("/dev/null")) {
+    term.writeLine("student@linux:~$ echo 'Secret' > /dev/null", { type: "info" });
+    term.writeLine("student@linux:~$ cat /dev/null", { type: "info" });
+    term.writeLine("(Aucune sortie : les données envoyées dans /dev/null sont aspirées et détruites instantanément)", { type: "warning" });
+  } else {
+    term.writeLine("student@linux:~$ head -c 16 /dev/urandom | xxd", { type: "info" });
+    term.writeLine("00000000: 8f3a 91c4 02e7 4b19 d560 77a2 3c8e 10f4  .:....K..`w.<...", { type: "success" });
+    term.writeLine("✓ /dev/urandom fournit des octets pseudo-aléatoires cryptographiques directement depuis le noyau.", { type: "muted" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```

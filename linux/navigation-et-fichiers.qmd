@@ -1,0 +1,298 @@
+---
+title: "Navigation, Échappement & Manipulation"
+icon: "🧭"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Naviguer avec les chemins absolus/relatifs, déjouer les pièges d'espaces et d'échappement, éditer avec bat/micro et rechercher avec grep/find/cut."
+---
+
+Se déplacer avec fluidité dans l'arborescence Linux sans jamais toucher la souris repose sur la maîtrise des **chemins**, des **symboles spéciaux du Shell** et des règles d'interprétation des caractères par `bash`.
+
+## 🗺️ Chemin Absolu vs Chemin Relatif : Le GPS contre le Piéton
+
+Pour désigner l'emplacement d'un fichier ou d'un dossier avec `cd` (*Change Directory*), deux approches coexistent :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Chemin Absolu (Le GPS) {.bi-geo-alt-fill}
+
+C'est une coordonnée postale complète : `France / Rhône / Villeurbanne`. Peu importe où vous vous trouvez actuellement, cette adresse mène toujours exactement au même endroit.
+
+- **Règle absolue :** Un chemin absolu **commence toujours par le slash de la racine `/`**.
+```bash
+# Mène aux journaux système depuis n'importe où
+cd /var/log
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Chemin Relatif (Le Piéton) {.bi-sign-turn-right}
+
+C'est l'indication donnée à un passant : *« Prenez la porte en face, puis montez d'un étage »*. Le point d'arrivée dépend entièrement de l'endroit où vous êtes au moment où vous parlez.
+
+- **Règle absolue :** Un chemin relatif **ne commence jamais par `/`**.
+```bash
+# Entre dans le sous-dossier "apt" situé devant nous
+cd apt
+```
+:::::
+::::
+:::
+
+### 🧭 Les 4 Symboles de Navigation (`.`, `..`, `~`, `-`)
+
+| Symbole  | Signification                             | Usage concret & Mécanique interne                                                                                                                             |
+| :------- | :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`.`**  | **« Ici même »** (Dossier courant)        | Permet de désigner explicitement le dossier actif : copier un fichier ici (`cp /etc/hosts .`) ou lancer un exécutable local (`./mon_script.sh`).              |
+| **`..`** | **« Dossier parent »** (Un étage en haut) | Remonte d'un cran dans l'arbre sans retaper tout le chemin. On peut les enchaîner : `cd ../..` remonte de deux étages.                                        |
+| **`~`**  | **« Chez moi »** (`/home/student`)        | Remplacé en coulisses par le Shell par la variable `$HOME`. Taper `cd ~/workspace` équivaut à `cd /home/student/workspace` (`cd` seul ramène aussi dans `~`). |
+| **`-`**  | **« Touche Retour »** (`$OLDPWD`)         | `cd -` vous téléporte instantanément dans le dossier où vous étiez juste avant ! Le taper en boucle fait ping-pong entre deux dossiers éloignés.              |
+
+::: {.callout-note collapse="true"}
+## 🔗 Le lien secret entre `.`, `..` et les Inodes !
+Pourquoi `.` et `..` apparaissent-ils toujours en tête d'un `ls -la` ? Parce que ce ne sont pas de simples raccourcis virtuels : ce sont de **vrais liens physiques (*hard links*)** créés automatiquement dans chaque dossier !
+
+- L'inode de `.` est exactement le même que celui du dossier dans lequel vous vous trouvez.
+- Tout en haut de la racine (`ls -lai /`), `.` et `..` possèdent **exactement le même numéro d'inode** (souvent le n°`2`), car il est physiquement impossible de remonter plus haut que la racine `/` !
+:::
+
+## 🕵️ Fichiers Cachés, Casse et Magic Bytes
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Mythe des Fichiers Cachés (`.fichier`) {.bi-eye-slash}
+
+Sous Windows, on cache un fichier en cochant une case *« Caché »* dans ses propriétés. Sous Linux, **il n'existe aucune case « caché » dans l'inode !**
+
+C'est une simple convention héritée d'une paresse des créateurs d'Unix dans les années 1970 : pour éviter que `ls` n'affiche `.` et `..` en permanence, ils ont codé une règle disant *« Si le nom commence par un point `.`, ne l'affiche pas »*.
+
+```bash
+# Cacher un fichier consiste simplement à le renommer avec mv !
+touch secret.txt
+mv secret.txt .secret.txt
+ls     # Disparu !
+ls -a  # Toujours là, avec le même inode !
+```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Casse Stricte & Magic Bytes (`file`) {.bi-file-earmark-binary}
+
+Deux règles d'or différencient radicalement Linux de Windows :
+
+1. **Sensibilité stricte à la casse :** `Rapport.txt`, `rapport.txt` et `RAPPORT.TXT` sont **trois fichiers différents** pouvant cohabiter dans le même dossier.
+2. **Les extensions n'ont aucun pouvoir magique :** Renommer `image.png` en `image.txt` ne trompe pas Linux. Le système inspecte les premiers octets à l'intérieur du fichier (*Magic Bytes*) grâce à la commande **`file`** :
+```bash
+file /bin/ls
+# -> ELF 64-bit LSB pie executable (sans extension .exe !)
+```
+:::::
+::::
+:::
+
+## 🛡️ Espaces, Pièges Mortels et les 3 Armes d'Échappement
+
+Que se passe-t-il si un débutant tente de créer un dossier nommé `mon super projet` en tapant naïvement la commande suivante ?
+
+```bash
+mkdir mon super projet
+```
+
+Au lieu d'un seul dossier, Linux crée **trois dossiers séparés** (`mon`, `super` et `projet`) ! Pourquoi ? Parce que pour le Shell, **l'espace est le séparateur d'arguments**. Si un malheureux tape `rm -rf mon super /` avec un espace malheureux avant le slash, il ordonne la suppression de la racine `/` !
+
+### ⚔️ Les 3 Armes d'Échappement (Escaping) et le Boss Final (`--`)
+
+Pour ordonner au Shell de traiter un espace ou un caractère spécial (`$`, `*`, `?`) comme du simple texte :
+
+| Méthode                                                 | Syntaxe           | Comportement exact dans le Shell                                                                                    | Exemple concret                                                    |
+| :------------------------------------------------------ | :---------------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
+| **1. L'Anti-slash (`\`)**<br>*Caractère par caractère*  | `\` devant        | Annule le pouvoir spécial du **seul caractère** situé juste après lui *(la touche `Tab` les ajoute toute seule !)*. | `mkdir mon\ super\ projet`                                         |
+| **2. Guillemets doubles (`"..."`)**<br>*Souple (Weak)*  | `"texte ici"`     | Protège les espaces, **mais** laisse le Shell évaluer les variables (`$USER`) et substitutions `$(...)`.            | `echo "Je suis $USER"` $\rightarrow$ *Affiche : `Je suis student`* |
+| **3. Apostrophes (`'...'`)**<br>*Strict (Strong)*       | `'texte ici'`     | **Fige absolument tout.** Aucun caractère (`$`, `\`, `*`) n'est interprété : 100 % texte brut.                      | `echo 'Je suis $USER'` $\rightarrow$ *Affiche : `Je suis $USER`*   |
+| **4. Le Boss Final (`./` ou `--`)**<br>*Fichier `-nom`* | `cmd -- -fichier` | Si un fichier commence par un tiret (`-piège.txt`), `cat` croit voir une option. Utilisez `./-piège.txt` ou `--`.   | `cat -- -piège.txt` ou `rm ./-piège.txt`                           |
+
+### 🧪 Laboratoire Interactif : Comment `bash` Découpe et Évalue vos Commandes
+
+Testez les différents modes de protection ci-dessous pour visualiser comment le Shell analyse la ligne avant de l'exécuter :
+
+::: {.card-window}
+#### Simulateur d'Échappement & Quoting Bash {.bi-shield-lock}
+
+:::: {.tabs}
+##### Scénario d'Échappement {.bi-sliders}
+
+Choisissez une commande à analyser par l'interpréteur `bash` :
+[Commande testée]{.select #quote_scenario options="mkdir mon super projet (Sans protection : Piège !),mkdir 'mon super projet' (Protégé par guillemets/apostrophes),echo \"Trésor de $USER\" (Guillemets doubles : Évaluation souple),echo 'Trésor de $USER' (Apostrophes : Figé strict),cat -piege.txt (Fichier commençant par un tiret : Erreur !),cat -- -piege.txt (Double tiret -- : Fin des options)" value="mkdir mon super projet (Sans protection : Piège !)"}
+::::
+
+:::: {#quote-sim-terminal .terminal}
+#### Analyseur Syntaxique Bash {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_quoteSimulator = {
+  quote_scenario;
+  const term = aptitek.createTerminal("#quote-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (quote_scenario.startsWith("mkdir mon super")) {
+    term.writeLine("$ mkdir mon super projet", { type: "info" });
+    term.writeLine("Découpage argv par Bash : Programme='mkdir' | Arg1='mon' | Arg2='super' | Arg3='projet'", { type: "warning" });
+    term.writeLine("❌ Résultat : 3 dossiers distincts ('mon', 'super', 'projet') ont été créés par erreur !", { type: "danger" });
+  } else if (quote_scenario.startsWith("mkdir 'mon super")) {
+    term.writeLine("$ mkdir 'mon super projet'   (ou mkdir mon\\ super\\ projet)", { type: "info" });
+    term.writeLine("Découpage argv par Bash : Programme='mkdir' | Arg1='mon super projet' (1 seul bloc !)", { type: "success" });
+    term.writeLine("✅ Résultat : Un unique dossier nommé 'mon super projet' est créé proprement.", { type: "success" });
+  } else if (quote_scenario.includes("Guillemets doubles")) {
+    term.writeLine("$ echo \"Trésor de $USER dans $PWD\"", { type: "info" });
+    term.writeLine("Expansion des variables : $USER -> 'student' | $PWD -> '/home/student/workspace'", { type: "info" });
+    term.writeLine("Sortie écran : Trésor de student dans /home/student/workspace", { type: "success" });
+  } else if (quote_scenario.includes("Apostrophes")) {
+    term.writeLine("$ echo 'Trésor de $USER dans $PWD'", { type: "info" });
+    term.writeLine("Expansion des variables : DÉSACTIVÉE (Strong quoting '...')", { type: "warning" });
+    term.writeLine("Sortie écran : Trésor de $USER dans $PWD", { type: "success" });
+  } else if (quote_scenario.startsWith("cat -piege.txt")) {
+    term.writeLine("$ cat -piege.txt", { type: "info" });
+    term.writeLine("cat: invalid option -- 'p'\nTry 'cat --help' for more information.", { type: "danger" });
+    term.writeLine("❌ Le tiret initial fait croire à 'cat' que vous lui passez les options -p -i -e -g -e !", { type: "danger" });
+  } else {
+    term.writeLine("$ cat -- -piege.txt   (ou : cat ./-piege.txt)", { type: "info" });
+    term.writeLine("Bravo, tu m'as lu !", { type: "success" });
+    term.writeLine("✅ '--' signale la fin des options : tout ce qui suit est traité comme un nom de fichier.", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🛠️ Manipuler, Lire, Éditer et Rechercher
+
+Une fois les chemins maîtrisés, voici la boîte à outils complète pour créer des arborescences, lire, éditer et fouiller dans vos fichiers :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Créer, Déplacer & Supprimer {.bi-folder-plus}
+
+- **`mkdir [-p] dossier` :** Crée un dossier. L'option **`-p`** (*parents*) crée toute la hiérarchie intermédiaire si nécessaire. Combinée avec l'expansion d'accolades (*Brace expansion*), elle bâtit tout un projet en une ligne :
+  ```bash
+  mkdir -p projet/{config,logs,scripts}
+  ```
+
+- **`rmdir dossier` :** Supprime uniquement un dossier **vide**.
+- **`touch fichier` :** Crée un fichier vide s'il n'existe pas (ou met à jour sa date `mtime`).
+- **`cp source cible` :** Copie un fichier (`cp -R` pour un dossier entier).
+- **`mv source cible` :** Déplace **ou renomme** un fichier ou dossier.
+- **`rm [-R] fichier` :** Supprime définitivement un fichier (`-R` ou `-rf` pour supprimer récursivement un dossier et tout son contenu).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Lire & Éditer (`cat`, `bat`, `micro`) {.bi-file-earmark-code}
+
+- **`cat fichier` :** Affiche d'un bloc tout le contenu brut d'un ou plusieurs fichiers.
+- **`bat fichier` :** Le remplaçant moderne de `cat` (binaire `batcat` sur Ubuntu) avec **coloration syntaxique**, numéros de lignes et pagination automatique !
+- **`more` / `less fichier` :** Affiche un long fichier page par page en mode interactif.
+- **`head -n 5` / `tail -n 5 fichier` :** Affiche uniquement les 5 premières (`head`) ou 5 dernières (`tail`) lignes d'un fichier.
+- **`micro fichier` :** Éditeur de texte moderne dans le terminal utilisant les raccourcis universels :
+  - `Ctrl + S` : Sauvegarder
+  - `Ctrl + Q` : Quitter
+  - `Ctrl + F` : Rechercher (`Ctrl + C` / `Ctrl + V` pour copier/coller)
+:::::
+::::
+:::
+
+### 🔎 Sélecteurs (Globbing), Analyse et Recherche
+
+Dans toutes ces commandes, on peut remplacer un nom de fichier par un **sélecteur (*wildcard*)** : par exemple, `ls *.txt` cible tous les fichiers finissant par `.txt`.
+
+| Commande                        | Rôle et exemple d'utilisation                                                                                           |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------- |
+| **`echo [-e] texte`**           | Affiche le texte passé en paramètre (`-e` active les retours à la ligne `\n` et tabulations `\t`).                      |
+| **`wc fichier`**                | *Word Count* — Compte le nombre de lignes (`-l`), de mots (`-w`) et de caractères/octets (`-c`) d'un fichier.           |
+| **`diff fichier1 fichier2`**    | Compare deux fichiers ligne par ligne et affiche leurs différences exactes.                                             |
+| **`cut fichier -d ':' -f 1,3`** | Découpe chaque ligne selon le délimiteur `-d` (ici `:`) et n'extrait que les colonnes `-f` demandées (ex: `1` et `3`).  |
+| **`grep regexp fichier`**       | Filtre et affiche uniquement les lignes qui valident l'expression régulière (ex: `grep "ERROR" app.log`).               |
+| **`find dossier [critères]`**   | Recherche récursive de fichiers par nom (`-name "*.conf"`), par propriétaire (`-user student`) ou par taille (`-size`). |
+
+## 🏆 Défis Pratiques & Mini-TP Fil Rouge
+
+Testez vos réflexes sur ces deux missions pratiques avant de regarder les solutions :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Défi Express : « Le Parcours d'Obstacles » {.bi-flag}
+
+Réalisez cet enchaînement en 3 étapes au clavier :
+
+1. Créez en une seule commande un dossier caché nommé `.coffre fort` (avec un espace !) dans `~/workspace`.
+2. Entrez dans ce dossier, puis créez un fichier nommé `-tresor.txt` contenant le texte `1000 pieces d'or $USER` où `$USER` doit rester écrit littéralement `$USER` sans être remplacé par `student`.
+3. Depuis ce dossier, affichez le contenu de `/etc/hostname` en utilisant uniquement un **chemin relatif** (avec des `..`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Mini-TP : « L'Archiviste du Serveur » {.bi-hdd-stack}
+
+Vous prenez la main sur un nouveau conteneur :
+
+1. **Exploration :** Via `man uname`, trouvez l'option affichant **toutes** les infos du noyau et exécutez-la.
+2. **Architecture :** Dans `~/workspace`, créez en **une seule commande** : `webapp/releases/v1.0`, `webapp/releases/v2.0`, `webapp/shared/config` et `webapp/logs`.
+3. **Édition :** Avec `micro`, créez `webapp/shared/config/settings.ini` (`port = 8080`), vérifiez avec `bat`, et inspectez son inode/date `mtime` avec `stat`.
+4. **Déploiement :** Créez `index.html` dans `v1.0` et `v2.0`, liez `webapp/current` vers `releases/v1.0` (`ln -s`), puis basculez-le vers `releases/v2.0` sans temps d'arrêt !
+:::::
+::::
+:::
+
+::: {.callout-tip collapse="true"}
+## ✅ Corrigé Complet des 2 Défis (Cliquez pour révéler)
+
+**1. Corrigé du « Parcours d'Obstacles » :**
+```bash
+# 1. Dossier caché avec espace
+mkdir ~/workspace/".coffre fort"
+
+# 2. Entrer dedans et créer un fichier commençant par "-" avec texte figé
+cd ~/workspace/.coffre\ fort
+echo "1000 pieces d'or \$USER" > ./-tresor.txt
+
+# 3. Remonter de .coffre fort -> workspace -> student -> home -> /
+cat ../../../../etc/hostname
+```
+
+**2. Corrigé du Mini-TP « L'Archiviste du Serveur » :**
+```bash
+# 1. Manuel et infos système complètes
+uname -a
+
+# 2. Arborescence complète en une seule ligne (Brace expansion + mkdir -p)
+mkdir -p ~/workspace/webapp/{releases/{v1.0,v2.0},shared/config,logs}
+
+# 3. Édition, lecture colorée et enquête d'Inode
+micro ~/workspace/webapp/shared/config/settings.ini
+bat ~/workspace/webapp/shared/config/settings.ini
+stat ~/workspace/webapp/shared/config/settings.ini
+
+# 4. Déploiement par lien symbolique et bascule v1.0 -> v2.0
+cd ~/workspace/webapp
+echo "<h1>Version 1</h1>" > releases/v1.0/index.html
+echo "<h1>Version 2</h1>" > releases/v2.0/index.html
+ln -s releases/v1.0 current
+bat current/index.html
+
+# Bascule atomique vers la v2.0 (-s : symbolique, -f : force, -n : ne suit pas le dossier cible)
+ln -sfn releases/v2.0 current
+bat current/index.html
+```
+:::

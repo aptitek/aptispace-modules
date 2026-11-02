@@ -1,0 +1,273 @@
+---
+title: "Console, Shell & Ergonomie"
+icon: "💻"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Distinguer le Terminal du Shell Bash, décoder le prompt, maîtriser les raccourcis clavier, le manuel man et les séquences ANSI."
+---
+
+Lors d'une connexion à un serveur ou de l'ouverture d'une console sous GNU/Linux, l'utilisateur entre en dialogue direct avec le cœur du système. Là où une interface graphique (*GUI*) masque les opérations derrière des icônes, la ligne de commande (*CLI*) offre une vitesse d'exécution, une précision et une capacité d'automatisation inégalées.
+
+## 🖥️ Terminal vs Shell : Qui fait quoi ?
+
+Lorsqu'une « fenêtre noire » s'ouvre à l'écran, deux programmes bien distincts collaborent en réalité :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Terminal (La Carrosserie) {.bi-window}
+
+C'est une simple enveloppe graphique (ou matérielle) dont l'unique rôle est d'afficher des caractères à l'écran et de capter les frappes de votre clavier ou les clics de votre souris.
+
+- **Exemples :** GNOME Terminal, Konsole, Alacritty, Windows Terminal, ou le terminal intégré de VS Code.
+- **Rôle :** Gérer la police d'écriture, le défilement (*scroll*), le copier-coller et les couleurs d'affichage.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Shell (Le Moteur Interpréteur) {.bi-terminal-fill}
+
+C'est le programme d'interface homme/machine qui tourne **à l'intérieur** du terminal. Il attend vos instructions textuelles, les traduit pour le noyau du système d'exploitation (*Kernel*), puis renvoie le résultat.
+
+- **Standard du cours :** **`bash`** (*Bourne Again Shell*), le shell historique apparu avec le projet GNU/Linux.
+- **Alternatives :** `sh` (POSIX), `zsh`, `fish`.
+:::::
+::::
+:::
+
+### 🧬 Décoder le Prompt et la Syntaxe d'une Commande
+
+Avant même de taper votre première lettre, le Shell affiche une invite de commande appelée le **prompt** :
+
+```bash
+student@a1b2c3d4:~/workspace$
+```
+
+Chaque fragment de cette ligne vous donne une information vitale sur votre session active :
+
+| Élément           | Signification immédiate                                                                                                                      |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`student`**     | **Qui je suis :** le nom de l'utilisateur connecté.                                                                                          |
+| **`a1b2c3d4`**    | **Où je suis branché :** le nom d'hôte (*hostname*) de la machine ou l'identifiant du conteneur.                                             |
+| **`~/workspace`** | **Où je me trouve :** le dossier courant. Le symbole tilde `~` représente votre dossier personnel (`/home/student`).                         |
+| **`$`**           | **Mon niveau de privilège :** `$` indique un citoyen standard du système. S'il affiche `#`, vous êtes **`root`**, l'administrateur suprême ! |
+
+Pour exécuter une action, il suffit de saisir une commande suivie de ses options et paramètres, puis de valider avec la touche `Entrée` :
+
+```bash
+$ commande -option paramètre
+```
+
+::: {.callout-note collapse="true"}
+## 💡 Options courtes (`-a`) vs Options longues (`--all`)
+
+- **Option courte (un seul tiret `-`) :** Composée d'une seule lettre (ex: `-a`, `-l`, `-h`). Leur grand avantage est qu'on peut les **combiner** derrière un seul tiret : taper `ls -l -a -h` s'écrit directement `ls -lah`.
+- **Option longue (deux tirets `--`) :** Écrite en toutes lettres (ex: `--all`, `--human-readable`, `--help`). On privilégie ce format dans les scripts ou les `Dockerfile` car il est immédiatement compréhensible à la relecture.
+:::
+
+## ⌨️ La Survie au Clavier : Ergonomie & Raccourcis
+
+Sous Linux, la règle d'or d'un bon administrateur système est d'être un **« fainéant intelligent »** : on ne tape jamais un nom de fichier ou de commande en entier, et on ne lâche jamais le clavier pour déplacer son curseur à la souris.
+
+::: {.card-window}
+#### Simulateur d'Ergonomie Clavier & Historique Bash {.bi-keyboard}
+
+:::: {.tabs}
+##### Raccourcis d'Édition & Complétion {.bi-sliders}
+
+Sélectionnez une action clavier pour observer son effet immédiat dans l'interpréteur `bash` :
+[Action Clavier]{.select #kbd_action_select options="Tab (1 fois) : Auto-complétion directe,Tab (2 fois) : Lister toutes les possibilités,Ctrl + A / Ctrl + E : Sauter en Début ou Fin de ligne,Ctrl + Flèches : Sauter de mot en mot,Ctrl + W : Supprimer le mot précédent,Ctrl + U / Ctrl + K : Effacer toute la ligne,Ctrl + L : Nettoyer l'écran (clear),Ctrl + R : Recherche interactive dans l'historique,Commande !! : Répéter la dernière commande,Piège Ctrl + C vs Ctrl + Shift + C" value="Tab (1 fois) : Auto-complétion directe"}
+::::
+
+:::: {#kbd-sim-terminal .terminal}
+#### Terminal Bash Interactif {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_kbdSimulator = {
+  kbd_action_select;
+  const term = aptitek.createTerminal("#kbd-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (kbd_action_select.startsWith("Tab (1 fois)")) {
+    term.writeLine("student@linux:~/workspace$ fast[Tab]", { type: "info" });
+    term.writeLine("student@linux:~/workspace$ fastfetch ", { type: "success" });
+    term.writeLine("✓ Bash complète automatiquement la commande, l'option ou le chemin unique correspondant.", { type: "muted" });
+  } else if (kbd_action_select.startsWith("Tab (2 fois)")) {
+    term.writeLine("student@linux:~/workspace$ l[Tab][Tab]", { type: "info" });
+    term.writeLine("less      ln        local     locate    login     logname   ls        lsblk     lscpu     lspci     lsusb", { type: "warning" });
+    term.writeLine("✓ Appuyer deux fois sur Tab affiche toutes les commandes ou fichiers correspondants.", { type: "muted" });
+  } else if (kbd_action_select.startsWith("Ctrl + A")) {
+    term.writeLine("Ligne saisie : apt-get update && apt-get upgrade█", { type: "info" });
+    term.writeLine("[Ctrl + A]  -> █apt-get update && apt-get upgrade (Curseur au tout début : idéal pour ajouter sudo !)", { type: "success" });
+    term.writeLine("[Ctrl + E]  -> apt-get update && apt-get upgrade█ (Curseur ramené tout à la fin)", { type: "success" });
+  } else if (kbd_action_select.startsWith("Ctrl + Flèches")) {
+    term.writeLine("student@linux:~/workspace$ echo bonjour tout le █monde comment ca va", { type: "info" });
+    term.writeLine("✓ Maintenir Ctrl + Flèche Gauche/Droite fait bondir le curseur de mot en mot instantanément.", { type: "success" });
+  } else if (kbd_action_select.startsWith("Ctrl + W")) {
+    term.writeLine("Avant [Ctrl + W] : student@linux:~/workspace$ cd /var/log/mauvais_dossier█", { type: "warning" });
+    term.writeLine("Après [Ctrl + W] : student@linux:~/workspace$ cd /var/log/█", { type: "success" });
+    term.writeLine("✓ Efface le mot entier situé juste avant le curseur d'un seul coup.", { type: "muted" });
+  } else if (kbd_action_select.startsWith("Ctrl + U")) {
+    term.writeLine("[Ctrl + U] : Efface tout du curseur jusqu'au DÉBUT de la ligne (nettoie une commande ratée).", { type: "success" });
+    term.writeLine("[Ctrl + K] : Coupe tout du curseur jusqu'à la FIN de la ligne.", { type: "info" });
+  } else if (kbd_action_select.startsWith("Ctrl + L")) {
+    term.writeLine("student@linux:~/workspace$ mkdir -p mon_projet/█", { type: "success" });
+    term.writeLine("✓ Équivalent à la commande 'clear', mais fonctionne même pendant que vous êtes au milieu de l'écriture d'une ligne !", { type: "muted" });
+  } else if (kbd_action_select.startsWith("Ctrl + R")) {
+    term.writeLine("(reverse-i-search)`dock': docker run -d -p 8080:80 nginx", { type: "info" });
+    term.writeLine("✓ Fouille dans tout l'historique des commandes passées (tapez Échap pour quitter ou Entrée pour lancer).", { type: "success" });
+  } else if (kbd_action_select.startsWith("Commande !!")) {
+    term.writeLine("student@linux:~/workspace$ apt update", { type: "warning" });
+    term.writeLine("E: Could not open lock file - Permission denied (are you root?)", { type: "danger" });
+    term.writeLine("student@linux:~/workspace$ sudo !!", { type: "info" });
+    term.writeLine("sudo apt update", { type: "success" });
+    term.writeLine("✓ '!!' est automatiquement remplacé par l'intégralité de la dernière commande exécutée !", { type: "muted" });
+  } else {
+    term.writeLine("❌ Ctrl + C dans un Shell NE COPIE PAS : il envoie le signal SIGINT pour tuer le programme en cours !", { type: "danger" });
+    term.writeLine("✅ Copier dans le terminal : Ctrl + Shift + C (ou simple sélection à la souris).", { type: "success" });
+    term.writeLine("✅ Coller dans le terminal : Ctrl + Shift + V (ou clic sur la molette centrale de la souris).", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+### 📋 Récapitulatif des Raccourcis de Survie
+
+| Objectif                               | Raccourci Clavier / Souris                     | Détail et comportement                                                                     |
+| :------------------------------------- | :--------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| **Auto-complétion**                    | `Tab` (1 fois / 2 fois)                        | Complète automatiquement (1x) ou affiche toutes les possibilités (2x).                     |
+| **Sauter de mot en mot**               | `Ctrl + Flèche Gauche / Droite`                | Déplace le curseur d'un mot complet à l'autre dans la commande.                            |
+| **Aller au début / à la fin**          | `Ctrl + A` / `Ctrl + E` *(ou `Début` / `Fin`)* | Place le curseur au tout début (`A`) ou à la toute fin (`E`) de la saisie.                 |
+| **Supprimer un mot entier**            | `Ctrl + W` *(ou `Ctrl + Retour arrière`)*      | Supprime d'un coup le mot précédant le curseur.                                            |
+| **Effacer le début / la fin de ligne** | `Ctrl + U` / `Ctrl + K`                        | Efface du curseur vers le début (`U`) ou vers la fin (`K`).                                |
+| **Nettoyer l'affichage**               | `Ctrl + L`                                     | Remonte la ligne courante tout en haut de l'écran sans perdre la saisie en cours.          |
+| **Naviguer dans l'historique**         | `Flèche Haut / Bas` ou `!!`                    | Parcourt les commandes précédentes ; `!!` répète la dernière commande exécutée.            |
+| **Rechercher dans l'historique**       | `Ctrl + R`                                     | Recherche interactive à rebours dans l'historique (`Échap` pour annuler).                  |
+| **Copier / Coller**                    | `Ctrl + Maj + C` / `Ctrl + Maj + V`            | Ou sélectionner le texte à la souris puis appuyer sur la **molette centrale** pour coller. |
+| **Défiler l'affichage (*Scroll*)**     | Molette ou `Maj + PagePréc / PageSuiv`         | Remonte ou descend dans l'historique visuel du terminal.                                   |
+
+## 📖 Devenir Autonome avec le Manuel (`man`)
+
+La philosophie fondamentale sous UNIX est simple : **« Ne cherchez jamais sur Internet avant d'avoir consulté `man` »**. Sur un serveur en salle blanche ou en panne réseau, seul le manuel local est disponible, et sa documentation correspond exactement à la version de l'outil installée sur la machine.
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Accéder à la Documentation {.bi-book}
+
+En cas de doute sur une commande, deux réflexes :
+
+1. **L'aide rapide en ligne :**
+   ```bash
+   ls --help
+   # ou sur certains outils :
+    commande -h
+   ```
+
+1. **Le manuel officiel complet :**
+   ```bash
+   man [section] commande
+   ```
+
+   - **Section `1` (par défaut) :** Commandes exécutables de l'utilisateur (`man ls`).
+   - **Section `2` :** Appels système du noyau (*syscalls*, ex: `man 2 open`).
+   - **Section `3` :** Fonctions des bibliothèques C (`man 3 printf`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Naviguer en Mode Interactif (`less`) {.bi-arrows-move}
+
+Certaines commandes comme `man` ou `less` passent le terminal en **mode interactif** plein écran :
+
+- `Espace` ou `Flèches Haut / Bas` : Défiler d'une page ou d'une ligne (`b` pour remonter d'une page).
+- `/mot` puis `Entrée` : Rechercher un terme précis dans la page (ex: `/human`).
+- `n` / `N` : Aller à l'occurrence suivante (*next*) ou précédente.
+- `h` ou `H` : Afficher l'aide complète des raccourcis de navigation.
+- **`q` ou `Q` (ou `Ctrl + C`) :** Quitter proprement le mode interactif et rendre la main au Shell.
+:::::
+::::
+:::
+
+### 🔍 Savoir lire un `SYNOPSIS` dans `man`
+
+En haut de chaque page de manuel, la rubrique **SYNOPSIS** résume la grammaire exacte de la commande :
+
+```text
+SYNOPSIS
+       ls [OPTION]... [FILE]...
+```
+
+- **Ce qui est entre crochets `[...]` est facultatif :** vous pouvez lancer `ls` tout seul sans option ni nom de fichier.
+- **Les points de suspension `...` signifient « répétable » :** vous pouvez passer plusieurs options et lister plusieurs dossiers en une seule commande (`ls -l -a /etc /var`).
+
+## 🎨 Couleurs et Formatages ANSI
+
+Le terminal supporte l'affichage de texte enrichi (couleurs, gras, souligné) grâce aux **séquences d'échappement ANSI**. Avec la commande `echo -e` (où `-e` active l'interprétation des séquences spéciales commençant par `\033[`), vous pouvez styliser vos scripts et votre prompt :
+
+```bash
+echo -e "\033[CODEmVotre texte ici\033[0m"
+```
+
+::: {.card-window}
+#### Laboratoire de Séquences d'Échappement ANSI {.bi-palette}
+
+:::: {.tabs}
+##### Constructeur ANSI {.bi-sliders}
+
+Combinez un attribut de style, une couleur de texte et un arrière-plan :
+[Style]{.select #ansi_attr options="0 : Réinitialise (Normal),1 : Gras (Bold),2 : Fin (Dim),4 : Souligné (Underline),7 : Inversé (Reverse),8 : Caché (Hidden)" value="1 : Gras (Bold)"}
+[Texte]{.select #ansi_fg options="32 : Vert,31 : Rouge,33 : Jaune,34 : Bleu,35 : Magenta,36 : Cyan,37 : Blanc,30 : Noir" value="32 : Vert"}
+[Fond]{.select #ansi_bg options="Aucun fond,40 : Fond Noir,41 : Fond Rouge,42 : Fond Vert,44 : Fond Bleu,45 : Fond Magenta,46 : Fond Cyan" value="Aucun fond"}
+::::
+
+:::: {#ansi-sim-terminal .terminal}
+#### Commande Générée & Référence ANSI {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_ansiBuilder = {
+  ansi_attr;
+  ansi_fg;
+  ansi_bg;
+
+  const attrCode = ansi_attr.split(" :")[0];
+  const fgCode = ansi_fg.split(" :")[0];
+  const bgCode = ansi_bg.includes(" : ") ? ";" + ansi_bg.split(" :")[0] : "";
+  const fullCode = `${attrCode};${fgCode}${bgCode}`;
+
+  const term = aptitek.createTerminal("#ansi-sim-terminal", { defaultPrompt: false, showCursor: false });
+  term.writeLine(`$ echo -e "\\033[${fullCode}m[OK] Serveur opérationnel\\033[0m"`, { type: "info" });
+
+  let colorType = "success";
+  if (fgCode === "31") colorType = "danger";
+  else if (fgCode === "33") colorType = "warning";
+  else if (fgCode === "34" || fgCode === "36") colorType = "info";
+  else if (fgCode === "30") colorType = "muted";
+
+  term.writeLine(`[OK] Serveur opérationnel (Séquence active : \\033[${fullCode}m puis réinitialisation \\033[0m)`, { type: colorType });
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+### 📊 Table de Référence des Codes ANSI (`\033[CODEm`)
+
+| Attributs de Base      | Couleur du Texte   | Couleur d'Arrière-plan |
+| :--------------------- | :----------------- | :--------------------- |
+| **`0`** : Réinitialise | **`30`** : Noir    | **`40`** : Noir        |
+| **`1`** : Gras         | **`31`** : Rouge   | **`41`** : Rouge       |
+| **`2`** : Fin          | **`32`** : Vert    | **`42`** : Vert        |
+| **`4`** : Souligné     | **`33`** : Jaune   | **`43`** : Jaune       |
+| **`7`** : Inversé      | **`34`** : Bleu    | **`44`** : Bleu        |
+| **`8`** : Caché        | **`35`** : Magenta | **`45`** : Magenta     |
+|                        | **`36`** : Cyan    | **`46`** : Cyan        |
+|                        | **`37`** : Blanc   | **`47`** : Blanc       |

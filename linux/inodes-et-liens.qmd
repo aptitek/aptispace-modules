@@ -1,0 +1,245 @@
+---
+title: "Inodes & Liens (Physiques vs Symboliques)"
+icon: "🔗"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Comprendre les nœuds d'index (inodes POSIX), les horodatages mtime/ctime/atime, et maîtriser la différence entre liens physiques (ln) et symboliques (ln -s)."
+---
+
+Comment un système d'exploitation retrouve-t-il instantanément un fichier parmi des millions sur un disque dur ? Sous GNU/Linux, les systèmes de fichiers modernes (`ext4`, `xfs`, `btrfs`) reposent sur une structure fondamentale définie par la norme POSIX : le **nœud d'index**, universellement appelé **Inode** (*Index Node*).
+
+## 🪪 Qu'est-ce qu'un Inode ?
+
+::: {.callout-note collapse="true"}
+## 💡 L'analogie de l'entrepôt logistique
+Imaginez votre disque dur comme un immense entrepôt automatisé. Le contenu réel de vos fichiers (le texte, les pixels d'une image) est découpé et rangé dans des casiers numérotés appelés **blocs de données**. Pour savoir dans quels casiers se trouvent les morceaux d'un fichier et qui a le droit de les ouvrir, le système de fichiers tient à jour un registre de **fiches cartonnées numérotées** : ce sont les **Inodes**.
+:::
+
+Chaque fichier ou dossier possède sa propre fiche d'identité **Inode**, qui regroupe exactement les métadonnées suivantes (spécification POSIX) :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Identité, Droits & Stockage {.bi-person-vcard}
+
+1. **Numéro d'inode :** L'identifiant numérique unique du fichier au sein du système de fichiers.
+2. **Périphérique :** L'identifiant du disque/partition contenant le fichier.
+3. **Mode du fichier :** Le type du nœud (`-` fichier standard, `d` dossier, `l` lien symbolique) et les droits d'accès (`rwxr-xr-x`).
+4. **Propriétaire & Groupe :** L'identifiant numérique de l'utilisateur propriétaire (**`UID`**) et du groupe (**`GID`**).
+5. **Taille & Blocs :** La taille exacte en octets et les pointeurs vers les blocs de données sur le disque.
+6. **Compteur de liens (`Nlinks`) :** Le nombre de noms (liens physiques) pointant vers cet inode.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Les 3 Horodatages (Timestamps) {.bi-clock-history}
+
+Chaque inode maintient trois dates précises que l'on inspecte avec `stat` ou `ls` :
+
+- **`mtime` (*Modify time*) :** Date de dernière modification du **contenu** du fichier. Affichée par défaut avec `ls -l`.
+- **`ctime` (*Change time*) :** Date de dernière modification de **l'inode** lui-même (ex: modification des droits `chmod`, du propriétaire ou du compteur de liens). Affichée par `stat` ou `ls -lc`.
+- **`atime` (*Access time*) :** Date du dernier **accès en lecture** au fichier. Affichée par `stat` ou `ls -lu`.
+:::::
+::::
+:::
+
+### 🤯 Le Secret d'UNIX : Le fichier ne connaît pas son nom !
+
+Regardez attentivement la liste ci-dessus : **le nom du fichier ne figure PAS dans son inode !**
+
+Sous Linux, un fichier n'est qu'un numéro d'inode. Mais alors, où sont stockés les noms des fichiers ? **Dans les dossiers !** Un répertoire sous Linux n'est rien d'autre qu'un simple tableau à deux colonnes qui associe un `Nom humain` $\leftrightarrow$ `Numéro d'Inode` :
+
+| Nom dans le dossier (`~/workspace`) | Numéro d'Inode associé |
+| :---------------------------------- | :--------------------- |
+| `.` *(dossier courant)*             | `131105`               |
+| `..` *(dossier parent)*             | `131073`               |
+| `test_inode.txt`                    | `131420`               |
+
+Pour inspecter le numéro d'inode et la carte d'identité complète d'un fichier en direct :
+
+```bash
+# 1. Créer un fichier vide (touch sert à la base à mettre à jour les timestamps !)
+touch test_inode.txt
+
+# 2. Afficher son numéro d'inode en première colonne avec l'option -i
+ls -li test_inode.txt
+
+# 3. Ouvrir la carte d'identité complète de l'inode (Inode, Links, Uid, Gid, Access/Modify/Change)
+stat test_inode.txt
+```
+
+## 🔗 Liens Physiques (`ln`) vs Liens Symboliques (`ln -s`)
+
+Puisqu'un nom de fichier n'est qu'une étiquette pointant vers un inode, Linux permet de créer des **liens** entre plusieurs fichiers selon deux mécanismes radicalement différents :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Lien Symbolique : Le Raccourci (`ln -s`) {.bi-link-45deg}
+
+```bash
+ln -s source cible
+```
+
+- **Mécanisme :** Crée un **nouveau fichier spécial** doté de son **propre numéro d'inode** (type `l`, permissions `lrwxrwxrwx`). Au lieu de pointer vers des données, il contient simplement le **chemin texte** vers le fichier `source` (`cible -> source`).
+- **Fragilité :** Si le fichier `source` est supprimé ou déplacé, le lien symbolique pointe dans le vide et devient **invalide (lien cassé)**.
+- **Avantage :** Peut pointer vers un **dossier** ou traverser des disques/partitions différents.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Lien Physique : L'Alias (`ln`) {.bi-Copy}
+
+```bash
+ln source cible
+```
+
+- **Mécanisme :** Ajoute une nouvelle ligne dans le tableau du dossier qui pointe vers **exactement le même numéro d'inode** que `source`. Le compteur `Links` (`Nlinks`) de l'inode est incrémenté de `+1`.
+- **Robustesse :** `source` et `cible` sont **totalement indiscernables** (aucun n'est plus « original » que l'autre). Si vous supprimez `source` avec `rm`, **les données survivent intactes** via `cible` tant que le compteur `Nlinks` n'est pas tombé à `0` !
+- **Limitation :** Interdit sur les dossiers (hors `.` et `..`) et impossible entre deux partitions distinctes.
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Inodes, Liens et Test de Suppression (`rm`)
+
+Manipulez le fichier `db.conf` dans le simulateur ci-dessous pour visualiser l'architecture des inodes et vérifier ce qu'il se passe lorsque l'on supprime le fichier d'origine :
+
+::: {.card-window}
+#### Laboratoire d'Inodes & Résilience des Liens {.bi-diagram-3}
+
+:::: {.tabs .inode-sim-tabset}
+##### État 1 : Fichier Original {.bi-file-earmark-text}
+Un seul fichier `db.conf` pointant sur l'Inode `#4012` (`Links: 1`).
+
+##### État 2 : Création des 2 Liens {.bi-intersect}
+Ajout d'un lien symbolique `raccourci_sym.conf` (`ln -s`) et d'un lien physique `clone_physique.conf` (`ln`).
+
+##### État 3 : Suppression de `db.conf` (`rm`) {.bi-trash3}
+On exécute `rm db.conf` : observez quel lien survit et quel lien se casse !
+::::
+
+:::: {#inode-graph-container .chart-container-md}
+::::
+
+:::: {#inode-sim-terminal .terminal}
+#### Sortie `ls -li` & État des Inodes {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable inodeStep = "step1"
+
+_inodeWatcher = {
+  const w = createTabsetWatcher(
+    ".inode-sim-tabset",
+    {
+      "État 1 : Fichier Original": "step1",
+      "État 2 : Création des 2 Liens": "step2",
+      "État 3 : Suppression de db.conf (rm)": "step3"
+    },
+    (val) => { mutable inodeStep = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_inodeSimRender = {
+  inodeStep;
+  let nodes = [];
+  let links = [];
+
+  if (inodeStep === "step1") {
+    nodes = [
+      { id: "src", label: "📄 Nom: db.conf", shape: "rounded rect", fx: 140, fy: 150 },
+      { id: "inode1", label: "🪪 Inode #4012\n(Nlinks = 1)", shape: "circle", fx: 340, fy: 150 },
+      { id: "data", label: "💾 Blocs Disque\n'secret=1234'", shape: "pill", fx: 540, fy: 150 }
+    ];
+    links = [
+      { source: "src", target: "inode1", label: "pointe sur" },
+      { source: "inode1", target: "data", label: "adresse disque" }
+    ];
+  } else if (inodeStep === "step2") {
+    nodes = [
+      { id: "sym", label: "🔗 raccourci_sym.conf", shape: "rounded rect", fx: 120, fy: 60 },
+      { id: "inode2", label: "🪪 Inode #4099\n(Type l / Nlinks = 1)", shape: "circle", fx: 320, fy: 60 },
+      { id: "src", label: "📄 Nom: db.conf", shape: "rounded rect", fx: 120, fy: 170 },
+      { id: "hard", label: "📄 clone_physique.conf", shape: "rounded rect", fx: 120, fy: 270 },
+      { id: "inode1", label: "🪪 Inode #4012\n(Nlinks = 2 !)", shape: "circle", fx: 350, fy: 220 },
+      { id: "data", label: "💾 Blocs Disque\n'secret=1234'", shape: "pill", fx: 550, fy: 220 }
+    ];
+    links = [
+      { source: "sym", target: "inode2", label: "propre inode" },
+      { source: "inode2", target: "src", label: "chemin 'db.conf'" },
+      { source: "src", target: "inode1", label: "lien 1" },
+      { source: "hard", target: "inode1", label: "lien 2 (Alias)" },
+      { source: "inode1", target: "data", label: "adresse disque" }
+    ];
+  } else {
+    nodes = [
+      { id: "sym", label: "🔗 raccourci_sym.conf", shape: "rounded rect", fx: 120, fy: 70 },
+      { id: "inode2", label: "❌ Inode #4099\n(Cible introuvable !)", shape: "circle", fx: 340, fy: 70 },
+      { id: "hard", label: "📄 clone_physique.conf", shape: "rounded rect", fx: 120, fy: 230 },
+      { id: "inode1", label: "✅ Inode #4012\n(Nlinks = 1 -> Survit !)", shape: "circle", fx: 340, fy: 230 },
+      { id: "data", label: "💾 Blocs Disque\n'secret=1234'", shape: "pill", fx: 550, fy: 230 }
+    ];
+    links = [
+      { source: "sym", target: "inode2", label: "LIEN CASSÉ" },
+      { source: "hard", target: "inode1", label: "toujours lié" },
+      { source: "inode1", target: "data", label: "données intactes" }
+    ];
+  }
+
+  aptitek.renderStateMachineGraph("#inode-graph-container", { nodes, links }, {
+    nodeRadius: 26,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 320
+  });
+
+  const term = aptitek.createTerminal("#inode-sim-terminal", { defaultPrompt: false, showCursor: false });
+  if (inodeStep === "step1") {
+    term.writeLine("$ echo 'mot_de_passe_secret=1234' > db.conf && ls -li", { type: "info" });
+    term.writeLine("4012 -rw-r--r-- 1 student student 25 nov. 2 15:10 db.conf", { type: "success" });
+  } else if (inodeStep === "step2") {
+    term.writeLine("$ ln -s db.conf raccourci_sym.conf && ln db.conf clone_physique.conf && ls -li", { type: "info" });
+    term.writeLine("4012 -rw-r--r-- 2 student student 25 nov. 2 15:10 clone_physique.conf", { type: "success" });
+    term.writeLine("4012 -rw-r--r-- 2 student student 25 nov. 2 15:10 db.conf", { type: "success" });
+    term.writeLine("4099 lrwxrwxrwx 1 student student  7 nov. 2 15:11 raccourci_sym.conf -> db.conf", { type: "warning" });
+    term.writeLine("✓ Remarquez que db.conf et clone_physique.conf partagent l'inode 4012 et que le compteur est passé à 2 !", { type: "muted" });
+  } else {
+    term.writeLine("$ rm db.conf && ls -li", { type: "info" });
+    term.writeLine("4012 -rw-r--r-- 1 student student 25 nov. 2 15:10 clone_physique.conf", { type: "success" });
+    term.writeLine("4099 lrwxrwxrwx 1 student student  7 nov. 2 15:11 raccourci_sym.conf -> db.conf (ORPHELIN / CASSÉ)", { type: "danger" });
+    term.writeLine("$ cat raccourci_sym.conf  --> cat: raccourci_sym.conf: No such file or directory", { type: "danger" });
+    term.writeLine("$ cat clone_physique.conf --> mot_de_passe_secret=1234 (Données sauvées car Nlinks = 1 > 0 !)", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🚀 Cas Réel en Entreprise : Déploiement Zero-Downtime par Lien Symbolique
+
+En production, les ingénieurs DevOps utilisent quotidiennement les liens symboliques pour mettre à jour un site web **sans aucune coupure de service** :
+
+1. Les différentes versions du site sont préparées dans des dossiers séparés : `releases/v1.0/` et `releases/v2.0/`.
+2. Le serveur Web (Nginx/Apache) est configuré pour servir le dossier pointé par le lien symbolique `current`.
+3. Au moment de la mise en production, une seule commande atomique met à jour la cible du lien :
+
+```bash
+# Création initiale vers la v1.0
+ln -s releases/v1.0 current
+
+# Bascule instantanée vers la v2.0 (-s : symbolique, -f : écrase l'ancien lien, -n : traite le lien dossier comme un fichier)
+ln -sfn releases/v2.0 current
+```
+
+Si un bug critique est découvert sur la `v2.0`, le retour arrière (*rollback*) prend moins d'une milliseconde avec `ln -sfn releases/v1.0 current` !

@@ -51,6 +51,8 @@ listing:
     contents:
       - "architecture/*.qmd"
       - "infra/*.qmd"
+      - "docker/*.qmd"
+      - "linux/*.qmd"
       - "systeme-reseau/**/*.qmd"
     type: table
     sort: "title asc"

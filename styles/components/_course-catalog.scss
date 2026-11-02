@@ -57,6 +57,7 @@
 
     // Standard Category Color Mappings (Consuming Solarized Tokens)
     &[data-category="Docker"],
+    &[data-category="Linux"],
     &[data-category="Système & Réseau"] {
       color: var(--sol-cyan);
       background: rgba(var(--sol-cyan-rgb), 0.12);

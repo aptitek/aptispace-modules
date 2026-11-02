@@ -1,0 +1,202 @@
+---
+title: "Droits d'Accès, Utilisateurs & Système"
+icon: "🔐"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Décoder les permissions UNIX (drwxr-xr-x), maîtriser chmod et chown, administrer les utilisateurs/groupes avec sudo et inspecter le matériel (dmesg, lspci, lsusb)."
+---
+
+Dès sa conception dans les années 1970, UNIX a été pensé comme un système **multi-utilisateurs**. Plusieurs ingénieurs pouvant partager simultanément le même serveur, chaque fichier et chaque répertoire possède un verrou de sécurité strict définissant qui a le droit de le lire, de le modifier ou de l'exécuter.
+
+## 🔑 Décoder la Chaîne des Droits d'Accès (`drwxr-xr-x`)
+
+Lorsque vous exécutez `ls -l`, la toute première colonne affiche une chaîne de **10 caractères** telle que `drwxr-xr-x`. Elle se lit en **4 blocs distincts** (`1 + 3 + 3 + 3`) :
+
+```text
+ d   rwx   r-x   r-x
+─── ───── ───── ─────
+ 1    2     3     4
+```
+
+::: {.row gap=3 mb=4}
+:::: {.col span=3}
+::::: {.card-window}
+#### Type du Nœud {.bi-file-earmark}
+
+Le **1er caractère** indique la nature de l'entrée :
+
+- **`-`** : Fichier standard
+- **`d`** : Dossier (*Directory*)
+- **`l`** : Lien symbolique (*Link*)
+:::::
+::::
+
+:::: {.col span=3}
+::::: {.card-window}
+#### User (`u`) {.bi-person-fill}
+
+Les caractères **2 à 4** définissent les droits du **propriétaire** unique du fichier (affiché en 3e colonne de `ls -l`).
+:::::
+::::
+
+:::: {.col span=3}
+::::: {.card-window}
+#### Group (`g`) {.bi-people-fill}
+
+Les caractères **5 à 7** s'appliquent aux membres du **groupe propriétaire** du fichier (4e colonne de `ls -l`).
+:::::
+::::
+
+:::: {.col span=3}
+::::: {.card-window}
+#### Others (`o`) {.bi-globe}
+
+Les caractères **8 à 10** concernent **tous les autres utilisateurs** du système qui ne sont ni le propriétaire, ni dans le groupe.
+:::::
+::::
+:::
+
+### 📊 La Signification Exacte de `r`, `w`, `x` (Fichier vs Dossier)
+
+Une erreur classique consiste à croire que les lettres `r`, `w` et `x` ont exactement le même effet sur un fichier et sur un répertoire :
+
+| Symbole | Nom & Valeur Octale          | Effet sur un **Fichier (`-`)**                       | Effet sur un **Dossier (`d`)**                                                                       |
+| :------ | :--------------------------- | :--------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **`r`** | **Read** *(Lecture = `4`)*   | Lire le contenu du fichier (`cat`, `bat`).           | Lister les noms des fichiers contenus dans le dossier (`ls`).                                        |
+| **`w`** | **Write** *(Écriture = `2`)* | Modifier ou vider le contenu du fichier.             | **Créer, renommer ou supprimer** des fichiers à l'intérieur du dossier (`touch`, `rm`, `mv`).        |
+| **`x`** | **eXec** *(Exécution = `1`)* | Exécuter le fichier comme un programme ou un script. | **Indispensable pour explorer/traverser le dossier** (`cd dossier`) et accéder à ses sous-éléments ! |
+| **`-`** | **Aucun droit** *(`0`)*      | Permission refusée (`Permission denied`).            | Permission refusée (`Permission denied`).                                                            |
+
+## 🧮 Modifier les Droits (`chmod`) et le Propriétaire (`chown`)
+
+Deux commandes permettent d'administrer les permissions d'un nœud :
+
+- **`chmod` (*Change Mode*) :** Modifie les droits d'accès soit en **notation octale** (en additionnant `4` pour `r`, `2` pour `w` et `1` pour `x` pour chaque bloc), soit en **notation symbolique** (`u`/`g`/`o`/`a` suivi de `+`, `-` ou `=`) :
+  ```bash
+  # Notation octale : User=7 (4+2+1=rwx), Group=5 (4+0+1=r-x), Others=5 (4+0+1=r-x)
+  chmod 755 deploy.sh
+
+  # Notation symbolique : ajouter (+) le droit d'exécution (x) au propriétaire (u)
+  chmod u+x deploy.sh
+
+  # Retirer (-) le droit d'écriture (w) au groupe (g) et aux autres (o)
+  chmod go-w settings.ini
+  ```
+
+- **`chown` (*Change Owner*) :** Modifie l'utilisateur propriétaire et/ou le groupe propriétaire d'un fichier :
+  ```bash
+  # Changer uniquement le propriétaire
+  sudo chown student rapport.txt
+
+  # Changer simultanément le propriétaire ET le groupe (avec -R pour tout un dossier)
+  sudo chown -R student:www-data /var/www/webapp
+  ```
+
+### 🧪 Calculateur Interactif de Permissions `chmod`
+
+Cochez ou décochez les droits ci-dessous pour calculer en temps réel la notation UNIX (`rwxr-xr-x`), la valeur octale (`755`) et la commande `chmod` associée :
+
+::: {.card-window}
+#### Simulateur & Calculateur `chmod` {.bi-sliders}
+
+:::: {.tabs}
+##### Matrice des Permissions (U / G / O) {.bi-grid-3x3-gap}
+
+[Type de nœud]{.select #chmod_type options="- : Fichier standard,d : Dossier (Directory)" value="d : Dossier (Directory)"}
+
+- **Propriétaire (User) :** [Lecture (r = 4)]{.checkbox .checked #u_r} [Écriture (w = 2)]{.checkbox .checked #u_w} [Exécution (x = 1)]{.checkbox .checked #u_x}
+- **Groupe (Group) :** [Lecture (r = 4)]{.checkbox .checked #g_r} [Écriture (w = 2)]{.checkbox #g_w} [Exécution (x = 1)]{.checkbox .checked #g_x}
+- **Autres (Others) :** [Lecture (r = 4)]{.checkbox .checked #o_r} [Écriture (w = 2)]{.checkbox #o_w} [Exécution (x = 1)]{.checkbox .checked #o_x}
+::::
+
+:::: {#chmod-sim-terminal .terminal}
+#### Diagnostic des Permissions {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_chmodCalc = {
+  chmod_type;
+  u_r; u_w; u_x;
+  g_r; g_w; g_x;
+  o_r; o_w; o_x;
+
+  const isDir = chmod_type.startsWith("d");
+  const typeChar = isDir ? "d" : "-";
+
+  const uOct = (u_r ? 4 : 0) + (u_w ? 2 : 0) + (u_x ? 1 : 0);
+  const gOct = (g_r ? 4 : 0) + (g_w ? 2 : 0) + (g_x ? 1 : 0);
+  const oOct = (o_r ? 4 : 0) + (o_w ? 2 : 0) + (o_x ? 1 : 0);
+
+  const uStr = `${u_r ? "r" : "-"}${u_w ? "w" : "-"}${u_x ? "x" : "-"}`;
+  const gStr = `${g_r ? "r" : "-"}${g_w ? "w" : "-"}${g_x ? "x" : "-"}`;
+  const oStr = `${o_r ? "r" : "-"}${o_w ? "w" : "-"}${o_x ? "x" : "-"}`;
+
+  const fullSym = `${typeChar}${uStr}${gStr}${oStr}`;
+  const fullOct = `${uOct}${gOct}${oOct}`;
+  const targetName = isDir ? "mon_dossier" : "script.sh";
+
+  const term = aptitek.createTerminal("#chmod-sim-terminal", { defaultPrompt: false, showCursor: false });
+  term.writeLine(`$ chmod ${fullOct} ${targetName} && ls -ld ${targetName}`, { type: "info" });
+  term.writeLine(`${fullSym} 1 student student 4096 nov. 2 15:30 ${targetName}`, { type: "success" });
+  term.writeLine(`Valeur Octale : ${fullOct}  |  User=${uOct} (${uStr})  Group=${gOct} (${gStr})  Others=${oOct} (${oStr})`, { type: "muted" });
+
+  if (o_w) {
+    term.writeLine("⚠️ ALERTE SÉCURITÉ : Les autres utilisateurs (Others) ont le droit d'écriture (w) ! N'importe qui peut modifier ou supprimer cette cible.", { type: "danger" });
+  } else if (isDir && !u_x) {
+    term.writeLine("⚠️ ATTENTION : Sans le droit 'x' sur un dossier, même son propriétaire ne peut pas entrer dedans avec 'cd' !", { type: "warning" });
+  } else {
+    term.writeLine("✅ Configuration de sécurité saine et conforme aux bonnes pratiques UNIX.", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 👑 Sessions, Utilisateurs et Élévation `sudo`
+
+Pour administrer les comptes d'un serveur et exécuter des opérations réservées à l'administrateur `root`, Linux fournit un ensemble de commandes dédiées :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Identité & Privilèges (`whoami`, `su`, `sudo`) {.bi-shield-exclamation}
+
+- **`whoami` :** Affiche le nom de l'utilisateur courant.
+- **`w` :** Affiche les sessions actuellement connectées au serveur et ce qu'elles exécutent.
+- **`su utilisateur` :** Lance une nouvelle session d'interpréteur de commandes sous l'identité d'un autre utilisateur (`su -` charge son profil complet).
+- **`sudo commande` :** Exécute une unique commande avec les privilèges suprêmes du super-utilisateur (`root`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Gestion des Comptes & Groupes {.bi-person-plus-fill}
+
+- **`passwd` :** Permet de changer son propre mot de passe (ou celui d'un utilisateur avec `sudo passwd nom`).
+- **`useradd nom` :** Crée un nouvel utilisateur sur le système (`useradd -m nom` crée aussi son dossier `/home/nom`).
+- **`groupadd groupe` :** Ajoute un nouveau groupe d'utilisateurs au système.
+- **`usermod -a -G groupe utilisateur` :** Ajoute un utilisateur existant dans un groupe supplémentaire (ex: `sudo usermod -a -G docker student`).
+:::::
+::::
+:::
+
+::: {.callout-danger}
+## ✘ Prudence absolue avec `sudo` (et l'option `-a` de `usermod`) !
+
+1. **Méfiez-vous toujours des commandes précédées de `sudo` :** en tant que super-utilisateur, le noyau désactive les garde-fous. Une commande `sudo rm -rf` ou une mauvaise manipulation de partition peut rendre votre système instantanément inopérant.
+2. **N'oubliez jamais le `-a` (*append*) dans `usermod -a -G` :** taper `usermod -G groupe utilisateur` sans `-a` **remplace** tous les groupes secondaires de l'utilisateur par ce seul groupe (ce qui peut vous faire perdre vos propres droits `sudo` !).
+:::
+
+## 🔍 Journaux du Noyau et Diagnostic Matériel
+
+Lorsqu'un périphérique (clé USB, carte réseau, disque) est branché ou présente un dysfonctionnement, trois commandes permettent d'interroger directement le noyau et les bus matériels :
+
+| Commande       | Rôle et astuce d'utilisation                                                                                                     |                            |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
+| **`dmesg`**    | Affiche les journaux internes du noyau Linux (*Kernel Ring Buffer*). Très bavard : préférez **`dmesg                             | tail`** pour lire la fin ! |
+| **`lspci`**    | Liste tous les périphériques connectés sur le bus interne **PCI / PCIe** (carte mère, carte graphique, contrôleurs réseau/NVMe). |                            |
+| **`lsusb`**    | Liste tous les périphériques branchés sur les ports et contrôleurs **USB** de la machine.                                        |                            |
+| **`uname -a`** | Affiche le nom du noyau, sa version exacte, la date de compilation et l'architecture matérielle (`x86_64`, `aarch64`).           |                            |

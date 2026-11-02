@@ -1,0 +1,185 @@
+---
+title: "Processus, Signaux & Contrôle de Tâches"
+icon: "⚙️"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Comprendre l'anatomie d'un processus (PID, PPID, UID), observer l'activité système (ps, pstree, top) et piloter les signaux (kill, killall, Ctrl+C, Ctrl+Z, fg, bg)."
+---
+
+Tant qu'un programme (comme `/bin/ls` ou `/usr/sbin/nginx`) repose sur le disque dur, ce n'est qu'un fichier inerte. Dès que le noyau Linux le charge en mémoire vive (RAM) pour l'exécuter, il prend vie sous la forme d'une instance dynamique appelée un **processus**.
+
+## 🧬 Anatomie et Isolation d'un Processus
+
+Chaque processus actif sur le système est identifié par cinq attributs fondamentaux gérés par le noyau :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### La Carte d'Identité du Processus {.bi-cpu}
+
+1. **`CMD` (Exécutable) :** Le nom de la commande et les arguments ayant servi à le lancer.
+2. **`UID` (Propriétaire) :** L'utilisateur qui a lancé le processus (détermine quels fichiers il a le droit d'ouvrir).
+3. **`PID` (*Process ID*) :** Le numéro unique attribué au processus par le noyau.
+4. **`PPID` (*Parent Process ID*) :** Le numéro `PID` de son **processus père** (par exemple, votre shell `bash` est le père des commandes que vous tapez ; le tout premier processus au démarrage porte le **`PID 1`**).
+5. **État (*State*) :** En exécution (*Running*), en attente (*Sleeping*), en pause (*Stopped*) ou terminé.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Isolation & Communication Inter-Processus {.bi-shield-shaded}
+
+Par sécurité, chaque processus tourne dans une **bulle de mémoire virtuelle isolée** : un programme qui plante ne peut pas corrompre la mémoire d'un autre.
+
+Les processus ne peuvent communiquer entre eux que via des mécanismes très spécifiques contrôlés par le noyau (*IPC — Inter-Process Communication*) :
+
+- **Les tubes (*Pipes* `|`)** et sockets réseau
+- **Les signaux système** (`SIGINT`, `SIGTERM`, `SIGSTOP`)
+- **La mémoire partagée** (*Shared Memory*)
+:::::
+::::
+:::
+
+## 🔭 Lister et Surveiller les Processus (`ps`, `pstree`, `top`)
+
+Trois outils complémentaires permettent d'inspecter les processus qui tournent sur une machine :
+
+| Commande        | Mode de fonctionnement | Ce qu'elle affiche                                                                                                                   |
+| :-------------- | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| **`ps [-edf]`** | Statique (Photo)       | Affiche la liste complète (`-e`) au format détaillé (`-f`) de tous les processus actifs à l'instant T (`UID`, `PID`, `PPID`, `CMD`). |
+| **`pstree`**    | Statique (Arbre)       | Affiche l'**arbre généalogique** des processus depuis la racine `PID 1`, révélant qui a lancé quoi.                                  |
+| **`top`**       | Interactif (Direct)    | Tableau de bord en temps réel classant les processus par consommation CPU/RAM (`q` pour quitter, `h` pour l'aide).                   |
+
+## ⚡ Interagir avec les Processus : Signaux & Contrôle Clavier
+
+Sous Linux, on ne « force pas la fermeture d'une fenêtre » : on envoie un **signal** numérique ou nommé au processus pour lui ordonner de s'arrêter, de se mettre en pause ou de recharger sa configuration.
+
+::: {.card-window}
+#### Machine à États d'un Processus & Signaux UNIX {.bi-diagram-3}
+
+:::: {#process-lifecycle-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_procStateGraph = {
+  const nodes = [
+    { id: "shell", label: "💻 Shell Bash (PPID)", shape: "rounded rect", fx: 70, fy: 150 },
+    { id: "fg", label: "▶️ Premier Plan\n(Running Foreground)", shape: "rounded rect", fx: 250, fy: 80 },
+    { id: "paused", label: "⏸️ En Pause\n(Stopped / SIGSTOP)", shape: "rounded rect", fx: 460, fy: 80 },
+    { id: "bg", label: "⚙️ Arrière-Plan\n(Running Background)", shape: "rounded rect", fx: 460, fy: 220 },
+    { id: "dead", label: "⏹️ Terminé\n(Exited / Killed)", shape: "pill", fx: 250, fy: 220 }
+  ];
+
+  const links = [
+    { source: "shell", target: "fg", label: "commande" },
+    { source: "fg", target: "paused", label: "Ctrl + Z (SIGSTOP)" },
+    { source: "paused", target: "fg", label: "fg" },
+    { source: "paused", target: "bg", label: "bg" },
+    { source: "bg", target: "fg", label: "fg" },
+    { source: "fg", target: "dead", label: "Ctrl + C (SIGINT)" },
+    { source: "bg", target: "dead", label: "kill PID (SIGTERM / -9)" }
+  ];
+
+  aptitek.renderStateMachineGraph("#process-lifecycle-graph", { nodes, links }, {
+    nodeRadius: 26,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 320
+  });
+}
+```
+
+### 🎯 Commandes `kill`, `killall` et Signaux Clavier
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Envoyer un Signal (`kill` & `killall`) {.bi-crosshair}
+
+Contrairement à son nom anglais trompeur, `kill` sert à envoyer **n'importe quel signal** à un processus :
+
+- **`kill pid [-signal]` :** Cible un processus précis par son numéro `PID`. Par défaut (sans option), elle envoie **`SIGTERM` (`-15`)**, qui demande poliment au programme de sauvegarder son état avant de se fermer.
+- **`kill -9 pid` (`-SIGKILL`) :** L'arme ultime. Le noyau détruit immédiatement le processus sans lui laisser le temps de réagir.
+- **`killall nom [-s signal]` :** Tue d'un seul coup **tous** les processus portant ce nom (ex: `killall nginx`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Contrôle au Clavier (`Ctrl+C`, `Ctrl+Z`, `fg`, `bg`) {.bi-keyboard-fill}
+
+Lorsque qu'une commande occupe votre terminal :
+
+- **`Ctrl + C` (`SIGINT`) :** Envoie le signal d'interruption pour arrêter immédiatement la commande en cours.
+- **`Ctrl + Z` (`SIGSTOP`) :** Met le processus **en pause** et vous rend la main sur le prompt.
+- **`bg` (*Background*) :** Relance le processus mis en pause en **arrière-plan** (vous pouvez continuer à taper d'autres commandes !).
+- **`fg` (*Foreground*) :** Ramène le processus d'arrière-plan au **premier plan**.
+- **`Ctrl + D` (`EOF`) :** Quitte la session et ferme le shell courant (équivalent à `quit` ou `exit`).
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Console de Gestion des Processus
+
+Sélectionnez une opération d'inspection ou d'interaction pour observer la réaction des processus dans le terminal :
+
+::: {.card-window}
+#### Poste de Contrôle des Processus & Signaux {.bi-terminal}
+
+:::: {.tabs}
+##### Action Système {.bi-sliders}
+
+[Commande ou Signal]{.select #proc_action_select options="ps -edf : Lister les processus avec PID et PPID,pstree : Visualiser l'arbre généalogique des processus,Ctrl + Z puis bg : Mettre en pause et passer en arrière-plan,kill 1842 (SIGTERM) : Arrêt propre d'un processus,kill -9 1842 (SIGKILL) : Destruction forcée immédiate,killall python3 : Arrêter toutes les instances d'un programme" value="ps -edf : Lister les processus avec PID et PPID"}
+::::
+
+:::: {#proc-ctrl-terminal .terminal}
+#### Sortie du Terminal Système {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_procCtrlSim = {
+  proc_action_select;
+  const term = aptitek.createTerminal("#proc-ctrl-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (proc_action_select.startsWith("ps -edf")) {
+    term.writeLine("$ ps -edf", { type: "info" });
+    term.writeLine("UID        PID  PPID  C STIME TTY          TIME CMD", { type: "muted" });
+    term.writeLine("root         1     0  0 08:00 ?        00:00:02 /sbin/init", { type: "info" });
+    term.writeLine("student   1204     1  0 13:00 pts/0    00:00:00 -bash", { type: "success" });
+    term.writeLine("student   1842  1204  4 15:40 pts/0    00:00:12 python3 serveur_lent.py", { type: "warning" });
+    term.writeLine("student   1901  1204  0 15:42 pts/0    00:00:00 ps -edf", { type: "success" });
+    term.writeLine("✓ Remarquez que python3 (PID 1842) a pour père PPID 1204 (votre shell bash) !", { type: "muted" });
+  } else if (proc_action_select.startsWith("pstree")) {
+    term.writeLine("$ pstree", { type: "info" });
+    term.writeLine("init─┬─sshd───sshd───bash─┬─python3\n     │                    └─pstree\n     └─systemd-journal", { type: "success" });
+    term.writeLine("✓ L'arborescence montre visuellement toute la filiation depuis init (PID 1).", { type: "muted" });
+  } else if (proc_action_select.startsWith("Ctrl + Z")) {
+    term.writeLine("$ python3 serveur_lent.py", { type: "info" });
+    term.writeLine("^Z\n[1]+  Stopped                 python3 serveur_lent.py", { type: "warning" });
+    term.writeLine("$ bg", { type: "info" });
+    term.writeLine("[1]+ python3 serveur_lent.py &", { type: "success" });
+    term.writeLine("✓ Le programme continue de tourner en arrière-plan et votre terminal est libre ! (Tapez 'fg' pour le reprendre)", { type: "muted" });
+  } else if (proc_action_select.includes("SIGTERM")) {
+    term.writeLine("$ kill 1842", { type: "info" });
+    term.writeLine("[Signal 15 SIGTERM reçu par PID 1842] -> Fermeture des connexions et sauvegarde propre...", { type: "warning" });
+    term.writeLine("[1]+  Terminated              python3 serveur_lent.py", { type: "success" });
+  } else if (proc_action_select.includes("SIGKILL")) {
+    term.writeLine("$ kill -9 1842", { type: "info" });
+    term.writeLine("[1]+  Killed                  python3 serveur_lent.py", { type: "danger" });
+    term.writeLine("⚠️ Le noyau a détruit instantanément le processus 1842 sans lui permettre de nettoyer ses fichiers temporaires.", { type: "warning" });
+  } else {
+    term.writeLine("$ killall python3", { type: "info" });
+    term.writeLine("✅ Tous les processus nommés 'python3' ont reçu le signal d'arrêt SIGTERM.", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```

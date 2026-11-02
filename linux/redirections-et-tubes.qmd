@@ -1,0 +1,240 @@
+---
+title: "Redirections & Tubes (Pipes)"
+icon: "🔀"
+categories:
+  - Linux
+  - Système & Réseau
+description: "Maîtriser les 3 descripteurs standards (0 stdin, 1 stdout, 2 stderr), les opérateurs de redirection (>, 2>&1, &>), les tubes (|), tee et la substitution $(...)."
+---
+
+La véritable puissance d'UNIX ne réside pas dans des programmes géants qui tentent de tout faire, mais dans la capacité à **assembler de petites commandes spécialisées** comme des briques de Lego. Ce mécanisme d'assemblage repose sur trois canaux de communication universels : les **descripteurs de flux standards**.
+
+## 🔌 Les 3 Descripteurs de Communication (`0`, `1`, `2`)
+
+Dès la connexion au Shell, chaque processus lancé dispose automatiquement de trois flots de communication identifiés par un numéro de **descripteur** :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### `0` — `stdin` (Entrée Standard) {.bi-keyboard}
+
+C'est le canal par lequel la commande reçoit des données à traiter.
+
+- **Association par défaut :** Le **clavier** de l'utilisateur.
+- **Numéro de descripteur :** **`0`**
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### `1` — `stdout` (Sortie Standard) {.bi-display}
+
+C'est le canal sur lequel la commande envoie ses résultats normaux.
+
+- **Association par défaut :** L'**écran** du terminal.
+- **Numéro de descripteur :** **`1`**
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### `2` — `stderr` (Sortie d'Erreur) {.bi-exclamation-octagon}
+
+Canal séparé réservé aux messages d'erreur et d'alerte pour ne pas polluer les résultats normaux.
+
+- **Association par défaut :** L'**écran** du terminal.
+- **Numéro de descripteur :** **`2`**
+:::::
+::::
+:::
+
+## 🔀 Les Redirections de Flux (`>`, `>>`, `<`, `2>`, `&>`)
+
+Une **redirection** consiste à débrancher l'un de ces trois tuyaux de son périphérique par défaut (clavier ou écran) pour le relier à un fichier. Elle s'applique uniquement à la commande sur laquelle elle porte :
+
+| Syntaxe de Redirection          | Flux modifié                       | Comportement exact                                                                                        |
+| :------------------------------ | :--------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| **`commande > fichier`**        | `1 stdout` $\rightarrow$ Fichier   | Redirige la sortie normale dans `fichier` (**écrase** le fichier s'il existait déjà).                     |
+| **`commande >> fichier`**       | `1 stdout` $\rightarrow$ Fichier   | Redirige la sortie normale **à la suite** (en fin de `fichier`) sans écraser l'existant.                  |
+| **`commande < fichier`**        | Fichier $\rightarrow$ `0 stdin`    | Injecte le contenu de `fichier` sur l'entrée standard de la commande à la place du clavier.               |
+| **`commande 2> erreurs.log`**   | `2 stderr` $\rightarrow$ Fichier   | Capture **uniquement les erreurs** dans un fichier (ou les jette dans le trou noir avec `2> /dev/null`).  |
+| **`commande 2>&1`** ou **`&>`** | `1` + `2` $\rightarrow$ Même cible | Fusionne la sortie d'erreur (`2`) avec la sortie standard (`1`). Syntaxe courte : `commande &> tout.log`. |
+
+### 🧪 Simulateur Interactif : Routage des Descripteurs `stdin`, `stdout` et `stderr`
+
+Sélectionnez un câblage de redirection ci-dessous pour visualiser comment les flux `1 stdout` et `2 stderr` se séparent ou fusionnent :
+
+::: {.card-window}
+#### Banc de Routage des Flux Standards (`0`, `1`, `2`) {.bi-diagram-3}
+
+:::: {.tabs .redir-sim-tabset}
+##### Par Défaut (Écran) {.bi-display}
+`stdout` (`1`) et `stderr` (`2`) s'affichent tous les deux sur l'écran du terminal.
+
+##### Redirection `> ok.txt` {.bi-file-earmark-arrow-down}
+`stdout` (`1`) est écrit dans `ok.txt`, tandis que `stderr` (`2`) reste visible à l'écran !
+
+##### Silence `2> /dev/null` {.bi-volume-mute}
+`stdout` (`1`) s'affiche à l'écran, et les erreurs `stderr` (`2`) sont aspirées dans `/dev/null`.
+
+##### Fusion `&> complet.log` {.bi-intersect}
+`stdout` (`1`) et `stderr` (`2`) sont fusionnés (`2>&1`) et enregistrés ensemble dans `complet.log`.
+::::
+
+:::: {#redir-graph-container .chart-container-md}
+::::
+
+:::: {#redir-sim-terminal .terminal}
+#### Aperçu Écran vs Fichier Disque {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable redirMode = "default"
+
+_redirWatcher = {
+  const w = createTabsetWatcher(
+    ".redir-sim-tabset",
+    {
+      "Par Défaut (Écran)": "default",
+      "Redirection > ok.txt": "stdout_file",
+      "Silence 2> /dev/null": "stderr_null",
+      "Fusion &> complet.log": "both_file"
+    },
+    (val) => { mutable redirMode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_redirRender = {
+  redirMode;
+  const baseNodes = [
+    { id: "kbd", label: "⌨️ Clavier (0 stdin)", shape: "rounded rect", fx: 90, fy: 150 },
+    { id: "cmd", label: "⚙️ ls /home /introuvable", shape: "circle", fx: 300, fy: 150 }
+  ];
+  let extraNodes = [];
+  let links = [{ source: "kbd", target: "cmd", label: "0 stdin" }];
+
+  if (redirMode === "default") {
+    extraNodes = [
+      { id: "screen", label: "🖥️ Écran du Terminal", shape: "pill", fx: 530, fy: 150 }
+    ];
+    links.push(
+      { source: "cmd", target: "screen", label: "1 stdout (Succès)" },
+      { source: "cmd", target: "screen", label: "2 stderr (Erreur)" }
+    );
+  } else if (redirMode === "stdout_file") {
+    extraNodes = [
+      { id: "file", label: "📄 Fichier ok.txt", shape: "pill", fx: 530, fy: 80 },
+      { id: "screen", label: "🖥️ Écran du Terminal", shape: "pill", fx: 530, fy: 220 }
+    ];
+    links.push(
+      { source: "cmd", target: "file", label: "1 stdout (> ok.txt)" },
+      { source: "cmd", target: "screen", label: "2 stderr (Reste à l'écran)" }
+    );
+  } else if (redirMode === "stderr_null") {
+    extraNodes = [
+      { id: "screen", label: "🖥️ Écran du Terminal", shape: "pill", fx: 530, fy: 80 },
+      { id: "null", label: "🕳️ /dev/null (Trou noir)", shape: "pill", fx: 530, fy: 220 }
+    ];
+    links.push(
+      { source: "cmd", target: "screen", label: "1 stdout (Propre)" },
+      { source: "cmd", target: "null", label: "2 stderr (2> /dev/null)" }
+    );
+  } else {
+    extraNodes = [
+      { id: "file", label: "📄 Fichier complet.log", shape: "pill", fx: 530, fy: 150 }
+    ];
+    links.push(
+      { source: "cmd", target: "file", label: "1 stdout + 2 stderr (&>)" }
+    );
+  }
+
+  aptitek.renderStateMachineGraph("#redir-graph-container", { nodes: [...baseNodes, ...extraNodes], links }, {
+    nodeRadius: 26,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 300
+  });
+
+  const term = aptitek.createTerminal("#redir-sim-terminal", { defaultPrompt: false, showCursor: false });
+  if (redirMode === "default") {
+    term.writeLine("$ ls /home /introuvable", { type: "info" });
+    term.writeLine("[ÉCRAN - stderr 2] ls: cannot access '/introuvable': No such file or directory", { type: "danger" });
+    term.writeLine("[ÉCRAN - stdout 1] /home:\nstudent", { type: "success" });
+  } else if (redirMode === "stdout_file") {
+    term.writeLine("$ ls /home /introuvable > ok.txt", { type: "info" });
+    term.writeLine("[ÉCRAN - stderr 2] ls: cannot access '/introuvable': No such file or directory", { type: "danger" });
+    term.writeLine("[FICHIER ok.txt - stdout 1] /home: student  (Capturé dans le fichier !)", { type: "success" });
+  } else if (redirMode === "stderr_null") {
+    term.writeLine("$ ls /home /introuvable 2> /dev/null", { type: "info" });
+    term.writeLine("[ÉCRAN - stdout 1] /home:\nstudent", { type: "success" });
+    term.writeLine("✓ L'erreur sur '/introuvable' a été silencieusement absorbée par /dev/null !", { type: "muted" });
+  } else {
+    term.writeLine("$ ls /home /introuvable &> complet.log   (équivalent à : > complet.log 2>&1)", { type: "info" });
+    term.writeLine("[ÉCRAN] (Aucun affichage à l'écran)", { type: "muted" });
+    term.writeLine("[FICHIER complet.log] Contient à la fois l'erreur stderr ET le résultat stdout !", { type: "warning" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🔗 Le Tube (`|`), `tee`, Groupement `(...)` et Substitution `$(...)`
+
+Au lieu de rediriger la sortie d'une commande vers un fichier sur le disque, le **tube** (*pipe*, noté `|`) connecte directement le tuyau `1 stdout` d'une première commande sur le tuyau `0 stdin` d'une seconde commande en mémoire vive :
+
+```bash
+commande1 | commande2
+```
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Le Tube (`|`) et le Raccord en T (`tee`) {.bi-bezier2}
+
+- **Le Tube simple (`|`) :** Permet de filtrer, trier ou compter à la volée :
+  ```bash
+  # Lire les journaux du noyau et n'afficher que les 10 dernières lignes
+  dmesg | tail
+
+  # Compter combien de fichiers .conf se trouvent dans /etc
+  ls /etc/*.conf | wc -l
+  ```
+
+- **La commande `tee` (Embranchement en T) :** Quand on utilise `>` ou `|`, on ne voit plus le résultat intermédiaire à l'écran. La commande **`tee fichier`** lit `stdin`, l'enregistre dans `fichier` **tout en le recopiant sur `stdout`** :
+  ```bash
+  # Affiche les logs à l'écran ET les sauvegarde dans trace.log
+  dmesg | tail | tee trace.log
+  ```
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Groupement `(...)` & Substitution `$(...)` {.bi-braces}
+
+- **Regroupement de commandes `(...)` :** Permet de rassembler plusieurs commandes successives pour les considérer comme **une seule unité** face à un tube ou une redirection :
+  ```bash
+  # Redirige la sortie des deux commandes réunies dans rapport.txt
+  (uname -a; df -h) > rapport.txt
+  ```
+
+- **Substitution de commande `$(commande)` (ou `` `commande` ``) :** Exécute la commande entre parenthèses en premier et **remplace l'expression par son résultat texte** :
+  ```bash
+  # Crée un dossier nommé avec la date du jour (ex: backup_2026-11-02)
+  mkdir "backup_$(date +%F)"
+  ```
+:::::
+::::
+:::
+
+::: {.callout-tip}
+## 💡 Pourquoi préférer `$(commande)` aux anciens backticks `` `commande` `` ?
+La syntaxe moderne `$(commande)` est beaucoup plus lisible (impossible de confondre un backtick `` ` `` avec une apostrophe simple `'`) et supporte l'**imbrication** sans effort : `echo $(dirname $(which bash))`.
+:::
