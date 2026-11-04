@@ -1,0 +1,158 @@
+---
+title: "Mots de Passe, Authentification & Vie Privée"
+icon: "🔐"
+categories:
+  - Informatique
+  - Fondations
+description: "Concevoir des phrases de passe robustes, utiliser un coffre-fort (Bitwarden) avec double authentification OTP, vérifier les fuites (Have I Been Pwned) et protéger ses données par alias."
+---
+
+La sécurité informatique ne repose pas uniquement sur des pare-feux sophistiqués : elle commence par l'hygiène quotidienne de vos identifiants et par la maîtrise des informations personnelles que vous acceptez de divulguer en ligne.
+
+## 🔑 L'Art du Mot de Passe & de la Double Authentification
+
+::: {.callout-danger}
+## ✘ Règle d'or absolue : TOUT MOT DE PASSE EST STRICTEMENT PERSONNEL !
+Vous ne devez **jamais divulguer un mot de passe** à qui que ce soit (ni à un collègue, ni à un service de support technique, ni par téléphone), **sauf sur injonction judiciaire formelle**. Aucun administrateur légitime n'a besoin de votre mot de passe pour intervenir sur votre compte.
+:::
+
+Pour résister aux attaques automatisées modernes (qui testent des milliards de combinaisons par seconde), vos identifiants doivent respecter quatre principes fondamentaux :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Zéro Réutilisation & Phrase de Passe {.bi-key}
+
+1. **Ne jamais réutiliser un mot de passe :** Si un petit forum mal sécurisé se fait pirater et que vous utilisez le même mot de passe sur votre boîte mail, les attaquants prennent le contrôle de toute votre vie numérique.
+2. **Bannir les mots du dictionnaire, noms et dates :** Un prénom suivi d'une année (`Lucas2004!`) est cassé en moins d'une seconde.
+3. **Adopter la Phrase de Passe (*Passphrase*) :** Pour le mot de passe maître que vous devez retenir de tête, combinez une poignée de mots courts aléatoires en une phrase longue (ex: `cactus-velours-orbitale-42-citron`).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Gestionnaire & Double Facteur (OTP) {.bi-shield-lock}
+
+Même avec une mémoire prodigieuse, il est humainement impossible de retenir 150 mots de passe aléatoires différents :
+
+- **Utilisez un gestionnaire de mots de passe :** Des outils libres comme **[Bitwarden](https://bitwarden.com/)** ou **[MasterPassword](https://masterpassword.app/)** génèrent, chiffrent et remplissent automatiquement un mot de passe unique de 20+ caractères pour chaque site.
+- **Activez la Double Authentification (2FA) :** Activez-la partout où c'est possible, de préférence via un jeton temporel **OTP (*One-Time Password* : code à 6 chiffres changeant toutes les 30 s)** intégré à votre gestionnaire.
+:::::
+::::
+:::
+
+### 📊 Pourquoi la Phrase de Passe Écrase le Mot du Dictionnaire
+
+Observez l'explosion de l'**entropie cryptographique (en bits)** — et donc de la difficulté mathématique pour un pirate — lorsqu'on passe d'un mot de passe classique à une phrase de passe ou à un identifiant généré par Bitwarden :
+
+::: {.card-window}
+#### Comparateur de Robustesse Cryptographique (Bits d'Entropie) {.bi-bar-chart-fill}
+
+:::: {#pwd-entropy-chart .chart-container-sm}
+::::
+
+```{ojs}
+//| echo: false
+renderPwdEntropy = {
+  const labels = [
+    "Prénom + Date\n(Lucas2004)",
+    "Mot + Symboles\n(P@ssw0rd!)",
+    "4 Mots Aléatoires\n(Phrase de passe)",
+    "Coffre Bitwarden\n(20 car. aléatoires)"
+  ];
+  const bits = [28, 42, 77, 131];
+  const colors = [
+    aptitek.getThemeColor("--sol-red", "#dc322f"),
+    aptitek.getThemeColor("--sol-orange", "#cb4b16"),
+    aptitek.getThemeColor("--sol-blue", "#268bd2"),
+    aptitek.getThemeColor("--sol-green", "#859900")
+  ];
+
+  aptitek.createBar("pwd-entropy-chart", { x: labels, y: bits }, "Entropie du mot de passe (bits — échelle exponentielle 2^N)", {
+    marker: { color: colors },
+    layout: {
+      margin: { t: 45, b: 55, l: 60, r: 20 },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      yaxis: { title: "Entropie (bits)", range: [0, 150] }
+    }
+  });
+}
+```
+
+Un seuil de **75+ bits** (phrase de 4 à 5 mots aléatoires ou chaîne générée par un coffre-fort) rend toute attaque par force brute mathématiquement hors de portée pendant plusieurs millénaires.
+:::
+
+## 🕵️ Gardez Vos Données Pour Vous : Pseudonymat & Alias
+
+Sur Internet, la meilleure donnée protégée est celle que vous n'avez jamais fournie. Pratiquez le **pseudonymat** autant que possible et ne partagez votre véritable adresse e-mail, votre numéro de téléphone ou votre adresse postale **qu'avec des tiers de confiance absolue** (administration, banque, employeur).
+
+::: {.callout-note}
+## 🔍 Vérifiez immédiatement si vos comptes ont fuité : `haveibeenpwned.com`
+Le portail de référence **[haveibeenpwned.com](https://haveibeenpwned.com/)** agrège les milliards d'adresses e-mail issues des fuites de bases de données mondiales connues. Entrez votre adresse e-mail pour vérifier si l'un de vos anciens comptes a été compromis et changez immédiatement les mots de passe concernés.
+:::
+
+### 📧 3 Techniques pour Protéger votre Adresse E-mail
+
+Plutôt que de distribuer votre adresse e-mail principale à chaque inscription sur un site marchand ou une newsletter, utilisez la technique adaptée au niveau de confiance du site :
+
+| Technique de Protection                               | Fonctionnement & Syntaxe                                                                                   | Usage Idéal & Avantages                                                                                                                                                                                                                      |
+| :---------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. L'Obfuscation `+texte` (Gmail / Standard Plus)** | Ajoutez `+texte` juste avant le `@` : **`nomdutilisateur+texte@gmail.com`** *(ex: `jean+fnac@gmail.com`)*. | Les courriels arrivent dans votre boîte unique, mais vous pouvez **filtrer automatiquement** les messages, créer plusieurs comptes avec une seule boîte et **démasquer le site qui a revendu votre e-mail** si vous recevez du spam dessus ! |
+| **2. L'Alias Privé Anti-Traceurs**                    | Utilisez un relais privé comme **[duckduckgo.com/email](https://duckduckgo.com/email)** (`@duck.com`).     | Génère une adresse relais qui transfère les courriels vers votre vraie boîte tout en **supprimant automatiquement les traqueurs invisibles** (*pixels espions*) cachés dans les e-mails commerciaux.                                         |
+| **3. La Boîte Publique Jetable**                      | Utilisez un service éphémère sans mot de passe comme **[yopmail.com](https://yopmail.com/)**.              | Parfait pour télécharger un livre blanc ou tester un site inconnu en 10 secondes sans jamais dévoiler son e-mail. *(Attention : la boîte est publique, ne l'utilisez jamais pour des données privées !)*                                     |
+
+### 📱 2 Techniques pour Protéger votre Numéro de Téléphone
+
+Votre numéro de téléphone mobile est un identifiant critique (souvent lié à votre banque et à votre identité réelle). Lorsqu'un site curieux l'exige sans raison légitime :
+
+1. **Si aucun SMS de validation n'est envoyé (champ de formulaire obligatoire) :** Fournissez le **`+33 6 6000 3000`**. Il s'agit du numéro technique d'un serveur de centre de messagerie (*SMSC*) : le format est valide pour le formulaire, et vous êtes certain de ne déranger aucun abonné réel !
+2. **Si le site exige de lire un code SMS de confirmation ponctuel :** Utilisez un service gratuit de numéros de téléphone jetables comme **[fr.mytempsms.com](https://fr.mytempsms.com/)**, qui permet de consulter en ligne des boîtes de réception SMS publiques.
+
+### 🧪 Simulateur Interactif : Générateur d'Identité Cloisonnée & Anti-Pistage
+
+Sélectionnez le contexte de votre inscription en ligne pour générer automatiquement la combinaison d'identifiants protectrice :
+
+::: {.card-window}
+#### Atelier de Cloisonnement d'Identité Numérique {.bi-incognito}
+
+:::: {.tabs}
+##### Contexte d'Inscription {.bi-sliders}
+
+[Type de service en ligne]{.select #privacy_ctx_select options="Site e-commerce ou service régulier (Astuce Gmail +texte),Inscription newsletter ou compte courant (Alias DuckDuckGo Email),Site inconnu exigeant un e-mail pour un PDF (Yopmail jetable),Formulaire curieux exigeant un téléphone (SMSC ou MyTempSMS)" value="Site e-commerce ou service régulier (Astuce Gmail +texte)"}
+::::
+
+:::: {#privacy-sim-terminal .terminal}
+#### Protocole de Protection des Données Personnelles {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_privacySimulator = {
+  privacy_ctx_select;
+  const term = aptitek.createTerminal("#privacy-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (privacy_ctx_select.includes("+texte")) {
+    term.writeLine("[IDENTITÉ] Adresse réelle : nomdutilisateur@gmail.com", { type: "muted" });
+    term.writeLine("[ALIAS GÉNÉRÉ] Saisissez : nomdutilisateur+boutique@gmail.com", { type: "info" });
+    term.writeLine("✓ Tous les courriels arrivent normalement dans nomdutilisateur@gmail.com.", { type: "success" });
+    term.writeLine("🕵️ Bonus : Si vous recevez un mail de casino adressé à 'nomdutilisateur+boutique@gmail.com', vous savez avec certitude qui a fuité ou vendu votre adresse !", { type: "warning" });
+  } else if (privacy_ctx_select.includes("DuckDuckGo")) {
+    term.writeLine("[DUCKDUCKGO EMAIL] Création d'un alias privé @duck.com...", { type: "info" });
+    term.writeLine("[ANALYSE ENTRÉE] Courriel promotionnel reçu -> 3 pixels de pistage (ouverture, IP, appareil) détectés et détruits !", { type: "warning" });
+    term.writeLine("✅ [TRANSFERT] Le courriel nettoyé est acheminé vers votre boîte personnelle sans révéler votre adresse réelle.", { type: "success" });
+  } else if (privacy_ctx_select.includes("Yopmail")) {
+    term.writeLine("[YOPMAIL.COM] Saisie d'une adresse publique instantanée : apti-test-84@yopmail.com", { type: "info" });
+    term.writeLine("✅ Lien de téléchargement récupéré sur yopmail.com sans aucune création de compte.", { type: "success" });
+    term.writeLine("⚠️ Rappel : Toute personne connaissant le préfixe peut lire une boîte Yopmail. Ne jamais l'utiliser pour un compte personnel.", { type: "warning" });
+  } else {
+    term.writeLine("[PROTECTION TÉLÉPHONE] Champ 'Téléphone mobile (Obligatoire)' détecté :", { type: "info" });
+    term.writeLine("├── Cas A (Pas de SMS à lire) : Saisir +33 6 6000 3000 (Serveur technique SMSC).", { type: "success" });
+    term.writeLine("└── Cas B (Code SMS requis)   : Utiliser un numéro public temporaire sur fr.mytempsms.com.", { type: "success" });
+    term.writeLine("✅ Votre numéro personnel reste protégé du démarchage téléphonique et des fuites de données.", { type: "muted" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```

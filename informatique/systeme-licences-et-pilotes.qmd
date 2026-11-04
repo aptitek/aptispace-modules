@@ -1,0 +1,249 @@
+---
+title: "Système d'Exploitation, Licences & Pilotes"
+icon: "⚙️"
+categories:
+  - Informatique
+  - Fondations
+description: "Comprendre la séquence d'amorçage (BIOS/UEFI), le rôle du système d'exploitation (Windows, Linux, macOS), les licences logicielles (Libre vs Propriétaire) et la gestion des pilotes."
+---
+
+Sans logiciel (*Software*), l'assemblage le plus puissant de composants électroniques reste une boîte de silicium inerte. Tout ordinateur fonctionne grâce à une superposition ordonnée de couches logicielles qui prennent le relais dès l'appui sur le bouton de mise sous tension.
+
+## 🚀 De la Mise sous Tension aux Applications : La Chaîne d'Amorçage
+
+Lors de la mise en marche d'un ordinateur, trois étages logiciels s'éveillent successivement :
+
+1. **Le Logiciel d'Amorçage (BIOS / UEFI) :** Logé dans la puce CMOS de la carte mère, c'est le tout premier programme à s'exécuter. Il vérifie le bon fonctionnement des composants (RAM, CPU, clavier), détecte le disque de stockage permanent et amorce le système d'exploitation.
+2. **Le Système d'Exploitation (OS) :** Il prend le contrôle du matériel grâce aux **pilotes** et prépare le socle d'exécution (mémoire, fichiers, réseau, affichage).
+3. **Les Logiciels Utilisateurs :** Le système d'exploitation lance enfin les applications installées à la demande de l'utilisateur (navigateur web, suite bureautique, outils de création).
+
+::: {.card-window}
+#### Visualiseur de la Séquence de Démarrage & des Couches Logicielles {.bi-layers-half}
+
+:::: {.tabs .boot-chain-tabset}
+##### Amorçage (BIOS / CMOS) {.bi-motherboard}
+La puce CMOS réveille la carte mère, teste les composants matériels (*POST*) et cherche le secteur de démarrage sur le disque M.2/SSD.
+
+##### Système d'Exploitation & Pilotes {.bi-cpu}
+L'OS charge son noyau en mémoire vive (RAM) et active les pilotes pour communiquer avec l'écran, le réseau et les périphériques USB.
+
+##### Logiciels Utilisateurs {.bi-window-desktop}
+L'environnement de bureau est prêt : l'utilisateur lance ses applications qui s'appuient sur le socle du système d'exploitation.
+::::
+
+:::: {#boot-chain-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable bootStep = "bios"
+
+_bootWatcher = {
+  const w = aptitek.createTabsetWatcher(
+    ".boot-chain-tabset",
+    {
+      "Amorçage (BIOS / CMOS)": "bios",
+      "Système d'Exploitation & Pilotes": "os",
+      "Logiciels Utilisateurs": "apps"
+    },
+    (val) => { mutable bootStep = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_bootChainRender = {
+  bootStep;
+  const activeBlue = aptitek.getThemeColor("--sol-blue", "#268bd2");
+  const activeGreen = aptitek.getThemeColor("--sol-green", "#859900");
+  const activeYellow = aptitek.getThemeColor("--sol-yellow", "#b58900");
+  const mutedColor = aptitek.getThemeColor("--sol-base01", "#586e75");
+
+  const nodes = [
+    {
+      id: "hw",
+      label: "🖥️ Matériel Physique\n(CPU, RAM, Disque M.2)",
+      shape: "rounded rect",
+      fx: 95, fy: 150,
+      color: bootStep === "bios" ? activeBlue : mutedColor
+    },
+    {
+      id: "bios",
+      label: "🔋 1. BIOS / UEFI\n(Puce CMOS d'amorçage)",
+      shape: "rounded rect",
+      fx: 255, fy: 150,
+      color: bootStep === "bios" ? activeYellow : mutedColor
+    },
+    {
+      id: "os",
+      label: "⚙️ 2. Système d'Exploitation\n(Windows / Linux / macOS + Pilotes)",
+      shape: "rounded rect",
+      fx: 435, fy: 150,
+      color: bootStep === "os" ? activeGreen : mutedColor
+    },
+    {
+      id: "apps",
+      label: "🚀 3. Logiciels Utilisateurs\n(Navigateur, Bureautique, Jeux)",
+      shape: "rounded rect",
+      fx: 615, fy: 150,
+      color: bootStep === "apps" ? activeBlue : mutedColor
+    }
+  ];
+
+  const links = [
+    { source: "hw", target: "bios", label: "Mise sous tension" },
+    { source: "bios", target: "os", label: "Détecte & Amorçe" },
+    { source: "os", target: "apps", label: "Exécute en RAM" }
+  ];
+
+  aptitek.renderStateMachineGraph("#boot-chain-graph", { nodes, links }, {
+    nodeRadius: 30,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 270
+  });
+}
+```
+
+## 🏛️ Le Système d'Exploitation (OS)
+
+Le **système d'exploitation** (*Operating System* ou **OS**) est le chef d'orchestre logiciel qui gère l'intégralité du matériel et sert de socle de base à tout environnement informatique. Sans lui, chaque programme devrait savoir piloter directement chaque modèle de disque dur ou d'écran existant au monde.
+
+Il existe aujourd'hui **trois grandes bases de systèmes d'exploitation** sur ordinateur :
+
+::: {.row gap=3 mb=4}
+:::: {.col span=4}
+::::: {.card-window}
+#### Windows {.bi-windows}
+
+Développé par Microsoft, c'est le système d'exploitation historique le plus répandu sur les ordinateurs personnels et de bureau.
+
+- **Modèle :** Propriétaire et commercial.
+- **Points forts :** Compatibilité maximale avec les logiciels grand public, les périphériques matériels et le catalogue de jeux vidéo.
+- **Attention :** Nécessite une hygiène rigoureuse lors de l'installation des logiciels et des mises à jour.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### GNU/Linux {.bi-ubuntu}
+
+Famille de systèmes basés sur le noyau libre Linux (Ubuntu, Debian, Fedora, Arch, Linux Mint).
+
+- **Modèle :** Logiciel **libre** et gratuit, audité par la communauté mondiale.
+- **Points forts :** Sécurité native, légèreté, respect absolu de la vie privée, gestionnaire de paquets intégré. Il propulse la quasi-totalité des serveurs Internet et supercalculateurs.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card-window}
+#### macOS {.bi-apple}
+
+Le système d'exploitation conçu par Apple exclusivement pour ses propres ordinateurs (MacBook, iMac, Mac Studio).
+
+- **Modèle :** Propriétaire (fondé sur une base UNIX certifiée).
+- **Points forts :** Intégration matérielle et logicielle très étroite (puces Apple Silicon), ergonomie soignée et terminal UNIX natif.
+:::::
+::::
+:::
+
+## 📜 Les Licences Logicielles : Propriétaire vs Libre
+
+Télécharger un logiciel gratuit ne signifie pas qu'il vous appartient ni que vous pouvez en faire ce que vous voulez. Une **licence logicielle** est un **contrat légal** qui définit précisément vos droits et vos interdictions dans le cadre de l'utilisation d'un programme.
+
+On distingue deux philosophies fondamentales :
+
+| Critère Juridique & Technique | Logiciel Propriétaire (*Closed Source*)                                             | Logiciel Libre (*Open Source*)                                                                    |
+| :---------------------------- | :---------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| **Accès à la « Recette »**    | **Secret industriel :** Le code source est verrouillé, seul le binaire est fourni.  | **Code source ouvert :** Tout le monde peut lire et inspecter la recette de fabrication.          |
+| **Modification**              | Strictement interdite par contrat.                                                  | **Autorisée :** Vous pouvez corriger un bug ou adapter l'outil à vos besoins.                     |
+| **Redistribution / Partage**  | Interdite (partager un logiciel propriétaire payant relève de la contrefaçon).      | **Encouragée :** Vous avez le droit légal de copier et partager le logiciel avec vos collègues.   |
+| **Auditabilité & Confiance**  | Boîte noire : vous devez faire confiance à l'éditeur sur la gestion de vos données. | **Auditable par tous :** La communauté mondiale vérifie l'absence de virus ou d'espionnage caché. |
+| **Exemples célèbres**         | Microsoft Windows, Adobe Photoshop, Google Chrome, Microsoft Office.                | GNU/Linux, LibreOffice, VLC, Bitwarden, Brave, Blender, 7-Zip.                                    |
+
+::: {.callout-warning}
+## ⚖️ Vérifiez toujours la licence avant d'utiliser ou de partager !
+Avant d'installer un logiciel en entreprise, à l'université ou de le partager avec un tiers, **vérifiez systématiquement vos droits et sa licence d'utilisation** (GPL, MIT, Apache, Freeware à usage personnel uniquement, ou licence commerciale payante) afin de rester dans la stricte légalité.
+:::
+
+## 🔌 Les Pilotes (Drivers) : Les Traducteurs du Matériel
+
+Un **pilote** (*driver*) est un programme spécialisé qui permet au système d'exploitation de dialoguer avec un périphérique ou un composant précis (carte graphique, carte réseau Wi-Fi, imprimante, pavé tactile). Il est **très important d'avoir des pilotes fonctionnels et à jour** pour garantir la stabilité et les performances de votre machine.
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Vérifier ses Périphériques (`⌘ + X`) {.bi-wrench-adjustable-circle}
+
+Sous Windows, lorsqu'un composant fonctionne mal (pas de son, Wi-Fi absent, écran basse définition) :
+
+1. Pressez le raccourci **`⌘ + X`** (ou clic droit sur le menu Démarrer).
+2. Sélectionnez **Gestionnaire de périphériques**.
+3. Repérez tout périphérique marqué d'un **triangle jaune d'avertissement `⚠️`** : cela signifie que son pilote est manquant ou défectueux.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Où Télécharger un Pilote sans Risque ? {.bi-cloud-arrow-down}
+
+Ne tapez jamais *« télécharger pilote gratuit »* au hasard sur Internet (les faux sites de pilotes pullulent de logiciels malveillants) :
+
+- **Méthode 1 (Officielle) :** Allez directement sur le **site officiel du fabricant** de votre ordinateur ou de votre carte mère, rubrique **Support / Pilotes**.
+- **Méthode 2 (Semi-automatisée) :** Utilisez l'outil libre **[Snappy Driver Installer Origin (SDIO)](https://www.glenn.delahoy.com/snappy-driver-installer-origin/)**. *(Astuce : téléchargez uniquement **les index** en premier pour identifier votre matériel !)*
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Diagnostic de Pilotes & Audit de Licences
+
+Sélectionnez un cas pratique ci-dessous pour simuler l'inspection du Gestionnaire de périphériques (`⌘ + X`) ou l'audit d'une licence logicielle :
+
+::: {.card-window}
+#### Console d'Inspection Système & Pilotes {.bi-terminal}
+
+:::: {.tabs}
+##### Opération de Diagnostic {.bi-sliders}
+
+[Action Système]{.select #sys_diag_select options="⌘ + X -> Gestionnaire de périphériques : Triangle jaune détecté,Installation via le site Support du fabricant (Recommandé),Snappy Driver Installer Origin : Télécharger les index d'abord,Audit de Licence : Logiciel Libre (GPL / MIT) vs Propriétaire" value="⌘ + X -> Gestionnaire de périphériques : Triangle jaune détecté"}
+::::
+
+:::: {#sys-diag-terminal .terminal}
+#### Sortie du Diagnostic Système {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_sysDiagSim = {
+  sys_diag_select;
+  const term = aptitek.createTerminal("#sys-diag-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (sys_diag_select.startsWith("⌘ + X")) {
+    term.writeLine("[⌘ + X] Ouverture du Gestionnaire de périphériques...", { type: "info" });
+    term.writeLine("├── ✅ Cartes graphiques : AMD Radeon / NVIDIA GeForce (Pilote OK)", { type: "success" });
+    term.writeLine("├── ✅ Clavier : Clavier standard PS/2 ou HID USB (Pilote OK)", { type: "success" });
+    term.writeLine("└── ⚠️ Autres périphériques : Contrôleur réseau PCI inconnu (Code 28 : Les pilotes ne sont pas installés)", { type: "warning" });
+    term.writeLine("💡 Diagnostic : Le matériel est bien branché sur le port PCI (Organe n°9), mais l'OS n'a pas son traducteur logiciel.", { type: "muted" });
+  } else if (sys_diag_select.startsWith("Installation via le site")) {
+    term.writeLine("[SUPPORT FABRICANT] Connexion à https://support.msi.com (Section Carte Mère)...", { type: "info" });
+    term.writeLine("[TÉLÉCHARGement] Réception du pilote réseau officiel signé numériquement (Realtek_LAN_v10.68.zip).", { type: "success" });
+    term.writeLine("✅ [SYSTÈME] Pilote installé et vérifié : Port réseau RJ45 (Organe n°3) opérationnel à 1 Gbps.", { type: "success" });
+  } else if (sys_diag_select.startsWith("Snappy Driver")) {
+    term.writeLine("[SDIO] Lancement de Snappy Driver Installer Origin (Logiciel Libre)...", { type: "info" });
+    term.writeLine("Étape 1 : Téléchargement des INDEX uniquement (18 Mo au lieu de 35 Go de pack complet).", { type: "info" });
+    term.writeLine("Étape 2 : Analyse des identifiants matériels PCI/USB -> 2 mises à jour de pilotes trouvées.", { type: "success" });
+    term.writeLine("✅ Point de restauration créé et pilotes mis à jour proprement sans publicité ni adware.", { type: "success" });
+  } else {
+    term.writeLine("[AUDIT DE LICENCE] Comparaison avant déploiement sur 25 postes étudiants :", { type: "info" });
+    term.writeLine("❌ Logiciel Propriétaire Craké : Illégal + Risque critique de cheval de Troie (Trojan) injecté dans l'exécutable.", { type: "danger" });
+    term.writeLine("✅ Alternative Libre (Open Source) : Code source public audité, gratuité légale et déploiement illimité autorisé.", { type: "success" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```

@@ -1,0 +1,154 @@
+---
+title: "Maintenance Système & Gestion des Logiciels"
+icon: "🧰"
+categories:
+  - Informatique
+  - Fondations
+description: "Entretenir et nettoyer son système (BleachBit, CCleaner, Tron Script), installer ses applications proprement avec un gestionnaire de paquets (Chocolatey) et trouver des alternatives libres."
+---
+
+Au fil des mois d'utilisation, tout système informatique accumule des fichiers résiduels, des caches de mise à jour orphelins et des programmes inutilisés qui ralentissent le démarrage et encombrent le disque de stockage. Adopter une **maintenance rigoureuse** et une **méthode d'installation saine** permet de conserver un ordinateur rapide et exempt de logiciels malveillants.
+
+## 🧹 Maintenance & Réparation Système
+
+Une bonne hygiène informatique consiste d'abord à désinstaller les applications superflues et à purger périodiquement les fichiers temporaires.
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Nettoyage Semi-Automatique {.bi-trash3}
+
+Sous Windows, deux outils permettent de nettoyer les fichiers temporaires, caches de navigateurs et journaux obsolètes :
+
+- **[BleachBit](https://www.bleachbit.org/) *(Recommandé)* :** Logiciel **libre** (*Open Source*), léger, sans publicité ni télémétrie cachée. Il nettoie efficacement l'espace disque sous Windows et Linux.
+- **[CCleaner](https://www.ccleaner.com/) :** L'utilitaire historique de nettoyage sous Windows. S'il reste populaire, veillez à toujours le télécharger sur son site officiel et à décocher toute offre logicielle additionnelle lors de l'installation.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Réparation Lourde : Tron Script {.bi-bandaid}
+
+Si vous rencontrez un dysfonctionnement majeur avec votre ordinateur sous Windows (ralentissements extrêmes, services système cassés, suspicion d'infection) :
+
+- **[Tron Script](https://old.reddit.com/r/TronScript/)** est une boîte à outils libre et automatisée de réparation système.
+- Il exécute séquentiellement un nettoyage en profondeur, plusieurs analyses antivirales indépendantes, la suppression des *bloatwares* et la réparation de l'image système Windows (`DISM` et `SFC`).
+:::::
+::::
+:::
+
+::: {.callout-danger}
+## ✘ Alerte Sécurité : Méfiez-vous des faux nettoyeurs et faux antivirus !
+Paradoxalement, la plupart des pseudo-logiciels de « maintenance miracle », « accélérateurs de PC » et faux antivirus promus par des publicités sur Internet **contiennent eux-mêmes des virus ou des logiciels espions**.
+
+1. **Téléchargez toujours vos logiciels depuis leur site officiel** (ou via un gestionnaire de paquets vérifié).
+2. Sur Windows, **scannez systématiquement tout nouveau fichier téléchargé** avec votre antivirus avant de l'exécuter.
+3. **Privilégiez les logiciels libres (*Open Source*) :** ils sont intrinsèquement plus fiables, car leur code source est ouvert et **auditable par tous**.
+:::
+
+## 📦 Logiciels Utilisateurs & Gestionnaire de Paquets (`Chocolatey`)
+
+Chaque système d'exploitation possède un écosystème d'applications riche et varié. Alors que Linux ou les smartphones s'appuient depuis toujours sur un magasin ou dépôt centralisé, **Windows nécessite encore souvent une installation manuelle** (chercher un site sur le web, télécharger un `.exe`, cliquer dix fois sur *« Suivant »* en évitant les barres d'outils publicitaires).
+
+Pour éliminer ce risque et automatiser à 100 % la gestion de vos applications sous Windows, il existe un **gestionnaire de paquets** incontournable : **[Chocolatey](https://chocolatey.org/)**.
+
+### 🚀 Installer et Utiliser Chocolatey en 3 Étapes
+
+Chocolatey télécharge directement les programmes depuis le **site officiel de l'éditeur**, vérifie leur empreinte cryptographique, les installe silencieusement et permet de tout mettre à jour en une seule commande :
+
+1. **Ouvrir le terminal administrateur :** Pressez le raccourci **`⌘ + X`** puis sélectionnez **[Windows PowerShell (Admin)]**.
+2. **Installer Chocolatey :** Collez dans le terminal la ligne de commande officielle fournie à l'adresse **[chocolatey.org/install](https://chocolatey.org/install)** et validez avec `Entrée`.
+3. **Installer un logiciel en une ligne :** Une fois Chocolatey en place, il suffit d'ouvrir votre terminal et de taper :
+
+```bash
+# Installer un paquet avec l'alias court cinst (Voir la liste des packages sur chocolatey.org)
+cinst ccleaner
+
+# Syntaxe moderne équivalente pour installer plusieurs logiciels libres d'un coup (-y valide automatiquement)
+choco install bleachbit vlc 7zip bitwarden -y
+
+# Mettre à jour TOUS les logiciels de l'ordinateur en une seule commande !
+choco upgrade all -y
+
+```
+
+### 🧪 Simulateur Interactif : Déploiement Propre avec Chocolatey
+
+Cochez les logiciels que vous souhaitez installer ou maintenir sur votre poste Windows et observez l'exécution automatisée dans PowerShell :
+
+::: {.card-window}
+#### Constructeur de Commande `Chocolatey` (PowerShell Admin) {.bi-terminal-plus}
+
+:::: {.tabs}
+##### Sélection des Paquets Officiels {.bi-box-seam}
+
+[Mode d'action]{.select #choco_mode options="cinst / choco install : Installer de nouveaux logiciels,choco upgrade all : Mettre à jour tous les logiciels installés,choco uninstall : Désinstaller proprement sans résidus" value="cinst / choco install : Installer de nouveaux logiciels"}
+
+- **Maintenance :** [bleachbit (Nettoyeur Libre)]{.checkbox .checked #pkg_bleachbit} [ccleaner (Nettoyeur Windows)]{.checkbox .checked #pkg_ccleaner}
+- **Sécurité & Web :** [brave (Navigateur Anti-pistage)]{.checkbox .checked #pkg_brave} [bitwarden (Coffre-fort Mots de passe)]{.checkbox .checked #pkg_bitwarden}
+- **Utilitaires Libres :** [vlc (Lecteur Multimédia)]{.checkbox #pkg_vlc} [7zip (Archiveur Compressé)]{.checkbox #pkg_7zip}
+::::
+
+:::: {#choco-sim-terminal .terminal}
+#### Terminal Windows PowerShell (Administrateur) {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_chocoSimulator = {
+  choco_mode;
+  pkg_bleachbit;
+  pkg_ccleaner;
+  pkg_brave;
+  pkg_bitwarden;
+  pkg_vlc;
+  pkg_7zip;
+
+  const pkgs = [];
+  if (pkg_bleachbit) pkgs.push("bleachbit");
+  if (pkg_ccleaner) pkgs.push("ccleaner");
+  if (pkg_brave) pkgs.push("brave");
+  if (pkg_bitwarden) pkgs.push("bitwarden");
+  if (pkg_vlc) pkgs.push("vlc");
+  if (pkg_7zip) pkgs.push("7zip");
+
+  const term = aptitek.createTerminal("#choco-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (choco_mode.startsWith("choco upgrade")) {
+    term.writeLine("PS C:\\WINDOWS\\system32> choco upgrade all -y", { type: "info" });
+    term.writeLine("Chocolatey v2.3.0 — Vérification des dépôts officiels...", { type: "muted" });
+    term.writeLine("✓Tous vos paquets (bleachbit, ccleaner, brave, bitwarden) sont téléchargés depuis l'éditeur officiel et mis à jour !", { type: "success" });
+  } else if (pkgs.length === 0) {
+    term.writeLine("PS C:\\WINDOWS\\system32> # Cochez au moins un paquet ci-dessus pour générer la commande.", { type: "warning" });
+  } else if (choco_mode.startsWith("cinst")) {
+    const pkgStr = pkgs.join(" ");
+    term.writeLine(`PS C:\\WINDOWS\\system32> cinst ${pkgStr}`, { type: "info" });
+    pkgs.forEach(p => {
+      term.writeLine(`[+] Téléchargement officiel de '${p}' -> Vérification SHA-256 OK -> Installé.`, { type: "success" });
+    });
+    term.writeLine(`✅ ${pkgs.length} logiciel(s) installé(s) sans navigateur, sans publicité et depuis la source officielle.`, { type: "muted" });
+  } else {
+    const pkgStr = pkgs.join(" ");
+    term.writeLine(`PS C:\\WINDOWS\\system32> choco uninstall ${pkgStr} -y`, { type: "info" });
+    term.writeLine(`🗑️ Désinstallation propre de : ${pkgStr} terminée.`, { type: "warning" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## 🔄 Trouver des Logiciels Fiables avec `AlternativeTo`
+
+Lorsque vous cherchez un logiciel pour accomplir une tâche précise (montage vidéo, retouche photo, prise de notes, nettoyage) ou que vous souhaitez remplacer un logiciel propriétaire coûteux par un équivalent **libre et gratuit**, une ressource communautaire est indispensable : **[AlternativeTo (`alternativeto.net`)](https://alternativeto.net/)**.
+
+Ce portail référence la quasi-totalité des logiciels existants et permet de filtrer leurs alternatives par **système d'exploitation** (Windows, Linux, macOS, Android) et par **licence** (*Open Source*, Gratuit).
+
+| Besoin Quotidien                | Logiciel Propriétaire Courant | Alternative Libre (*Open Source*) Recommandée | Pourquoi privilégier l'alternative libre ?                                    |
+| :------------------------------ | :---------------------------- | :-------------------------------------------- | :---------------------------------------------------------------------------- |
+| **Nettoyage Système**           | CCleaner                      | **BleachBit**                                 | Zéro pistage publicitaire, code source léger et audité.                       |
+| **Bureautique (Texte/Tableur)** | Microsoft Office (Word/Excel) | **LibreOffice**                               | Formats ouverts pérennes (`.odt`, `.ods`), gratuit à vie.                     |
+| **Gestion de Mots de Passe**    | Dashlane / 1Password          | **Bitwarden** (ou **KeePassXC**)              | Chiffrement de bout en bout audité publiquement.                              |
+| **Compression d'Archives**      | WinRAR / WinZip               | **7-Zip**                                     | Plus rapide, taux de compression supérieur (`.7z`), aucune fenêtre de rappel. |
+| **Lecture Vidéo & Audio**       | Windows Media Player          | **VLC Media Player**                          | Lit absolument tous les formats sans jamais réclamer de codec payant.         |
+| **Retouche Photo & Dessin**     | Adobe Photoshop / Illustrator | **GIMP / Krita / Inkscape**                   | Aucun abonnement mensuel, respectueux de vos fichiers locaux.                 |

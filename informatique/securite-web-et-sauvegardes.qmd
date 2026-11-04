@@ -1,0 +1,258 @@
+---
+title: "Navigation Sécurisée, Mises à Jour & Sauvegardes"
+icon: "🛡️"
+categories:
+  - Informatique
+  - Fondations
+description: "Sécuriser ses communications (HTTPS, VPN, Tor), blinder son navigateur contre le pistage et les cookies (Brave, uBlock Origin), maintenir ses appareils à jour et appliquer les 5 règles de sauvegarde."
+---
+
+Protéger ses mots de passe ne suffit pas si vos échanges sur le réseau peuvent être interceptés, si votre navigateur trahit vos habitudes de navigation ou si une panne matérielle détruit l'unique exemplaire de vos travaux. Ce dernier chapitre rassemble les règles d'or pour communiquer en sécurité et garantir la survie de vos données.
+
+## 🔒 Communiquer en Sécurité : HTTPS, VPN & TOR
+
+::: {.callout-warning}
+## 🔒 Règle absolue : LE CADENAS DOIT ÊTRE FERMÉ (`https://`) !
+Sur tous les sites que vous consultez, vérifiez toujours que l'icône de **cadenas** à gauche de la barre d'adresse est bien **fermée** (ou verte) et que l'adresse débute par **`https://`**. Ne vous connectez **jamais** sur des réseaux Wi-Fi publics (gares, hôtels, cafés, aéroports) sans protection chiffrée !
+:::
+
+Pour protéger votre trafic réseau contre l'espionnage local et le pistage par adresse IP, trois niveaux de protection existent :
+
+::: {.card-window}
+#### Visualiseur d'Architecture Réseau : Clair vs VPN vs TOR {.bi-shield-shaded}
+
+:::: {.tabs .net-sec-tabset}
+##### HTTPS Standard {.bi-lock}
+Le contenu de la page est chiffré entre votre navigateur et le site, mais votre fournisseur d'accès (ou le Wi-Fi public) voit quels domaines vous visitez.
+
+##### Tunnel VPN de Confiance {.bi-shield-check}
+Tout votre trafic est encapsulé dans un tunnel chiffré jusqu'au serveur VPN : le Wi-Fi public est aveugle et le site web ne voit plus votre adresse IP réelle.
+
+##### Routage en Oignon (TOR) {.bi-globe2}
+Votre trafic rebondit à travers 3 relais chiffrés dispersés dans le monde entier : aucun nœud ne connaît simultanément qui vous êtes et quel site vous consultez.
+::::
+
+:::: {#net-sec-graph .chart-container-md}
+::::
+:::
+
+```{ojs}
+//| echo: false
+mutable netSecMode = "https"
+
+_netSecWatcher = {
+  const w = aptitek.createTabsetWatcher(
+    ".net-sec-tabset",
+    {
+      "HTTPS Standard": "https",
+      "Tunnel VPN de Confiance": "vpn",
+      "Routage en Oignon (TOR)": "tor"
+    },
+    (val) => { mutable netSecMode = val; }
+  );
+  invalidation.then(() => w.destroy());
+  return null;
+}
+
+_netSecRender = {
+  netSecMode;
+  const blue = aptitek.getThemeColor("--sol-blue", "#268bd2");
+  const green = aptitek.getThemeColor("--sol-green", "#859900");
+  const yellow = aptitek.getThemeColor("--sol-yellow", "#b58900");
+  const violet = aptitek.getThemeColor("--sol-violet", "#6c71c4");
+
+  const dataMap = {
+    https: {
+      nodes: [
+        { id: "pc", label: "💻 Votre Navigateur\n(Brave + HTTPS)", shape: "rounded rect", fx: 120, fy: 150, color: blue },
+        { id: "wifi", label: "📡 Routeur / FAI\n(Voit le nom du site)", shape: "rounded rect", fx: 360, fy: 150, color: yellow },
+        { id: "site", label: "🔒 Site Web Cible\n(https://...)", shape: "rounded rect", fx: 600, fy: 150, color: green }
+      ],
+      links: [
+        { source: "pc", target: "wifi", label: "TLS Chiffré (DNS visible)" },
+        { source: "wifi", target: "site", label: "IP réelle visible par le site" }
+      ]
+    },
+    vpn: {
+      nodes: [
+        { id: "pc", label: "💻 Votre Appareil\n(Client VPN actif)", shape: "rounded rect", fx: 100, fy: 150, color: blue },
+        { id: "wifi", label: "📡 Wi-Fi Public / FAI\n(Aveuglé par le tunnel)", shape: "rounded rect", fx: 280, fy: 150, color: green },
+        { id: "vpn", label: "🛡️ Serveur VPN Fiable\n(Masque votre IP)", shape: "rounded rect", fx: 460, fy: 150, color: green },
+        { id: "site", label: "🔒 Site Web Cible\n(https://...)", shape: "rounded rect", fx: 630, fy: 150, color: blue }
+      ],
+      links: [
+        { source: "pc", target: "wifi", label: "Tunnel Chiffré" },
+        { source: "wifi", target: "vpn", label: "Indéchiffrable" },
+        { source: "vpn", target: "site", label: "IP du VPN" }
+      ]
+    },
+    tor: {
+      nodes: [
+        { id: "pc", label: "💻 Navigateur TOR", shape: "rounded rect", fx: 80, fy: 150, color: violet },
+        { id: "n1", label: "🧅 Nœud d'Entrée\n(Pays A)", shape: "circle", fx: 240, fy: 150, color: violet },
+        { id: "n2", label: "🧅 Nœud Milieu\n(Pays B)", shape: "circle", fx: 390, fy: 150, color: violet },
+        { id: "n3", label: "🧅 Nœud de Sortie\n(Pays C)", shape: "circle", fx: 540, fy: 150, color: violet },
+        { id: "site", label: "🔒 Site Cible", shape: "rounded rect", fx: 670, fy: 150, color: green }
+      ],
+      links: [
+        { source: "pc", target: "n1", label: "3 couches" },
+        { source: "n1", target: "n2", label: "2 couches" },
+        { source: "n2", target: "n3", label: "1 couche" },
+        { source: "n3", target: "site", label: "Anonyme (Lent)" }
+      ]
+    }
+  };
+
+  const curr = dataMap[netSecMode];
+  aptitek.renderStateMachineGraph("#net-sec-graph", { nodes: curr.nodes, links: curr.links }, {
+    nodeRadius: 28,
+    fontSize: 9,
+    enableZoom: false,
+    enablePan: false,
+    zoomToFit: true,
+    zoomToFitPadding: 25,
+    height: 270
+  });
+}
+```
+
+### 🛡️ Bien Choisir son VPN et ses Outils Réseau
+
+- **VPN de confiance uniquement :** Évitez impérativement les **VPN gratuits**, qui monétisent votre connexion en revendant votre historique de navigation.
+- **Sur smartphone sans VPN :** Activez la fonctionnalité de **VPN local de [DuckDuckGo](https://duckduckgo.com/)** sur mobile, qui filtre en temps réel les traceurs cachés dans vos applications directement au niveau réseau de votre téléphone.
+- **Protection maximale avec [TOR](https://www.torproject.org/) :** Le réseau Tor disperse votre trafic à travers le monde entier pour garantir un anonymat fort, au prix d'une vitesse de chargement réduite.
+
+## 🌐 Navigateur, Publicités, Démineur & Cookies
+
+Votre navigateur web est la première ligne de défense de votre vie privée et de votre sérénité quotidienne.
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Choisir son Navigateur & Bloquer les Pubs {.bi-browser-safari}
+
+- **Évitez les navigateurs à compte utilisateur publicitaire** comme **Google Chrome**, qui sont gratuits au prix de vos données personnelles.
+- **Privilégiez [Brave](https://brave.com/) :** Il place la vie privée au cœur de sa conception en bloquant par défaut les publicités et les traceurs — y compris ceux qui exploitent discrètement les capteurs de votre appareil.
+- **L'extension reine :** Sur tout navigateur, installez **[uBlock Origin](https://ublockorigin.com/)** (couplé aux listes *Anti-Adblock Killer*) pour éradiquer la quasi-totalité des publicités.
+- **Sur mobile & réseau :** Essayez **[Pi-hole](https://pi-hole.net/)**, **[AdGuard](https://adguard.com/)** ou le projet **[ReVanced](https://revanced.app/)** avec **[SponsorBlock](https://sponsor.ajay.app/)**.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Internet comme un Grand Jeu de Démineur {.bi-minecart-loaded}
+
+Une grande partie de votre sécurité en ligne dépend de **votre vigilance** :
+
+- **Méfiez-vous des noms de domaine louches :** présence de chiffres aléatoires, fautes d'orthographe subtiles (`paypa1.com`, `impots-gouv.info`) ou extensions exotiques.
+- **Réfléchissez avant chaque clic** en dehors des sites que vous connaissez bien, exactement comme au **Démineur**.
+- **Ne cliquez jamais sur une publicité** et fermez immédiatement tout onglet qui tente de capter votre attention avec des couleurs clignotantes ou des sons d'alerte.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+## 🛠️ L'astuce chirurgicale de l'Inspecteur d'Élément (`Ctrl + ⇧ Shift + C` puis `Del`)
+Lorsqu'un bandeau intrusif, un masque gris ou un faux *paywall* recouvre le texte d'une page web :
+
+1. Pressez simultanément **`Ctrl + ⇧ Shift + C`** pour activer le sélecteur d'élément de l'inspecteur du navigateur.
+2. Cliquez directement sur l'élément visuel qui obstrue votre lecture.
+3. Appuyez sur la touche **`Del` (*Suppr*)** de votre clavier : le bloc HTML gênant disparaît instantanément de la page !
+:::
+
+### 🍪 Bas les Cookies ! Déjouer les Bannières de Pistage
+
+Les **cookies** sont de petits fichiers texte déposés dans votre navigateur. S'ils sont utiles pour maintenir votre session connectée, ils sont massivement détournés par les régies publicitaires pour **vous tracer d'un site à l'autre** à vos dépens.
+
+1. **Votre droit légal (RGPD) :** Grâce aux lois européennes sur la vie privée, vous avez le droit de tous les refuser. Comme les sites rendent ce refus volontairement pénible (*Dark Patterns*), cliquez toujours sur **[Tout refuser]** ou sur **[Plus d'options]** pour tout décocher. *(Pour vous entraîner de façon ludique à déjouer ces pièges, testez le jeu en ligne **[cookieconsentspeed.run](https://cookieconsentspeed.run/)** !)*
+2. **Automatiser le refus :** Supprimez d'abord vos cookies existants dans les paramètres du navigateur, puis installez la combinaison de deux extensions : **[Consent-O-Matic](https://consentomatic.au.dk/)** (qui coche automatiquement « Tout refuser » à votre place) et **[I don't care about cookies](https://www.i-dont-care-about-cookies.eu/)**.
+3. **Le signe que vous êtes bien protégé :** Un excellent indicateur de l'efficacité de votre blindage anti-pistage est l'affichage plus fréquent de **CAPTCHAs** vous demandant de prouver que vous êtes bien humain !
+
+## 🔄 Mettre à Jour & Sauvegarder ses Données
+
+Deux habitudes finales séparent l'utilisateur serein de la perte catastrophique de données :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=5}
+::::: {.card-window}
+#### La Mise à Jour, c'est Tous les Jours ! {.bi-arrow-repeat}
+
+Il ne se passe plus un mois sans qu'une **faille de sécurité géante** n'affecte la plupart des appareils informatisés.
+
+- Mettez régulièrement à jour votre système, vos logiciels et **tous vos appareils, y compris votre smartphone**.
+- **Signal d'alerte critique :** Les éditeurs sérieux publient des correctifs très fréquents. Si aucune mise à jour n'est plus fournie après plusieurs mois pour votre appareil, considérez que **celui-ci est obsolète et potentiellement compromis**.
+:::::
+::::
+
+:::: {.col span=7}
+::::: {.card-window}
+#### Les 5 Règles de Base de la Sauvegarde {.bi-hdd-rack}
+
+Pour ne jamais perdre vos travaux en cas de vol, d'incendie, de panne de SSD ou d'attaque par rançongiciel (*ransomware*), toute stratégie de sauvegarde doit respecter **5 piliers** :
+
+1. **Régularité :** Sauvegarder aussi souvent que possible (idéalement de façon automatisée).
+2. **Fiabilité :** Stocker sur des disques durs en **RAID** (tolérance à la panne d'un disque) ou sur un **cloud de confiance**.
+3. **Dispersé :** Conserver une copie sur des **sites géographiques séparés** (hors de votre domicile/bureau).
+4. **Chiffré :** **Chiffrer** systématiquement vos sauvegardes, surtout lorsqu'elles sont hébergées en ligne.
+5. **Récupérabilité :** **Vérifier concrètement** que vos données sont bien restaurables en cas de sinistre !
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Auditeur des 5 Règles de Sauvegarde
+
+Cochez les règles que vous appliquez actuellement à vos fichiers importants pour simuler la résistance de vos données face aux sinistres :
+
+::: {.card-window}
+#### Simulateur de Résilience de Sauvegarde (Les 5 Piliers) {.bi-clipboard2-pulse}
+
+:::: {.tabs}
+##### Vos Pratiques Actuelles {.bi-sliders}
+
+- [1. Régularité (Sauvegarde quotidienne ou hebdomadaire)]{.checkbox .checked #bak_1}
+- [2. Fiabilité (Disques redondants RAID ou Cloud de confiance)]{.checkbox .checked #bak_2}
+- [3. Dispersion géographique (Copie sur un site distant séparé)]{.checkbox .checked #bak_3}
+- [4. Chiffrement (Données chiffrées avant envoi en ligne)]{.checkbox #bak_4}
+- [5. Récupérabilité vérifiée (Test réel de restauration effectué)]{.checkbox #bak_5}
+::::
+
+:::: {#backup-audit-terminal .terminal}
+#### Rapport d'Audit de Résilience {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_backupAuditSim = {
+  bak_1; bak_2; bak_3; bak_4; bak_5;
+
+  const rules = [
+    { ok: bak_1, name: "1. Régularité", fail: "En cas de crash aujourd'hui, vous perdez plusieurs mois de travail récent." },
+    { ok: bak_2, name: "2. Fiabilité (RAID / Cloud)", fail: "Une simple panne mécanique de votre disque externe unique détruit la sauvegarde." },
+    { ok: bak_3, name: "3. Site géographique séparé", fail: "Un cambriolage, un incendie ou un dégât des eaux emporte l'ordinateur ET le disque posé à côté !" },
+    { ok: bak_4, name: "4. Chiffrement en ligne", fail: "En cas d'accès non autorisé à votre compte Cloud, vos documents privés sont lisibles en clair." },
+    { ok: bak_5, name: "5. Récupérabilité testée", fail: "Risque d'archive corrompue ou de clé de déchiffrement oubliée le jour où vous en aurez besoin." }
+  ];
+
+  const score = rules.filter(r => r.ok).length;
+  const term = aptitek.createTerminal("#backup-audit-terminal", { defaultPrompt: false, showCursor: false });
+
+  term.writeLine(`=== SCORE DE SÉCURITÉ DES SAUVEGARDES : ${score} / 5 PILIERS VALIDÉS ===`, {
+    type: score === 5 ? "success" : (score >= 3 ? "warning" : "danger")
+  });
+
+  rules.forEach(r => {
+    if (r.ok) {
+      term.writeLine(`✅ [OK] ${r.name}`, { type: "success" });
+    } else {
+      term.writeLine(`❌ [MANQUANT] ${r.name} -> ${r.fail}`, { type: "danger" });
+    }
+  });
+
+  if (score === 5) {
+    term.writeLine("🏆 Félicitations : Vos données sont protégées contre les pannes, le vol, les incendies et les fuites Cloud !", { type: "info" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```

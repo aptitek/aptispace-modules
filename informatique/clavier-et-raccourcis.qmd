@@ -1,0 +1,247 @@
+---
+title: "Clavier, Modificateurs & Raccourcis"
+icon: "⌨️"
+categories:
+  - Informatique
+  - Fondations
+description: "Maîtriser la topographie d'un clavier, les 4 niveaux d'étiquettes d'une touche (Shift, Alt Gr) et les raccourcis essentiels (édition, système, fenêtres et navigation textuelle)."
+---
+
+Un **clavier** est le périphérique d'entrée principal d'un ordinateur. Il est composé d'une matrice de touches dont chacune possède une étiquette imprimée — à une seule exception universelle : **la barre d'espace**.
+
+Pour maîtriser la frappe rapide et piloter son système sans perdre de temps à la souris, il faut d'abord comprendre la distinction entre les deux grandes familles de touches :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Les Touches de Caractères {.bi-fonts}
+
+Ce sont les touches principales situées au centre du clavier (lettres, chiffres, ponctuation) et sur le pavé numérique.
+
+- **Rôle :** Entrer directement du texte, des nombres et des symboles dans le champ actif.
+- **Particularité :** Une seule touche physique peut produire **jusqu'à 4 caractères différents** selon les modificateurs maintenus.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Les Touches Modificatrices {.bi-sliders}
+
+Situées en périphérie du bloc principal (`⇧ Shift`, `Ctrl`, `Alt`, `Alt Gr`, `⌘ Super / Windows`), elles ne produisent aucun texte lorsqu'on les presse seules.
+
+- **Rôle :** Changer le comportement d'autres touches pressées **simultanément**.
+- **La touche `⌘` (Super / Windows `⊞`) :** Appelée **Super** sous Linux ou **Windows** sur PC, elle déclenche les actions globales du système d'exploitation.
+:::::
+::::
+:::
+
+## 🔠 La Règle des 4 Étiquettes d'une Touche
+
+Sur un clavier complet (notamment les dispositions francophones AZERTY ou BÉPO), une touche de caractère peut comporter **jusqu'à 4 symboles gravés aux quatre coins**. Le choix du caractère affiché dépend de la combinaison des modificateurs **`⇧ Shift` (Majuscule)** et **`Alt Gr` (Graphique Alternatif)** :
+
+| Position sur la touche | Combinaison à maintenir     | Exemple 1 (Touche Devise) | Exemple 2 (Touche `2`) | Exemple 3 (Touche `0`) |
+| :--------------------- | :-------------------------- | :-----------------------: | :--------------------: | :--------------------: |
+| **En bas à gauche**    | Aucun modificateur (Frappe) |            `$`            |          `é`           |          `à`           |
+| **En haut à gauche**   | **`⇧ Shift`** pressé        |            `£`            |          `2`           |          `0`           |
+| **En bas à droite**    | **`Alt Gr`** pressé         |            `ø`            |          `~`           |          `@`           |
+| **En haut à droite**   | **`⇧ Shift` + `Alt Gr`**    |            `Ø`            |          `É`           |          `À`           |
+
+### 🧪 Simulateur Interactif : Décodeur de Touche à 4 Niveaux
+
+Choisissez une touche du clavier et activez les modificateurs `⇧ Shift` et `Alt Gr` pour observer quel coin de la touche est sélectionné :
+
+::: {.card-window}
+#### Inspecteur de Matrice à 4 Étiquettes {.bi-grid-fill}
+
+:::: {.tabs}
+##### Configuration de Frappe {.bi-keyboard}
+
+[Touche observée]{.select #key_target options="Touche Devise ($ / £ / ø / Ø),Touche Chiffre 2 (é / 2 / ~ / É),Touche Chiffre 0 (à / 0 / @ / À),Touche Lettre E (e / E / € / ¢)" value="Touche Devise ($ / £ / ø / Ø)"}
+
+- **Modificateurs maintenus :** [⇧ Shift (Majuscule)]{.checkbox #mod_shift} [Alt Gr (À droite de l'espace)]{.checkbox #mod_altgr}
+::::
+
+:::: {#key-matrix-terminal .terminal}
+#### Signal Émis par le Clavier {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_keyMatrixSim = {
+  key_target;
+  mod_shift;
+  mod_altgr;
+
+  const keyMap = {
+    "Touche Devise": { bl: "$", tl: "£", br: "ø", tr: "Ø" },
+    "Touche Chiffre 2": { bl: "é", tl: "2", br: "~", tr: "É" },
+    "Touche Chiffre 0": { bl: "à", tl: "0", br: "@", tr: "À" },
+    "Touche Lettre E": { bl: "e", tl: "E", br: "€", tr: "¢" }
+  };
+
+  const prefix = key_target.split(" (")[0];
+  const k = keyMap[prefix] || keyMap["Touche Devise"];
+
+  let pos = "EN BAS À GAUCHE (Sans modificateur)";
+  let charOut = k.bl;
+  if (mod_shift && mod_altgr) {
+    pos = "EN HAUT À DROITE (⇧ Shift + Alt Gr)";
+    charOut = k.tr;
+  } else if (mod_shift) {
+    pos = "EN HAUT À GAUCHE (⇧ Shift pressé)";
+    charOut = k.tl;
+  } else if (mod_altgr) {
+    pos = "EN BAS À DROITE (Alt Gr pressé)";
+    charOut = k.br;
+  }
+
+  const term = aptitek.createTerminal("#key-matrix-terminal", { defaultPrompt: false, showCursor: false });
+  term.writeLine(`┌───────────┐`, { type: "muted" });
+  term.writeLine(`│  ${k.tl}     ${k.tr}  │   <- Niveau Haut (⇧ Shift)`, { type: mod_shift ? "warning" : "muted" });
+  term.writeLine(`│  ${k.bl}     ${k.br}  │   <- Niveau Bas  (Standard / Alt Gr)`, { type: !mod_shift ? "info" : "muted" });
+  term.writeLine(`└───────────┘`, { type: "muted" });
+  term.writeLine(`Position active : ${pos}`, { type: "info" });
+  term.writeLine(`✅ Caractère envoyé à l'écran : « ${charOut} »`, { type: "success" });
+
+  invalidation.then(() => term.destroy());
+}
+```
+
+## ✂️ Raccourcis de Base : Presse-Papiers, Fichiers & Onglets
+
+Ces raccourcis utilisent la touche **`Ctrl`** et fonctionnent dans la quasi-totalité des logiciels (navigateurs web, traitements de texte, éditeurs de code) sur Windows comme sur Linux :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Presse-Papiers & Édition {.bi-clipboard-check}
+
+- **`Ctrl + C` :** **Copier** la sélection dans le presse-papiers.
+- **`Ctrl + X` :** **Couper** la sélection (supprime l'original et le copie en mémoire, exactement comme des ciseaux `✂️`).
+- **`Ctrl + V` :** **Coller** le contenu du presse-papiers à la position du curseur.
+- **`Ctrl + A` :** **Sélectionner tout** le document ou le champ actif.
+- **`Ctrl + Z` :** **Annuler** la dernière action effectuée.
+- **`Ctrl + Y` :** **Répéter / Rétablir** l'action qui vient d'être annulée.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Documents, Fenêtres & Onglets {.bi-window-stack}
+
+- **`Ctrl + S` :** **Enregistrer** immédiatement le fichier en cours.
+- **`Ctrl + P` :** **Imprimer** la page ou le document.
+- **`Ctrl + Molette souris` :** **Zoomer / Dézoomer** l'affichage.
+- **`Ctrl + N` :** Ouvrir une **nouvelle fenêtre**.
+- **`Ctrl + Q` :** **Fermer la fenêtre** (ou quitter l'application).
+- **`Ctrl + T` :** Ouvrir un **nouvel onglet**.
+- **`Ctrl + W` :** **Fermer l'onglet** actif.
+- **`Ctrl + ⇧ Shift + T` :** **Rouvrir le dernier onglet fermé** par inadvertance !
+:::::
+::::
+:::
+
+## 🖥️ Raccourcis Système & Gestion de Fenêtres
+
+La touche **`⌘` (Super / Windows)** combinée à d'autres touches permet de piloter l'environnement graphique sans toucher à la souris. *(Note : les raccourcis marqués du symbole **`⊞`** sont spécifiques à Microsoft Windows).*
+
+| Catégorie             | Raccourci Clavier          | Spécificité | Effet immédiat sur le système                                                               |
+| :-------------------- | :------------------------- | :---------: | :------------------------------------------------------------------------------------------ |
+| **Système**           | **`⌘ + D`**                |  Universel  | **Revenir au bureau** (minimise ou restaure instantanément toutes les fenêtres).            |
+| **Système**           | **`⌘ + E`**                | `⊞` Windows | Ouvrir directement l'**Explorateur de fichiers**.                                           |
+| **Système**           | **`⌘ + X`**                | `⊞` Windows | Ouvrir le **Menu d'administration** rapide (Terminal Admin, Gestionnaire de périphériques). |
+| **Système**           | **`⌘ + L`**                |  Universel  | **Verrouiller la session** (indispensable dès que vous quittez votre poste !).              |
+| **Système / Urgence** | **`Ctrl + Alt + Del`**     |  Universel  | Ouvrir le **Menu d'action système** (sécurité, déconnexion, redémarrage).                   |
+| **Système / Urgence** | **`Ctrl + ⇧ Shift + Esc`** | `⊞` Windows | Ouvrir directement le **Gestionnaire de tâches** pour stopper un programme bloqué.          |
+| **Fenêtres**          | **`Alt + ↹ Tab`**          |  Universel  | **Changer de fenêtre** active en parcourant les applications ouvertes.                      |
+| **Fenêtres**          | **`Alt + F4`**             |  Universel  | **Fermer la fenêtre** active au premier plan.                                               |
+| **Fenêtres**          | **`⌘ + ◂ / ▴ / ▸`**        |  Universel  | **Déplacer et ancrer** la fenêtre à gauche (`◂`), à droite (`▸`) ou en plein écran (`▴`).   |
+| **Bureaux Virtuels**  | **`Ctrl + ⌘ + D`**         | `⊞` Windows | **Ajouter un bureau virtuel** neuf pour organiser son espace de travail.                    |
+| **Bureaux Virtuels**  | **`Ctrl + ⌘ + ◂ / ▸`**     | `⊞` Windows | **Se déplacer** instantanément d'un bureau virtuel à un autre.                              |
+| **Bureaux Virtuels**  | **`Ctrl + ⌘ + F4`**        | `⊞` Windows | **Fermer le bureau virtuel** actif (les fenêtres sont rapatriées sur le bureau précédent).  |
+
+## 📝 Navigation Textuelle de Précision
+
+Lorsqu'un champ de saisie ou un éditeur de texte est actif, déplacer sa main vers la souris pour positionner le curseur entre deux lettres fait perdre un temps considérable. Les touches de navigation permettent de bondir avec une précision chirurgicale :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card-window}
+#### Déplacement Rapide du Curseur {.bi-cursor-text}
+
+- **`◂` `▴` `▾` `▸` (Flèches) :** Déplace le curseur caractère par caractère ou ligne par ligne.
+- **`↸ Start` (*Début / Home*) :** Propulse le curseur tout au **début de la ligne** courante.
+- **`End` (*Fin*) :** Propulse le curseur tout à la **fin de la ligne** courante.
+- **`⇞` (*Page Up*) / `⇟` (*Page Down*) :** Défile verticalement d'un écran entier vers le haut ou vers le bas.
+- **`Ctrl + ◂` ou `Ctrl + ▸` :** Fait **sauter le curseur de mot en mot** au lieu de lettre par lettre !
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card-window}
+#### Sélection au Clavier avec `⇧ Shift` {.bi-bounding-box-circles}
+
+Maintenir la touche **`⇧ Shift`** tout en utilisant n'importe quelle touche de navigation permet de **sélectionner le texte** sur le passage du curseur :
+
+- **`⇧ Shift + ▸` :** Sélectionne le caractère suivant.
+- **`⇧ Shift + End` :** Sélectionne tout depuis le curseur jusqu'à la fin de la ligne.
+- **`Ctrl + ⇧ Shift + ▸` :** **Sélectionne le mot suivant** en entier d'une seule impulsion (idéal avant un `Ctrl + C` ou `Ctrl + X` !).
+:::::
+::::
+:::
+
+### 🧪 Simulateur Interactif : Entraînement à la Navigation Textuelle & Système
+
+Sélectionnez une combinaison de touches pour visualiser son action sur un curseur de texte (`|`) ou sur vos fenêtres :
+
+::: {.card-window}
+#### Simulateur de Saisie & Raccourcis {.bi-terminal}
+
+:::: {.tabs}
+##### Combinaison Clavier {.bi-sliders}
+
+[Raccourci Testé]{.select #shortcut_demo_select options="Ctrl + ▸ : Sauter au mot suivant,Ctrl + ⇧ Shift + ▸ : Sélectionner le mot suivant,↸ Start / End : Bondir en début ou fin de ligne,Ctrl + ⇧ Shift + T : Sauver un onglet fermé par erreur,⌘ + L : Verrouiller son poste en quittant le bureau,Ctrl + ⇧ Shift + Esc : Ouvrir le Gestionnaire de tâches" value="Ctrl + ▸ : Sauter au mot suivant"}
+::::
+
+:::: {#shortcut-sim-terminal .terminal}
+#### Aperçu de l'Action {.bi-terminal}
+::::
+:::
+
+```{ojs}
+//| echo: false
+_shortcutSim = {
+  shortcut_demo_select;
+  const term = aptitek.createTerminal("#shortcut-sim-terminal", { defaultPrompt: false, showCursor: false });
+
+  if (shortcut_demo_select.startsWith("Ctrl + ▸")) {
+    term.writeLine("Avant :  Le |petit manuel informatique d'Aptitek", { type: "muted" });
+    term.writeLine("Action : [Ctrl] + [▸] (Saut d'un mot complet vers la droite)", { type: "info" });
+    term.writeLine("Après :  Le petit |manuel informatique d'Aptitek", { type: "success" });
+  } else if (shortcut_demo_select.startsWith("Ctrl + ⇧ Shift + ▸")) {
+    term.writeLine("Avant :  Le |petit manuel informatique d'Aptitek", { type: "muted" });
+    term.writeLine("Action : [Ctrl] + [⇧ Shift] + [▸] (Saut de mot + Sélection active)", { type: "info" });
+    term.writeLine("Après :  Le [petit]| manuel informatique d'Aptitek  (Mot 'petit' surligné !)", { type: "success" });
+    term.writeLine("💡 Astuce : Enchaînez immédiatement avec Ctrl+X ou Suppr pour remplacer le mot.", { type: "warning" });
+  } else if (shortcut_demo_select.startsWith("↸ Start")) {
+    term.writeLine("Avant :  https://aptitek.io/cours/|informatique", { type: "muted" });
+    term.writeLine("[↸ Start] -> |https://aptitek.io/cours/informatique (Tout au début)", { type: "info" });
+    term.writeLine("[End]     -> https://aptitek.io/cours/informatique| (Tout à la fin)", { type: "success" });
+  } else if (shortcut_demo_select.startsWith("Ctrl + ⇧ Shift + T")) {
+    term.writeLine("[-] Oups ! Vous venez de fermer votre onglet de travail avec Ctrl + W...", { type: "warning" });
+    term.writeLine("Action : [Ctrl] + [⇧ Shift] + [T]", { type: "info" });
+    term.writeLine("✅ [NAVIGATEUR] L'onglet fermé est instantanément restauré avec tout son historique !", { type: "success" });
+  } else if (shortcut_demo_select.startsWith("⌘ + L")) {
+    term.writeLine("Action : [⌘ Super / Windows] + [L]", { type: "info" });
+    term.writeLine("🔒 [SYSTÈME] Écran verrouillé instantanément. Mot de passe requis pour reprendre la session.", { type: "success" });
+    term.writeLine("✓ Réflexe de sécurité n°1 en open-space, en salle de TP ou à la bibliothèque.", { type: "muted" });
+  } else {
+    term.writeLine("Action : [Ctrl] + [⇧ Shift] + [Esc]", { type: "info" });
+    term.writeLine("⚙️ [GESTIONNAIRE DE TÂCHES] Ouverture directe sans passer par l'écran Ctrl+Alt+Del.", { type: "success" });
+    term.writeLine("PID 4812 | Navigateur.exe | CPU: 94% | RAM: 3.2 Go -> Prêt pour 'Fin de tâche'.", { type: "warning" });
+  }
+
+  invalidation.then(() => term.destroy());
+}
+```
