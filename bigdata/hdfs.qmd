@@ -1,0 +1,97 @@
+---
+title: "Stockage Distribué & Autoguérison avec HDFS"
+icon: "🗄️"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Comprendre le découplage NameNode/DataNodes, le dimensionnement des blocs de 128 Mo, le placement Rack-Aware et la résilience automatique face aux pannes matérielles."
+---
+
+Lorsque le volume de données dépasse la capacité d'un serveur unique, acheter un supercalculateur propriétaire (*scale-up*) devient vite hors de prix et crée un point unique de rupture [@manne_scaling_2024]. Inspiré du *Google File System* (GFS) [@ghemawat_gfs_2003], **HDFS** (*Hadoop Distributed File System*) relève ce défi en fédérant des centaines de serveurs standards économiques (*commodity hardware*) où la panne disque ou électrique n'est plus une anomalie rare, mais une certitude quotidienne gérée nativement par le logiciel [@shvachko_hdfs_2010; @malhotra_hdfs_2020].
+
+## 🏗️ Philosophie & Découplage Maître / Esclaves
+
+HDFS sacrifie délibérément les écritures aléatoires à faible latence au profit d'un **débit séquentiel massif** (*streaming data access*) sous le contrat **Write-Once, Read-Many** : une fois écrit et fermé, un fichier est immuable (seuls les ajouts en fin de fichier *append* sont permis), ce qui élimine tout verrouillage concurrent complexe [@shvachko_hdfs_2010; @apache_hdfs_2023].
+
+Son architecture sépare strictement le **plan de contrôle des métadonnées** du **plan de transfert des octets** [@malhotra_hdfs_2020; @apache_hdfs_2023] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### NameNode (Annuaire Linéarisable) [Métadonnées RAM]{.concept-badge .tag-primary} {.bi-journal-bookmark-fill}
+
+Le **NameNode** est le bibliothécaire central : il maintient l'intégralité de l'arborescence des répertoires, les permissions et la cartographie `Fichier → Blocs → DataNodes` directement en **mémoire vive (RAM)** pour servir les requêtes d'index en $O(d_{\text{local}})$ [@apache_hdfs_2020; @wang_checkpointing_2014].
+
+- **Règle cardinale** : les données utilisateur ne transitent **jamais** par le NameNode. Le client lui demande les adresses des blocs, puis dialogue directement en pair-à-pair avec les DataNodes [@malhotra_hdfs_2020].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### DataNodes (Ouvriers de Stockage) [Commodity Hardware]{.concept-badge .tag-success} {.bi-hdd-stack-fill}
+
+Déployés sur chaque machine du cluster, les **DataNodes** stockent physiquement les fragments binaires sous forme de fichiers ordinaires sur leurs disques locaux (JBOD), servent les lectures/écritures en pipeline aux clients et exécutent les ordres de création, suppression ou copie de blocs dictés par le NameNode [@shvachko_hdfs_2010; @malhotra_hdfs_2020].
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### Persistance du NameNode : `fsimage`, `edit log`, Checkpointing & `Safemode`
+
+Comment le NameNode protège-t-il son espace de noms en RAM contre une coupure de courant tout en restant strictement **linéarisable** [@apache_hdfs_2020; @wang_checkpointing_2014] ?
+
+1. **`fsimage` + `edit log`** : toute mutation de métadonnées (`create`, `rename`, `delete`) est immédiatement inscrite de façon séquentielle dans un journal d'audit sur disque (**`edit log`**) avant confirmation au client, tandis que **`fsimage`** représente un cliché consolidé (*snapshot*) de l'annuaire à un instant donné [@wang_checkpointing_2014].
+2. **Checkpointing déporté** : si `edit log` grossissait sans fin, redémarrer le NameNode prendrait des heures de relecture. Un nœud auxiliaire (**`Secondary NameNode`**, **`Checkpoint Node`**, ou en Haute Disponibilité le **`Standby NameNode`** protégé contre le *Split-Brain* par quorum et [jetons de clôture](consensus.qmd)) télécharge périodiquement `fsimage` et `edit log`, les fusionne en CPU/RAM de son côté, puis renvoie une nouvelle `fsimage` compactée au NameNode actif [@wang_checkpointing_2014; @apache_hdfs_2020].
+3. **État `Safemode` (Disponibilité sacrifiée pour la Sécurité)** : au démarrage ou lors d'une anomalie critique, le NameNode entre automatiquement en **`Safemode`** (lecture seule stricte). Il refuse toute modification et toute re-réplication hâtive tant que les DataNodes n'ont pas validé un seuil minimal (ex. 99,9 %) de leurs **rapports de blocs** (*Block Reports*) [@apache_hdfs_2020].
+:::
+
+## 📦 Pourquoi des Blocs Géants de 128 Mo ? (Et le Piège des Petits Fichiers)
+
+Là où un système de fichiers Linux classique (`ext4`, voir le cours sur les [inodes et blocs Linux](../linux/inodes-et-liens.qmd)) manipule des blocs de **4 Ko**, HDFS découpe chaque fichier en unités massives de **128 Mo** par défaut (`dfs.blocksize`) — un fichier de 300 Mo donne ainsi deux blocs de 128 Mo et un dernier bloc de 44 Mo qui n'occupe que ses 44 Mo réels sur disque [@malhotra_hdfs_2020; @apache_hdfs_2023].
+
+Ce choix découle d'un calcul physique simple sur le **temps de positionnement mécanique** (*seek time*) [@malhotra_hdfs_2020] :
+
+$$t_{\text{seek}} \approx 10\text{ ms}, \quad \text{Débit disque} \approx 100\text{ Mo/s} \implies \text{Pour que } \frac{t_{\text{seek}}}{t_{\text{transfert}}} \le 1\%, \text{ il faut } t_{\text{transfert}} \ge 1\text{ s} \iff \text{Bloc} \ge 100\text{ Mo}$$
+
+::: {.callout-warning}
+#### Le « Small File Problem » : le talon d'Achille de la RAM du NameNode
+
+Chaque fichier, répertoire et bloc occupe environ **150 octets** de métadonnées dans la RAM du NameNode [@niazi_smallfiles_2017; @gummalla_smallfiles_2019]. Stocker 100 Go sous forme d'un seul fichier répliqué 3 fois consomme moins de **400 Ko** de RAM sur le NameNode ; mais stocker ces mêmes 100 Go sous forme de **50 millions de petits fichiers IoT de 2 Ko** engloutit plus de **15 Go de RAM** d'index et transforme les lectures séquentielles en millions de sauts de têtes disques (*seeks*) catastrophiques [@gummalla_smallfiles_2019] !
+:::
+
+## 🛡️ Topologie Rack-Aware et Autoguérison Active
+
+Pour survivre aux pannes sans intervention humaine, HDFS duplique chaque bloc selon un facteur de réplication par défaut **`dfs.replication = 3`** guidé par la topologie physique des baies du centre de données (**Rack-Awareness**) [@shvachko_hdfs_2010; @malhotra_hdfs_2020] :
+
+1. **Réplique 1** : écrite sur le DataNode local au client (ou dans la même baie **Rack A**) pour minimiser la latence initiale.
+2. **Réplique 2** : envoyée en pipeline à travers le switch vers une **baie physiquement distincte (Rack B)** — garantissant la survie si l'alimentation ou le switch du Rack A grille intégralement.
+3. **Réplique 3** : placée sur un **second DataNode de cette même baie distante (Rack B)** afin d'éviter un deuxième transfert coûteux sur le cœur de réseau inter-racks [@malhotra_hdfs_2020; @apache_hdfs_2023].
+
+| Mécanisme d'autoguérison              | Menace physique ciblée                                                                                | Réaction automatisée d'HDFS                                                                                                                                                                           |
+| :------------------------------------ | :---------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Heartbeats** *(toutes les 3 s)*     | Crash serveur, coupure réseau ou arrêt processus DataNode                                             | Après **> 10 min** sans signal, le NameNode déclare le nœud mort et ordonne aux DataNodes sains de copier les blocs tombés sous `R = 3` [@malhotra_hdfs_2020; @apache_hdfs_2023].                     |
+| **Checksums CRC32** + *Block Scanner* | Corruption silencieuse de secteurs magnétiques (*bit-rot*) [@chen_scanners_2016; @lebdaoui_hdfs_2024] | Le client détecte la somme de contrôle invalide à la lecture, bascule de façon transparente sur une autre réplique et déclenche le remplacement du bloc vicié en tâche de fond [@malhotra_hdfs_2020]. |
+| **Placement 2-Racks**                 | Disjonction électrique ou panne du commutateur *Top-of-Rack*                                          | Les blocs restent immédiatement accessibles en lecture depuis la seconde baie survivante [@shvachko_hdfs_2010].                                                                                       |
+
+## 🧪 Simulateur : Topologie HDFS, Pannes Physiques & Autoguérison
+
+Injectez des pannes réelles sur ce cluster HDFS à deux baies pour observer les réactions coordonnées du NameNode et des DataNodes :
+
+::: {.card-window}
+#### Simulateur de Pannes HDFS : Crash DataNode, Bit-Rot, Panne de Baie & Safemode {.bi-hdd-network-fill}
+
+:::: {#hdfs-cluster-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createHdfsClusterSimulator("#hdfs-cluster-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **Zéro transit de données par le maître** : le `NameNode` gouverne l'annuaire en RAM (`fsimage` + `edit log` consolidés par checkpointing), tandis que les clients lisent/écrivent en flux tendu directement sur les `DataNodes` [@wang_checkpointing_2014; @malhotra_hdfs_2020].
+- **Blocs de 128 Mo = amortissement du *seek time* + sobriété mémoire** : des blocs géants réduisent le coût d'accès mécanique à moins de 1 % et préservent la RAM du NameNode contre l'asphyxie des petits fichiers [@niazi_smallfiles_2017].
+- **Triple bouclier d'autoguérison** : le placement **Rack-Aware** (2 baies pour 3 copies), les **Heartbeats** et les **Checksums** transforment un parc de disques faillibles en un stockage durable et auto-réparateur [@shvachko_hdfs_2010; @chen_scanners_2016].

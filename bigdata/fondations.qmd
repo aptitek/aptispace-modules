@@ -1,0 +1,133 @@
+---
+title: "Fondations : Théorème CAP, Délais Réseau & Cohérence"
+icon: "🌐"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Distinguer goulots matériels et surcoûts système, démystifier le théorème CAP formel et piloter le spectre de cohérence par la sensibilité au délai O(d) vs O(1)."
+---
+
+Concevoir une plateforme Big Data ne consiste pas simplement à empiler des serveurs : dès que l'état d'une application franchit les frontières d'une machine unique, la vitesse de la lumière dans la fibre optique, les pertes de paquets et la défaillance statistique des composants deviennent les lois fondamentales de votre architecture [@romero_hardware_2024; @kleppmann_critique_2015].
+
+## ⚡ Goulots d'Étranglement Matériels vs Surcoûts Système
+
+Avant d'analyser les algorithmes distribués, il faut distinguer rigoureusement deux freins que l'on confond trop souvent en production : la **limite physique d'un composant** (*hardware bottleneck*) et le **coût d'orchestration logicielle** (*system overhead*) [@romero_hardware_2024].
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Goulots Matériels (Bottlenecks) [Physique]{.concept-badge .tag-danger} {.bi-cpu}
+
+Un goulot matériel est un plafond capacitaire physique d'un composant qui bride le débit global et laisse les autres ressources sous-utilisées (par exemple des cœurs CPU oisifs attendant le disque ou le réseau) [@romero_hardware_2024] :
+
+1. **Latence & bande passante réseau** : délai physique de propagation inter-nœuds.
+2. **E/S de stockage (Storage I/O)** : accès disque local ou amplifié par un montage réseau (NFS).
+3. **Bus mémoire & caches CPU** : saturation de la bande passante RAM lors d'accès aléatoires (voir le cours sur la [hiérarchie des mémoires](../architecture/memoires.qmd)).
+4. **Fréquence CPU / GPU** : plafond d'instructions par seconde en parallélisme de tâches.
+5. **Bridage thermique (*Thermal Throttling*)** : baisse forcée de fréquence pour dissiper la chaleur sans détruire la puce.
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Surcoûts Système (Overheads) [Orchestration]{.concept-badge .tag-warning} {.bi-gear-wide-connected}
+
+Un surcoût désigne le temps CPU et l'espace RAM consommés non pas pour calculer le résultat métier, mais pour **coordonner, isoler et synchroniser** l'exécution [@romero_hardware_2024] :
+
+- **Communication inter-processus (IPC)** et sérialisation des structures en octets réseau.
+- **Synchronisation bloquante** : attente de verrous distribués (*locks*), quorums ou barrières d'étapes.
+- **Changement de contexte OS (*Context Switching*)** : sauvegarde et restauration explicites des registres processeur, du pointeur d'instruction et de la table de mémoire virtuelle lors du passage d'un thread à un autre.
+:::::
+::::
+:::
+
+| Critère d'analyse       | Goulot d'Étranglement (*Bottleneck*)                                           | Surcoût Système (*Overhead*)                                                     |
+| :---------------------- | :----------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| **Nature**              | Plafond physique d'un composant matériel [@romero_hardware_2024]               | Charge algorithmique et système dédiée à la coordination [@romero_hardware_2024] |
+| **Symptôme typique**    | Sous-utilisation des autres composants (CPU en *iowait*)                       | Consommation élevée de cycles CPU/RAM sans progrès applicatif                    |
+| **Remède d'ingénierie** | *Scale-up* matériel, équilibrage de charge (*scale-out*) [@manne_scaling_2024] | Refactoring sans verrous, réduction des barrières synchrones                     |
+
+## 🧩 Démystifier le Théorème CAP : Au-delà du « Pick Any Two »
+
+Issu de la conjecture d'Eric Brewer et démontré formellement par Seth Gilbert et Nancy Lynch [@gilbert_brewers_2002; @brewer_cap_2012], le **théorème CAP** est souvent résumé par le slogan *« Choisissez deux propriétés sur trois entre Cohérence (C), Disponibilité (A) et Tolérance aux partitions (P) »*. Comme le démontre Martin Kleppmann [@kleppmann_critique_2015], cette formule induit les architectes en erreur car les définitions mathématiques du théorème divergent radicalement du sens opérationnel utilisé en production.
+
+::: {.row gap=4 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### C — Linéarisabilité [Safety]{.concept-badge .tag-primary} {.bi-bullseye}
+
+Dans CAP, **C** ne désigne **pas** la cohérence ACID d'une base relationnelle (qui porte sur des invariants métiers multi-tables), ni même la *1-Copy Serializability* (1SR). Il désigne strictement la **linéarisabilité** (*atomic consistency*) : chaque opération sur un objet unique doit sembler prendre effet instantanément à un point atomique du temps réel, interdisant toute lecture obsolète (*stale read*) [@kleppmann_critique_2015].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### A — Vivacité sans SLA [Liveness]{.concept-badge .tag-warning} {.bi-clock-history}
+
+En entreprise, la disponibilité se mesure via un **SLA** (ex. *99,9 % de réponses en moins de 200 ms*). Chez Gilbert et Lynch, **A** exige seulement que toute requête envoyée à un nœud *non défaillant* finisse par recevoir une réponse valide — **même après trois semaines d'attente** ! Pis encore : un système qui plante intégralement lors d'une coupure réseau satisfait trivialement ce *A* formel puisqu'il ne reste aucun « nœud non défaillant » [@kleppmann_critique_2015].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### P — Réalité Physique [Hypothèse]{.concept-badge .tag-danger} {.bi-diagram-3}
+
+Une partition réseau (câble sectionné, routeur saturé, perte de paquets) n'est **pas un choix d'architecture** que l'on peut désactiver dans un fichier de configuration : c'est une propriété physique du réseau sous-jacent. Un système dit « CA » signifie simplement un algorithme conçu sous l'hypothèse irréaliste qu'aucun paquet réseau ne sera jamais perdu [@brewer_cap_2012; @kleppmann_critique_2015].
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### Pour aller plus loin : Liens Fair-Loss et Propriétés Opportunistes de Kleppmann
+
+L'impossibilité stricte démontrée par Gilbert et Lynch repose sur l'existence de **partitions de durée infinie** [@gilbert_brewers_2002; @kleppmann_critique_2015]. Or, les réseaux réels se modélisent plus fidèlement par des **liens à pertes équitables** (*fair-loss links*) : des paquets peuvent être perdus temporairement, mais si l'émetteur retransmet suffisamment longtemps, le message finit par passer dès la réparation du lien. Sur de tels liens, une partition équivaut à un **délai réseau $d$ très élevé mais fini** ; des algorithmes linéarisables sans chef (comme le registre ABD) préservent à la fois sécurité et terminaison en suspendant simplement la requête jusqu'à résolution de la coupure [@kleppmann_critique_2015].
+
+Pour formaliser ce qu'un système garantit quand le réseau fonctionne normalement, Kleppmann introduit pour toute propriété $\mathcal{P}$ sa variante **opportuniste** $\mathcal{P}'$ sur une exécution $E$ [@kleppmann_critique_2015] :
+
+$$\forall E : (E \models \mathcal{P}') \iff \big(\text{partitioned}(E) \lor (E \models \mathcal{P})\big)$$
+
+Autrement dit, $\mathcal{P}'$ exige $\mathcal{P}$ uniquement sur les exécutions sans perte définitive de messages. Kleppmann prouve alors un résultat fondamental : il est possible de garantir une **cohérence éventuelle opportuniste** avec terminaison en présence de partitions, mais une **linéarisabilité opportuniste avec terminaison immédiate** demeure mathématiquement impossible car un nœud local ne peut jamais deviner instantanément si le silence d'un pair résulte d'une lenteur passagère ou d'une partition durable [@kleppmann_critique_2015].
+:::
+
+## 🌈 Le Spectre de Cohérence et la Sensibilité au Délai $O(d)$
+
+Puisque les partitions réelles se manifestent comme des pics continus du **délai réseau $d$** (incluant propagation, files d'attente des switchs et retransmissions TCP), Kleppmann propose de remplacer CAP par le **cadre de sensibilité au délai** (*delay-sensitivity framework*) [@kleppmann_critique_2015] :
+
+- **Opérations sensibles au délai $O(d)$** : exigent une coordination réseau synchrone (consensus Raft/Paxos [@ongaro_raft_2014], lecture/écriture par quorum). Si $d$ explose lors d'un incident, la latence explose proportionnellement et viole le SLA.
+- **Opérations indépendantes du délai $O(1)$** : s'exécutent intégralement sur la réplique locale sans attendre d'acquittement distant, autorisant même le fonctionnement déconnecté (*offline-first*) [@kleppmann_critique_2015; @vogels_eventually_2009].
+
+| Modèle de cohérence        | Garantie formelle offerte à l'application                                                                                  | Latence Écriture     | Latence Lecture      |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :------------------- | :------------------- |
+| **Linéarisabilité**        | Récence temps réel stricte sur copie atomique unique [@kleppmann_critique_2015]                                            | $O(d)$               | $O(d)$               |
+| **Cohérence Séquentielle** | Ordre global unique respectant l'ordre programme de chaque client, sans horloge temps réel [@kleppmann_critique_2015]      | $O(d)$ *(ou $O(1)$)* | $O(1)$ *(ou $O(d)$)* |
+| **Cohérence Causale**      | Toute opération ayant *causé* une autre est vue avant elle par tous les nœuds [@lloyd_cops_2011; @kleppmann_critique_2015] | **$O(1)$**           | **$O(1)$**           |
+| **Cohérence Éventuelle**   | Convergence asymptotique des répliques lorsque les écritures cessent [@vogels_eventually_2009]                             | $O(1)$               | $O(1)$               |
+
+::: {.callout-important}
+#### L'optimum théorique sans coordination : la Cohérence Causale
+
+La **cohérence causale** est le modèle de cohérence le plus fort mathématiquement capable de garantir à la fois des lectures et des écritures en **$O(1)$** [@kleppmann_critique_2015]. Dans une topologie multi-datacenter où $d_{\text{local}} \ll d_{\text{remote}}$, des architectures comme **COPS** [@lloyd_cops_2011] assurent la linéarisabilité au sein de chaque centre de données en $O(d_{\text{local}})$ tout en répliquant de manière causalement cohérente à travers le WAN : l'utilisateur obtient une réponse locale quasi instantanée même si le câble sous-marin transatlantique est coupé !
+:::
+
+## 🧪 Simulateur : Partition WAN, Contrat SLA & Sensibilité au Délai
+
+Testez concrètement comment une congestion ou une coupure inter-datacenter affecte les quatre grands niveaux de cohérence face à un budget SLA réaliste :
+
+::: {.card-window}
+#### Laboratoire Interactif : Délai Réseau $d$, Violations SLA & Modèles de Cohérence {.bi-sliders}
+
+:::: {#cap-delay-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createCapDelaySimulator("#cap-delay-sim")
+```
+
+## 🎯 Les 3 Règles d'Or à Retenir
+
+1. **Mesurez la disponibilité par le SLA, jamais comme un booléen abstrait** : une requête qui répond après 15 secondes de retransmission TCP valide le *A* théorique de CAP mais constitue bel et bien une panne en production [@kleppmann_critique_2015].
+2. **Traitez les partitions comme une dérive continue du délai $d$** : demandez-vous systématiquement quelles routes critiques de votre architecture dépendent de $O(d_{\text{remote}})$ et lesquelles tournent localement en $O(1)$ ou $O(d_{\text{local}})$ [@romero_hardware_2024; @kleppmann_critique_2015].
+3. **Visez la cohérence causale dès que la coordination WAN est prohibitive** : elle préserve la logique métier (*lecture de ses propres écritures*, ordre *question $\to$ réponse*) sans payer la taxe synchrone d'un consensus global [@lloyd_cops_2011; @kleppmann_critique_2015].

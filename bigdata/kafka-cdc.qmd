@@ -1,0 +1,105 @@
+---
+title: "Journaux d'Événements : Apache Kafka, CDC & Contrats de Schéma"
+icon: "📡"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Découpler producteurs et consommateurs à l'échelle avec le journal distribué Apache Kafka, capturer les mutations OLTP sans charge via le CDC (WAL) et verrouiller les schémas Avro/Protobuf."
+---
+
+Jusqu'ici, nos moteurs ([MapReduce](mapreduce.qmd), [Apache Spark](spark.qmd)) travaillaient sur des fichiers déjà posés au repos. Mais en entreprise, les commandes, paiements et clics naissent **à chaque milliseconde** dans des dizaines de microservices et de bases opérationnelles. Comment transporter ces millions d'événements en continu sans coupler tous les systèmes dans un plat de spaghettis fragile, ni perdre le moindre centime lors d'un crash serveur [@kreps_kafka_2011; @kleppmann_ddia_2017] ?
+
+## 📜 Apache Kafka : Du Courtier Éphémère au Journal d'Engagement Distribué
+
+Les files de messages traditionnelles (RabbitMQ, ActiveMQ) suppriment un message dès qu'un consommateur l'acquitte : impossible pour un second service (ex. détection de fraude + ingestion analytique) ou pour un job en convalescence de relire l'historique ! Créé chez LinkedIn par Jay Kreps, Neha Narkhede et Jun Rao [@kreps_kafka_2011], **Apache Kafka** remplace la file volatile par un **journal d'engagement distribué immuable (*Distributed Commit Log*)** :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### Topics, Partitions & Offsets [Ordre Local]{.concept-badge .tag-primary} {.bi-list-ol}
+
+Un **Topic** est découpé en $P$ **Partitions** réparties sur les serveurs (*Brokers*). Chaque partition est un fichier strictement *append-only* où chaque message reçoit un entier séquentiel immuable : son **`Offset`** [@kreps_kafka_2011].
+
+- **Loi d'ordre fondamentale** : Kafka garantit l'ordre exact des événements **uniquement à l'intérieur d'une même partition** (en hachant une clé métier comme `customer_id`).
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Consumer Groups & Lag [Parallélisme]{.concept-badge .tag-info} {.bi-people-fill}
+
+Les lecteurs s'organisent en **Consumer Groups** indépendants qui mémorisent simplement leur dernier `offset` lu (autorisant un rejeu historique par simple retour arrière de l'offset !).
+
+- Au sein d'un même groupe, **une partition ne peut être lue que par un seul consommateur à la fois** : sur un topic à 4 partitions, un 5e consommateur reste **100 % oisif** ! L'écart entre la tête d'écriture et la lecture forme le **`Consumer Lag`**.
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### `ISR`, `acks=all` & KRaft [Durabilité]{.concept-badge .tag-success} {.bi-shield-lock-fill}
+
+Chaque partition possède un Broker **Leader** et des répliques synchrones (**`ISR` — *In-Sync Replicas***) coordonnées nativement en [consensus Raft](consensus.qmd) via **KRaft** (remplaçant ZooKeeper [@mccabe_kip500_2019]).
+
+- Régler `acks=1` expose à une perte de messages validés si le Leader brûle avant réplication ; en production critique, combinez **`replication.factor=3`**, **`min.insync.replicas=2`** et **`acks=all`**.
+:::::
+::::
+:::
+
+::: {.callout-note collapse="true"}
+#### Pourquoi Kafka sature-t-il une carte réseau 10 Gb/s sur de simples disques ? (`Page Cache` + `Zero-Copy`)
+
+Kafka n'accumule pas les messages dans le tas Java (*JVM Heap*) [@kreps_kafka_2011] : il écrit séquentiellement dans le **Page Cache du noyau Linux** et délègue l'envoi réseau à l'appel système **`sendfile()`** (*Zero-Copy*). Les octets glissent directement du cache noyau vers le tampon de la carte réseau par DMA sans jamais être copiés dans l'espace utilisateur JVM, atteignant des débits de plusieurs gigaoctets par seconde ! De plus, au-delà de la rétention temporelle (ex. 7 jours), la **Log Compaction** permet de ne conserver éternellement que la toute dernière valeur connue de chaque clé.
+:::
+
+## 🔄 Change Data Capture (CDC) : Bannir le Polling SQL grâce au Journal `WAL`
+
+Comment répliquer en temps réel les mutations d'une base opérationnelle PostgreSQL ou MySQL vers Kafka sans l'écraser sous les requêtes ? Deux approches s'opposent radicalement [@debezium_doc_2026; @kleppmann_ddia_2017] :
+
+| Critère opérationnel             | **Polling par Requêtes SQL** (`WHERE updated_at > T`)             | **Log-Based CDC** (*Debezium sur `WAL` / `binlog`*) [@debezium_doc_2026] |
+| :------------------------------- | :---------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| **Impact sur la base OLTP**      | **Lourd** (scans répétés concurrençant les clients en ligne)      | **Quasi nul** (lecture séquentielle passive du journal binaire)          |
+| **Détection des `DELETE`**       | **AVEUGLE** (une ligne supprimée disparaît sans laisser de trace) | **Totale** (émet un événement `op="d"` suivi d'un *Tombstone*)           |
+| **États intermédiaires rapides** | Perdus entre deux scrutations (ex. toutes les 5 min)              | **100 % capturés** dans l'ordre exact des transactions validées          |
+
+::: {.callout-warning}
+#### Le piège de la Double Écriture (Dual-Write) et le patron « Transactional Outbox »
+
+Un anti-pattern fréquent dans un microservice consiste à valider une commande dans PostgreSQL, *puis* à appeler `producer.send()` vers Kafka dans le code applicatif [@richardson_microservices_2018]. Si le conteneur plante entre les deux lignes de code, la base et Kafka divergent définitivement !
+
+Le patron **Transactional Outbox** élimine ce risque sans transaction distribuée lourde : le microservice insère la commande **et** l'événement à publier dans une table locale `outbox` au sein de la **même transaction ACID SQL**. **Debezium** relève ensuite le journal `WAL` de la table `outbox` et pousse l'événement dans Kafka avec garantie de livraison [@richardson_microservices_2018; @debezium_doc_2026].
+:::
+
+## 📐 Sérialisation Binaire & Pare-Feu Schema Registry
+
+Publier du JSON brut dans Kafka répète les noms de colonnes des milliards de fois et laisse n'importe quelle mise à jour applicative renommer un champ ou changer un type (`amount: 42.50` $\to$ `"42,50 €"`), faisant exploser les pipelines en aval (*Poison Pill*) [@confluent_schemaregistry_2026].
+
+Les architectures industrielles associent un format binaire compact (**Apache Avro** orienté lignes ou **Protocol Buffers**) à un **Schema Registry** central [@confluent_schemaregistry_2026] :
+
+1. **Zéro répétition des clés** : le producteur enregistre son schéma une seule fois et ne préfixe chaque message binaire que d'un octet magique suivi d'un **`Schema ID` sur 4 octets**.
+2. **Validation préventive de compatibilité** : avant d'autoriser une nouvelle version de schéma, le registre vérifie mathématiquement la règle d'évolution :
+   - **`BACKWARD`** *(recommandé pour le Lakehouse)* : les nouveaux consommateurs peuvent toujours relire les anciens messages déjà présents dans le journal (ex. ajout d'un champ optionnel avec valeur par défaut).
+   - **`FORWARD`** : les anciens consommateurs continuent de fonctionner face aux nouveaux messages.
+   - **`FULL`** : garantit simultanément les deux sens, bloquant par une erreur HTTP `409` toute modification destructrice **avant** qu'un seul octet vicié n'entre dans Kafka [@confluent_schemaregistry_2026] !
+
+## 🧪 Simulateur : Cluster Kafka, Crash Leader ISR, Consumer Lag & CDC
+
+Expérimentez la perte de données en `acks=1` face à `acks=all`, ajustez le nombre de consommateurs sur 4 partitions et observez le blocage d'une mutation cassante par le *Schema Registry* :
+
+::: {.card-window}
+#### Simulateur Événementiel : Quorums ISR, Consumer Group Lag, CDC WAL & Schema Registry {.bi-broadcast-pin}
+
+:::: {#kafka-cdc-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createKafkaCdcSimulator("#kafka-cdc-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **Une partition = une file ordonnée = au plus un lecteur actif par Consumer Group** : dimensionnez toujours le nombre de partitions à la cible maximale de parallélisme souhaitée [@kreps_kafka_2011].
+- **Exigez le triptyque `RF=3`, `min.insync.replicas=2` et `acks=all`** dès qu'une perte d'événement est inacceptable en cas de défaillance matérielle du Leader [@kreps_kafka_2011; @mccabe_kip500_2019].
+- **Couplez CDC sur journal (`WAL` + Outbox) et Schema Registry (`BACKWARD`/`FULL`)** : vous capturez 100 % des mutations (y compris les `DELETE`) sans fatiguer l'OLTP et bloquez les dérives de schéma à la source [@debezium_doc_2026; @confluent_schemaregistry_2026].

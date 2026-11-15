@@ -1,0 +1,114 @@
+---
+title: "Coordination Distribuée : Quorums, Raft & Jetons de Clôture"
+icon: "🧭"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Garantir l'accord entre serveurs faillibles grâce aux quorums stricts (W + R > N), à l'élection de leader Raft et aux jetons de clôture (Fencing Tokens) contre le Split-Brain."
+---
+
+Dans le chapitre sur les [Fondations distribuées](fondations.qmd), nous avons vu que les opérations linéarisables paient une taxe réseau $O(d)$ parce qu'elles exigent une **coordination synchrone** entre répliques [@kleppmann_critique_2015]. Concrètement, comment plusieurs serveurs qui ne partagent aucune horloge physique fiable parviennent-ils à se mettre d'accord sur une valeur unique, à élire un chef unique après un crash et à empêcher deux nœuds de se croire chefs en même temps (**Split-Brain**) [@kleppmann_ddia_2017] ?
+
+## ⚖️ Réplication Sans Chef et la Loi Mathématique des Quorums ($W + R > N$)
+
+L'approche la plus directe, popularisée par **Amazon Dynamo** [@decandia_dynamo_2007], supprime tout nœud maître : le client envoie lui-même ses écritures et ses lectures en parallèle aux $N$ répliques d'une donnée.
+
+- Une écriture est confirmée dès que **$W$ répliques** l'acquittent.
+- Une lecture sonde **$R$ répliques** en parallèle et retient la valeur portant le numéro de version le plus récent (tout en réparant en arrière-plan les répliques en retard par **Read Repair** [@decandia_dynamo_2007]).
+
+Pour garantir qu'un lecteur tombe sur **au moins une réplique** possédant la dernière écriture validée, le principe des tiroirs impose l'inégalité de **quorum strict** [@decandia_dynamo_2007; @kleppmann_ddia_2017] :
+
+$$W + R > N$$
+
+::: {.row gap=4 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### Quorum Équilibré [Standard]{.concept-badge .tag-primary} {.bi-intersect}
+
+Avec $N = 5$, choisir **$W = 3, R = 3$** ($3 + 3 = 6 > 5$) tolère jusqu'à **2 serveurs en panne** aussi bien en lecture qu'en écriture tout en garantissant le chevauchement d'au moins une réplique à jour [@kleppmann_ddia_2017].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Quorum Asymétrique [Lecture Rapide]{.concept-badge .tag-info} {.bi-lightning-fill}
+
+Choisir **$W = 5, R = 1$** ($5 + 1 = 6 > 5$) permet de lire sur une seule réplique locale ultra-rapide, mais la moindre panne d'un seul serveur bloque 100 % des écritures !
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Sloppy Quorum [Haute Dispo]{.concept-badge .tag-warning} {.bi-arrow-left-right}
+
+Si une partition isole les répliques attitrées, Dynamo accepte d'écrire temporairement sur un voisin de secours (**Hinted Handoff**) ou abaisse $W + R \le N$ : la disponibilité écriture est sauvée en $O(1)$, au prix de **lectures obsolètes (*stale reads*)** [@decandia_dynamo_2007].
+:::::
+::::
+:::
+
+## 🗳️ Consensus Distribué : De Paxos à l'Élection de Leader Raft
+
+Les quorums de type Dynamo ne suffisent pas lorsqu'il faut ordonner strictement une séquence d'opérations non commutatives (élire un unique maître, attribuer une partition ou valider un journal de transactions sans divergence) [@kleppmann_ddia_2017]. Historiquement résolu par **Paxos** de Leslie Lamport [@lamport_paxos_2001] (et **ZAB** dans **Apache ZooKeeper** [@hunt_zookeeper_2010]), le problème du **consensus distribué** a été reformulé de manière limpide par Diego Ongaro et John Ousterhout avec l'algorithme **Raft** [@ongaro_raft_2014].
+
+Raft découpe le temps en **mandats numérotés monotones (*Terms*)** qui jouent le rôle d'horloge logique sur un cluster impair ($2f + 1$ nœuds pour tolérer $f$ pannes) [@ongaro_raft_2014] :
+
+1. **Élection du Leader (`RequestVote`)** : chaque *Follower* attend un battement de cœur périodique du *Leader*. Si un délai aléatoire (*election timeout*, 150–300 ms) expire sans signal, le nœud incrémente son `Term`, passe *Candidate* et demande le vote de ses pairs. Un nœud ne vote qu'**une seule fois par `Term`** et uniquement pour un candidat dont le journal est au moins aussi à jour que le sien : une majorité stricte ($\lfloor N/2 \rfloor + 1$) ne peut donc élire **qu'un seul Leader par mandat** [@ongaro_raft_2014].
+2. **Réplication du Journal (`AppendEntries`)** : toutes les écritures passent par le *Leader*, qui les ajoute à son journal local et les diffuse aux *Followers*. Une entrée n'est déclarée **engagée (*committed*)** et appliquée à la machine à états qu'une fois écrite sur le disque d'une majorité de nœuds [@ongaro_raft_2014].
+
+::: {.callout-note collapse="true"}
+#### Pourquoi un cluster de consensus utilise toujours un nombre IMPAIR de nœuds (3 ou 5, jamais 4) ?
+
+La tolérance aux pannes dépend du seuil de majorité stricte $\lfloor N/2 \rfloor + 1$ [@ongaro_raft_2014] :
+
+- Avec **$N = 3$**, la majorité vaut **2** $\implies$ tolère **1 nœud mort**.
+- Avec **$N = 4$**, la majorité vaut **3** $\implies$ ne tolère **toujours qu'1 seul nœud mort** (perdre 2 nœuds sur 4 laisse 2 survivants, incapables d'atteindre 3 votes), tout en ralentissant chaque quorum d'écriture !
+- Avec **$N = 5$**, la majorité vaut **3** $\implies$ tolère **2 nœuds morts simultanément**.
+:::
+
+## 🛡️ Le Piège Mortel du Split-Brain et les Jetons de Clôture (Fencing Tokens)
+
+Dans les systèmes distribués (qu'il s'agisse du NameNode [HDFS](hdfs.qmd) en Haute Disponibilité, d'un exécuteur lent ou d'un verrou de catalogue Lakehouse), on protège souvent une ressource partagée à l'aide d'un **verrou assorti d'un bail temporel (*Lease / TTL*)** [@kleppmann_locking_2016].
+
+Or, comme le démontre Martin Kleppmann [@kleppmann_locking_2016], **un verrou temporel seul ne protège jamais l'intégrité des données** sur un réseau asynchrone ou un moteur à ramasse-miettes (JVM) :
+
+1. Le **Client 1** acquiert un bail de 10 secondes, prépare son écriture, puis subit une **pause *Stop-the-World* du Garbage Collector JVM de 15 secondes** (ou un engorgement TCP).
+2. À $t = 10\text{ s}$, le bail expire : le coordinateur croit le Client 1 mort et attribue légitimement le verrou au **Client 2**, qui écrit sa nouvelle version `v2` à $t = 12\text{ s}$.
+3. À $t = 15\text{ s}$, le processeur du **Client 1** reprend son fil d'exécution exactement là où il s'était figé : persuadé de détenir encore le verrou, il expédie son écriture retardée `v1` au stockage et **écrase silencieusement `v2`** (*Dirty Write*) [@kleppmann_locking_2016] !
+
+| Approche de verrouillage               | Réaction face à un client « zombie » réveillé après pause GC                                                                                                                                           | Intégrité des données |
+| :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
+| **Bail temporel nu (*Lease / TTL*)**   | Le stockage ignore tout de l'expiration du bail et accepte aveuglément l'écriture en retard [@kleppmann_locking_2016]                                                                                  | **Corrompue**         |
+| **Jeton de Clôture (*Fencing Token*)** | Chaque acquisition de verrou délivre un entier monotone croissant (`token = 33`, puis `34`). Le stockage mémorise `max_token = 34` et **rejette atomiquement** toute requête portant un jeton $< 34$ ! | **100 % Garantie**    |
+
+::: {.callout-important}
+#### L'omniprésence du Fencing dans tout l'écosystème Big Data
+
+Ce mécanisme explique à lui seul l'architecture des briques que vous croiserez dans la suite du cours :
+
+- **HDFS Haute Disponibilité** : le *Standby NameNode* incrémente un numéro d'époque (`epoch`) sur le *Quorum Journal Manager* (QJM), qui clôture instantanément tout ancien NameNode actif redevenu joignable.
+- **Apache Kafka (KRaft)** : chaque élection de partition incrémente une `Leader Epoch` interdisant aux anciens leaders isolés de corrompre les répliques [@mccabe_kip500_2019].
+- **Data Lakehouse** : c'est l'absence de jeton de clôture vérifié par le stockage qui provoque la corruption par expiration de bail *Hive MetaStore* étudiée dans le chapitre [Data Lakehouse](datalakehouse.qmd) !
+:::
+
+## 🧪 Simulateur : Quorums, Élection Raft & Attaque Zombie par Pause GC
+
+Manipulez les seuils $W$ et $R$ sur 5 répliques, puis déclenchez un crash de Leader Raft et une pause GC pour comparer un verrou naïf avec un jeton de clôture :
+
+::: {.card-window}
+#### Laboratoire de Coordination : Quorum W+R>N, Mandats Raft & Fencing Tokens {.bi-shield-shaded}
+
+:::: {#consensus-fencing-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createConsensusFencingSimulator("#consensus-fencing-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **$W + R > N$ garantit la fraîcheur sans chef** : dès que la somme des quorums d'écriture et de lecture excède le nombre total de répliques, les deux sous-ensembles partagent au moins un témoin à jour [@decandia_dynamo_2007; @kleppmann_ddia_2017].
+- **Raft ordonne le temps par mandats (`Terms`) et majorités impaires** : un cluster de 5 nœuds survit à 2 pannes simultanées sans jamais élire deux leaders dans le même mandat [@ongaro_raft_2014].
+- **Ne faites jamais confiance au temps écoulé pour protéger vos écritures** : face aux pauses GC et aux délais réseau, seul un **Fencing Token** monotone validé côté stockage neutralise les écritures zombies [@kleppmann_locking_2016].

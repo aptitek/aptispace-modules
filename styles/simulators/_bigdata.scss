@@ -1,0 +1,558 @@
+/* ==========================================================================
+   _bigdata.scss
+   Système visuel unifié pour les simulateurs interactifs Big Data & Pannes Distribuées.
+   100 % tokens Solarized (zéro hex codé en dur, zéro style inline).
+   ========================================================================== */
+
+.bd-sim {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: var(--font-sans);
+  color: var(--sol-base00);
+}
+
+/* Barre de scénarios / injections de pannes */
+.bd-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.75rem 0.9rem;
+  background: var(--sol-base2);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.35);
+  border-radius: 8px;
+}
+
+.bd-toolbar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sol-base01);
+  margin-right: 0.25rem;
+}
+
+.bd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.4);
+  background: var(--sol-base3);
+  color: var(--sol-base00);
+  font-family: var(--font-code);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+
+  &:hover {
+    border-color: var(--sol-blue);
+    color: var(--sol-blue);
+  }
+
+  &.is-active {
+    background: rgba(var(--sol-blue-rgb), 0.15);
+    border-color: var(--sol-blue);
+    color: var(--sol-blue);
+  }
+
+  &[data-variant="danger"] {
+    &:hover,
+    &.is-active {
+      background: rgba(var(--sol-red-rgb), 0.15);
+      border-color: var(--sol-red);
+      color: var(--sol-red);
+    }
+  }
+
+  &[data-variant="warning"] {
+    &:hover,
+    &.is-active {
+      background: rgba(var(--sol-orange-rgb), 0.15);
+      border-color: var(--sol-orange);
+      color: var(--sol-orange);
+    }
+  }
+
+  &[data-variant="success"] {
+    &:hover,
+    &.is-active {
+      background: rgba(var(--sol-green-rgb), 0.15);
+      border-color: var(--sol-green);
+      color: var(--sol-green);
+    }
+  }
+}
+
+/* Contrôles intégrés (curseur / sélecteur) */
+.bd-controls-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--sol-base2);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.3);
+  border-radius: 8px;
+}
+
+.bd-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.bd-control-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--sol-base01);
+}
+
+.bd-control-val {
+  font-family: var(--font-code);
+  color: var(--sol-blue);
+  font-weight: 700;
+}
+
+.bd-range {
+  width: 100%;
+  accent-color: var(--sol-blue);
+  cursor: pointer;
+}
+
+.bd-select {
+  padding: 0.32rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.45);
+  background: var(--sol-base3);
+  color: var(--sol-base00);
+  font-family: var(--font-code);
+  font-size: 0.76rem;
+}
+
+/* Bandeau de télémétrie / métriques temps réel */
+.bd-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 0.65rem;
+}
+
+.bd-metric {
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  background: var(--sol-base2);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.3);
+  border-left: 3px solid var(--sol-blue);
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &[data-state="ok"] {
+    border-left-color: var(--accent-success);
+  }
+  &[data-state="warn"] {
+    border-left-color: var(--accent-warning);
+  }
+  &[data-state="danger"] {
+    border-left-color: var(--accent-danger);
+    background: rgba(var(--sol-red-rgb), 0.06);
+  }
+  &[data-state="info"] {
+    border-left-color: var(--accent-info);
+  }
+}
+
+.bd-metric-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sol-base01);
+}
+
+.bd-metric-val {
+  font-family: var(--font-code);
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--sol-base02);
+  margin-top: 0.15rem;
+
+  .bd-metric[data-state="ok"] & { color: var(--accent-success); }
+  .bd-metric[data-state="warn"] & { color: var(--sol-orange); }
+  .bd-metric[data-state="danger"] & { color: var(--accent-danger); }
+  .bd-metric[data-state="info"] & { color: var(--accent-info); }
+}
+
+.bd-metric-sub {
+  font-size: 0.72rem;
+  color: var(--sol-base01);
+  margin-top: 0.1rem;
+}
+
+/* Grilles de topologie : Centres de données, Racks, Nœuds, Stages */
+.bd-topology {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.bd-topology-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.85rem;
+}
+
+.bd-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border-radius: 10px;
+  background: var(--sol-base3);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.38);
+  transition: border-color 0.22s ease, background 0.22s ease, opacity 0.22s ease;
+
+  &[data-state="ok"] {
+    border-color: rgba(var(--sol-green-rgb), 0.55);
+  }
+  &[data-state="warn"] {
+    border-color: var(--sol-orange);
+    background: rgba(var(--sol-yellow-rgb), 0.06);
+  }
+  &[data-state="danger"] {
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.06);
+  }
+  &[data-state="offline"] {
+    border-style: dashed;
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.05);
+    opacity: 0.78;
+  }
+  &[data-state="info"] {
+    border-color: var(--sol-cyan);
+    background: rgba(var(--sol-cyan-rgb), 0.05);
+  }
+}
+
+.bd-zone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(var(--sol-base1-rgb), 0.22);
+}
+
+.bd-zone-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--sol-base02);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Badges d'état sémantiques */
+.bd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  font-family: var(--font-code);
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(var(--sol-base1-rgb), 0.18);
+  color: var(--sol-base01);
+
+  &[data-state="ok"] {
+    background: rgba(var(--sol-green-rgb), 0.16);
+    color: var(--sol-green);
+  }
+  &[data-state="warn"] {
+    background: rgba(var(--sol-orange-rgb), 0.16);
+    color: var(--sol-orange);
+  }
+  &[data-state="danger"] {
+    background: rgba(var(--sol-red-rgb), 0.16);
+    color: var(--sol-red);
+  }
+  &[data-state="info"] {
+    background: rgba(var(--sol-cyan-rgb), 0.16);
+    color: var(--sol-cyan);
+  }
+  &[data-state="primary"] {
+    background: rgba(var(--sol-blue-rgb), 0.16);
+    color: var(--sol-blue);
+  }
+  &[data-state="violet"] {
+    background: rgba(var(--sol-violet-rgb), 0.16);
+    color: var(--sol-violet);
+  }
+}
+
+/* Cartes de Nœud / Exécuteur / Modèle */
+.bd-node {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: var(--sol-base2);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.32);
+  transition: all 0.2s ease;
+
+  &[data-clickable="true"] {
+    cursor: pointer;
+    &:hover {
+      border-color: var(--sol-blue);
+    }
+  }
+
+  &[data-state="ok"] {
+    border-color: rgba(var(--sol-green-rgb), 0.55);
+  }
+  &[data-state="warn"] {
+    border-color: var(--sol-orange);
+    background: rgba(var(--sol-orange-rgb), 0.08);
+  }
+  &[data-state="danger"] {
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.09);
+  }
+  &[data-state="dead"] {
+    border-style: dashed;
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.06);
+    opacity: 0.72;
+  }
+  &[data-state="pruned"] {
+    border-style: dashed;
+    border-color: rgba(var(--sol-base1-rgb), 0.4);
+    opacity: 0.48;
+  }
+  &[data-state="scanned"] {
+    border-color: var(--sol-cyan);
+    background: rgba(var(--sol-cyan-rgb), 0.1);
+  }
+}
+
+.bd-node-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sol-base02);
+}
+
+.bd-node-body {
+  font-size: 0.75rem;
+  color: var(--sol-base00);
+  line-height: 1.4;
+}
+
+/* Blocs HDFS / Slots / Conteneurs / Partitions RDD / Chunks Parquet */
+.bd-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.bd-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 5px;
+  font-family: var(--font-code);
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.4);
+  background: var(--sol-base3);
+  color: var(--sol-base00);
+  transition: all 0.2s ease;
+
+  &[data-state="ok"] {
+    border-color: var(--sol-green);
+    background: rgba(var(--sol-green-rgb), 0.13);
+    color: var(--sol-green);
+  }
+  &[data-state="primary"] {
+    border-color: var(--sol-blue);
+    background: rgba(var(--sol-blue-rgb), 0.13);
+    color: var(--sol-blue);
+  }
+  &[data-state="healing"] {
+    border-color: var(--sol-cyan);
+    background: rgba(var(--sol-cyan-rgb), 0.16);
+    color: var(--sol-cyan);
+  }
+  &[data-state="corrupt"],
+  &[data-state="danger"] {
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.16);
+    color: var(--sol-red);
+  }
+  &[data-state="warn"] {
+    border-color: var(--sol-orange);
+    background: rgba(var(--sol-orange-rgb), 0.15);
+    color: var(--sol-orange);
+  }
+  &[data-state="idle"],
+  &[data-state="pruned"] {
+    border-style: dashed;
+    opacity: 0.52;
+  }
+  &[data-state="violet"] {
+    border-color: var(--sol-violet);
+    background: rgba(var(--sol-violet-rgb), 0.15);
+    color: var(--sol-violet);
+  }
+}
+
+/* Jauges horizontales alimentées par variable CSS --bd-fill */
+.bd-bar-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(var(--sol-base1-rgb), 0.22);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bd-bar-fill {
+  height: 100%;
+  width: var(--bd-fill, 0%);
+  background: var(--sol-blue);
+  border-radius: 999px;
+  transition: width 0.28s ease, background 0.2s ease;
+
+  &[data-state="ok"] { background: var(--sol-green); }
+  &[data-state="warn"] { background: var(--sol-orange); }
+  &[data-state="danger"] { background: var(--sol-red); }
+  &[data-state="info"] { background: var(--sol-cyan); }
+  &[data-state="violet"] { background: var(--sol-violet); }
+}
+
+/* Connecteur réseau / pipeline / DAG */
+.bd-link-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.35);
+  background: var(--sol-base2);
+
+  &[data-state="ok"] {
+    border-color: rgba(var(--sol-green-rgb), 0.5);
+    color: var(--sol-green);
+  }
+  &[data-state="warn"] {
+    border-color: var(--sol-orange);
+    background: rgba(var(--sol-orange-rgb), 0.08);
+    color: var(--sol-orange);
+  }
+  &[data-state="danger"] {
+    border-style: dashed;
+    border-color: var(--sol-red);
+    background: rgba(var(--sol-red-rgb), 0.08);
+    color: var(--sol-red);
+  }
+}
+
+/* Tableaux miniatures (SCD1/SCD2, Zone Maps, Journal _delta_log) */
+.bd-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+
+  th,
+  td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid rgba(var(--sol-base1-rgb), 0.22);
+    text-align: left;
+  }
+
+  th {
+    color: var(--sol-base01);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.66rem;
+    background: rgba(var(--sol-base1-rgb), 0.1);
+  }
+
+  tr[data-state="ok"] td {
+    background: rgba(var(--sol-green-rgb), 0.09);
+  }
+  tr[data-state="warn"] td {
+    background: rgba(var(--sol-yellow-rgb), 0.11);
+  }
+  tr[data-state="danger"] td {
+    background: rgba(var(--sol-red-rgb), 0.11);
+    color: var(--sol-red);
+  }
+  tr[data-state="muted"] td {
+    opacity: 0.55;
+  }
+}
+
+/* Console de diagnostic / Journal d'événements système */
+.bd-console {
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  background: var(--sol-base03);
+  color: var(--sol-base1);
+  border: 1px solid rgba(var(--sol-base1-rgb), 0.35);
+  font-family: var(--font-code);
+  font-size: 0.74rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.bd-console-line {
+  line-height: 1.45;
+  color: var(--sol-base1);
+
+  &[data-state="ok"] { color: var(--sol-green); }
+  &[data-state="warn"] { color: var(--sol-yellow); }
+  &[data-state="danger"] { color: var(--sol-red); }
+  &[data-state="info"] { color: var(--sol-cyan); }
+}
+
+/* Grilles Parquet RowGroup x ColumnChunk */
+.bd-parquet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 0.45rem;
+
+  @media (max-width: 767.98px) {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
+
+.bd-footer-box {
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(var(--sol-violet-rgb), 0.1);
+  border: 1px solid rgba(var(--sol-violet-rgb), 0.45);
+  font-family: var(--font-code);
+  font-size: 0.74rem;
+  color: var(--sol-base02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

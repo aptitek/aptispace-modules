@@ -1,0 +1,109 @@
+---
+title: "De MapReduce à YARN & Localité des Données"
+icon: "⚙️"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Déplacer le calcul vers les données, dépasser les goulots d'Hadoop 1.x grâce aux conteneurs fongibles de YARN et maîtriser le Shuffle et l'exécution spéculative."
+---
+
+Une fois des pétaoctets de données découpés et répliqués sur [HDFS](hdfs.qmd), comment les analyser sans faire fondre les commutateurs réseau du centre de données ? En 2004, Jeffrey Dean et Sanjay Ghemawat posent avec **MapReduce** le dogme fondateur de tout le calcul distribué moderne [@dean_mapreduce_2004; @lee_locality_2019] :
+
+> ***« Moving computation is cheaper than moving data »*** — Déplacer un programme de quelques kilooctets vers le serveur qui possède déjà le bloc sur son disque local coûte infiniment moins cher que rapatrier des téraoctets à travers le réseau.
+
+## 🧱 Hadoop 1.x : Le Carcan Monolithique et ses Deux Impasses
+
+Dans sa première génération, Hadoop orchestrait l'exécution MapReduce à l'aide d'un démon maître unique, le **`JobTracker`**, commandant des agents esclaves déployés sur chaque machine, les **`TaskTrackers`** [@vavilapalli_yarn_2013]. Sur les grilles industrielles dépassant quelques milliers de nœuds, cette architecture s'est fracassée sur deux verrous structurels majeurs [@vavilapalli_yarn_2013] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Bulles d'Inefficacité (Typed Slots) [Gaspillage CPU]{.concept-badge .tag-warning} {.bi-grid-3x2-gap-fill}
+
+Chaque `TaskTracker` était partitionné statiquement au démarrage en **`map slots`** et **`reduce slots`** strictement non interchangeables [@vavilapalli_yarn_2013]. Dès qu'un job terminait sa vague *Map* et entrait en phase *Reduce*, tous les *map slots* du serveur restaient **oisifs** alors même que des dizaines de tâches *Reduce* attendaient en file (*pipeline bubbles*).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Goulot & SPOF du `JobTracker` [Fragilité]{.concept-badge .tag-danger} {.bi-exclamation-octagon-fill}
+
+Le `JobTracker` cumulait deux métiers incompatibles : **arbitrer les ressources matérielles** de tout le cluster ET **piloter la logique interne** de chaque sous-tâche en RAM [@vavilapalli_yarn_2013]. Au-delà de ~4 000 machines, il saturait ; pire, son crash (**SPOF**) détruisait l'état mémoire de **100 % des jobs en cours**, interdisant de surcroît tout autre moteur que MapReduce.
+:::::
+::::
+:::
+
+## 🚀 La Révolution YARN : Découpler la Plateforme de l'Application
+
+Introduit avec Hadoop 2.x, **YARN** (*Yet Another Resource Negotiator*) brise ce monolithe en séparant radicalement l'**infrastructure matérielle agnostique** de l'**orchestration propre à chaque application** [@vavilapalli_yarn_2013] :
+
+1. **`ResourceManager` (RM)** : arbitre central pur, allégé de toute logique métier. Il distribue uniquement des enveloppes abstraites de ressources sans préjuger du moteur applicatif qui les utilisera (lots sur disque, calcul en mémoire ou traitement de flux) [@vavilapalli_yarn_2013].
+2. **`NodeManager` (NM)** : agent local sur chaque serveur qui supervise les cœurs CPU/RAM réels et isole le cycle de vie des conteneurs.
+3. **`ApplicationMaster` (AM)** : « chef d'orchestre éphémère » instancié **par job** au sein d'un premier conteneur. C'est lui qui négocie les ressources auprès du RM et gère les pannes de ses propres tâches : s'il plante, seul son job redémarre [@vavilapalli_yarn_2013] !
+4. **`Container` & Liaison Tardive (*Late Binding*)** : les slots rigides disparaissent au profit de **conteneurs fongibles** définis par un vecteur `<RAM, CPU>` (ex. `<4 Go, 2 vCPU>`). Lorsqu'un AM reçoit un bail sur un nœud, il y associe *au dernier moment* (*late binding*) la tâche en attente la plus pertinente, éliminant les bulles d'inactivité [@vavilapalli_yarn_2013].
+
+## 📍 Hiérarchie de Localité, Shuffle & Exécution Spéculative
+
+Pour préserver le dogme *Moving Compute, Not Data*, l'`ApplicationMaster` exprime ses besoins via des requêtes structurées **`ResourceRequest`** précisant `(nombre de conteneurs, vecteur <RAM, CPU>, préférences de localité, priorité)` [@vavilapalli_yarn_2013]. L'ordonnanceur résout alors le placement selon trois échelons d'efficacité décroissante (affinés par le *Delay Scheduling*, qui accepte d'attendre quelques millisecondes qu'un conteneur local se libère plutôt que de dégrader immédiatement la localité [@zaharia_delay_2010]) :
+
+| Niveau de localité  | Trajet physique des octets lus                                                  | Coût réseau                                       |
+| :------------------ | :------------------------------------------------------------------------------ | :------------------------------------------------ |
+| **1. `Node-local`** | Lecture directe sur le disque du serveur qui héberge la réplique du bloc HDFS   | **Nul (0 octet réseau)** [@vavilapalli_yarn_2013] |
+| **2. `Rack-local`** | Lecture depuis un voisin de la même baie à travers le commutateur *Top-of-Rack* | **Faible (intra-baie)** [@vavilapalli_yarn_2013]  |
+| **3. `Off-switch`** | Traversée du cœur de réseau inter-racks faute de capacité libre dans la baie    | **Élevé (à minimiser)** [@vavilapalli_yarn_2013]  |
+
+::: {.callout-note collapse="true"}
+#### Le mur caché du Shuffle, la Deep Data Locality et l'Exécution Spéculative
+
+- **De la localité Map à la *Deep Data Locality*** : si la phase *Map* lit localement, la transition vers *Reduce* exige un rapatriement HTTP croisé *tous-vers-tous* (**Shuffle & Sort**) qui sature les switchs inter-racks [@apache_mapreduce_2026]. En modélisant conjointement le placement des Mappers **et** la topologie du Shuffle, l'approche **Deep Data Locality** de Lee et al. réduit le trafic global et accélère l'exécution de **plus de 34 %** [@lee_locality_2019].
+- **Survivre aux nœuds lents (*Stragglers*) grâce à l'Idempotence** : sur mille machines, un disque vieillissant ou un bridage thermique peut ralentir une tâche unique de 10× et bloquer tout le job. Sans tuer la tâche lente, l'`ApplicationMaster` lance une **tâche spéculative** jumelle sur un autre nœud [@dean_mapreduce_2004; @apache_mapreduce_2026]. Chaque tentative écrit ses fichiers dans un dossier isolé **`_temporary/_taskid`** : seule la première qui termine promeut atomiquement son dossier vers la sortie finale, tandis que la perdante est annulée sans jamais créer de doublons [@apache_mapreduce_2026].
+:::
+
+## 🧪 Simulateur : Hadoop 1.x vs YARN, Pannes & Nœuds Lents
+
+Comparez en direct les bulles de slots et le crash catastrophique du `JobTracker` d'Hadoop 1.x avec l'isolation applicative et la course spéculative de YARN :
+
+::: {.card-window}
+#### Simulateur d'Ordonnancement & Pannes : Bulles de Slots, SPOF, YARN & Stragglers {.bi-boxes}
+
+:::: {#yarn-locality-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createYarnLocalitySimulator("#yarn-locality-sim")
+```
+
+## 🏆 Preuve Industrielle : Le Choc YARN sur les Grilles de Yahoo!
+
+Le déploiement de YARN en production chez **Yahoo!** a livré l'une des validations empiriques les plus célèbres de l'histoire des systèmes distribués [@vavilapalli_yarn_2013] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### +1 000 Machines Gratuites {.bi-lightning-charge-fill}
+
+Sur un cluster de **2 500 serveurs**, l'occupation moyenne est passée de **3,2 cœurs** sous Hadoop 1.x à **6–10 cœurs** sous YARN — soit **+7 000 cœurs CPU** utiles gagnés par pure suppression des bulles logicielles [@vavilapalli_yarn_2013].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Débit Doublé à 350 Po {.bi-graph-up-arrow}
+
+La même grille est passée de **77 000** à **150 000 jobs/jour** (10 à 12 millions de tâches quotidiennes), et plus de **500 000 jobs/jour** sur l'ensemble du parc de **350 Pétaoctets** [@vavilapalli_yarn_2013].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### Records GraySort {.bi-trophy-fill}
+
+YARN a établi les records officiels **Daytona GraySort** (**102,5 To** triés en 72 min à 1,42 To/min) et **MinuteSort** (**1,61 To** triés en 58 secondes sur 2 100 nœuds) [@vavilapalli_yarn_2013].
+:::::
+::::
+:::
+
+En libérant le cluster du verrou MapReduce, YARN a surtout ouvert la piste d'atterrissage idéale au moteur qui allait détrôner le calcul sur disque : **Apache Spark**.

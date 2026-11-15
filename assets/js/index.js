@@ -122,6 +122,26 @@ export { createCielabSphere, createCielabSlider } from "./custom/cielab.js";
 export { createRecursiveFontSampler } from "./custom/recursive-font.js";
 export { createSvgInspector, createTouchTargetVisualizer } from "./custom/iconography.js";
 export { createAtomicDesignSimulator } from "./custom/atomic-design.js";
+export {
+  createCapDelaySimulator,
+  createHdfsClusterSimulator,
+  createYarnLocalitySimulator,
+  createSparkLineageSimulator
+} from "./custom/bigdata-cluster.js";
+export {
+  createParquetPruningSimulator,
+  createHybridPipelineSimulator,
+  createLakehouseOccSimulator,
+  createMedallionReplaySimulator,
+  renderVarmaIncidentsChart
+} from "./custom/bigdata-pipelines.js";
+export {
+  createConsensusFencingSimulator,
+  createNosqlLsmSimulator,
+  createKafkaCdcSimulator,
+  createStreamWatermarkSimulator,
+  createGovernanceWapSimulator
+} from "./custom/bigdata-streaming.js";
 
 
 

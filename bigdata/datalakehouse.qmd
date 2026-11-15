@@ -1,0 +1,116 @@
+---
+title: "Data Lakehouse & Formats de Table Ouverts"
+icon: "🏛️"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Unifier Data Lake et Data Warehouse sur stockage objet grâce aux couches de métadonnées (Iceberg, Delta Lake, Hudi), aux transactions MVCC/OCC et à l'arbitrage CoW vs MoR."
+---
+
+Pendant longtemps, les architectures d'entreprise ont souffert d'une schizophrénie coûteuse : d'un côté un **[Data Lake](datalake.qmd)** économique en fichiers Parquet sur S3/ADLS mais dépourvu de transactions ACID ; de l'autre un **[Data Warehouse](datawarehouse.qmd)** fiable en SQL mais enfermé dans des formats propriétaires onéreux [@armbrust_lakehouse_2021]. L'architecture **Data Lakehouse** abolit cette frontière en greffant directement au-dessus des fichiers Parquet ouverts une **couche transactionnelle de métadonnées** (*Open Table Format*) offrant garanties ACID, *Time Travel*, évolution de schéma et mutations ciblées aux moteurs SQL comme aux frameworks d'IA [@armbrust_lakehouse_2021; @jain_lhbench_2023].
+
+## 🗂️ Le Cœur de l'Innovation : Éliminer l'API `LIST` par la Couche de Métadonnées
+
+Sur un stockage objet clé-valeur comme Amazon S3, l'opération HTTP **`LIST`** est plafonnée à **1 000 clés par requête** : explorer une table Hive contenant deux millions de fichiers Parquet impose des milliers d'appels réseau séquentiels pendant plusieurs minutes avant même de lire un seul octet utile [@armbrust_delta_2020; @jain_lhbench_2023] !
+
+Les formats de table ouverts suppriment totalement les appels `LIST` en maintenant aux côtés des données un catalogue transactionnel immuable répertoriant la liste exacte des fichiers d'un instantané (*snapshot*) ainsi que leurs **Zone Maps par fichier** (`min`/`max`, `null_count`), selon deux écoles architecturales [@jain_lhbench_2023; @merced_iceberg_2026] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Arbre Hiérarchique : Apache Iceberg [Planification Single-Node]{.concept-badge .tag-info} {.bi-diagram-3-fill}
+
+Créé chez Netflix (ASF), **Iceberg** organise ses métadonnées en trois étages immuables [@merced_iceberg_2026; @jain_lhbench_2023] :
+
+`metadata.json` $\to$ `Manifest List` *(bornes de partitions)* $\to$ `Manifest Files` *(Zone Maps par fichier)* $\to$ `Data Files`.
+
+- **Planification monopuce (*Driver*)** : le client élague des branches entières de manifestes en mémoire vive avec une latence minimale sur les tables petites/moyennes ($< 1\,000$ fichiers) ou requêtes très sélectives.
+- **Atouts uniques** : suivi par identifiants de colonnes (`Field-ID`), *Hidden Partitioning* et **Partition Evolution** sans jamais réécrire l'historique [@merced_iceberg_2026].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Journal Transactionnel : Delta Lake & Hudi [Planification Distribuée]{.concept-badge .tag-primary} {.bi-journal-code}
+
+- **Delta Lake** (Databricks / Linux Foundation) consigne chaque commit atomique dans `_delta_log/0000N.json` et consolide périodiquement l'état dans un **`checkpoint.parquet`** colonnaire [@armbrust_delta_2020; @derosiaux_deltalog_2026], complété par le **Liquid Clustering** (courbes de remplissage d'espace de **Hilbert** regroupant plusieurs colonnes incrémentalement sans réécriture globale ni petits fichiers, surpassant le `Z-Ordering` classique [@databricks_liquid_2025]) et **UniForm** (génération transparente de métadonnées Iceberg/Hudi).
+- **Apache Hudi** (Uber / ASF) couple son journal à une *Metadata Table* interne et à des index de clés primaires (Bloom / Bucket, cousins des [arbres LSM](nosql.qmd)) taillés pour le **[CDC](kafka-cdc.qmd)** [@jain_lhbench_2023].
+- **Gain à grande échelle** : en scannant son checkpoint Parquet via un job Spark parallèle, Delta surpasse la planification monopuce d'Iceberg de **7× à 12×** sur les tables géantes de **200 000 fichiers** [@jain_lhbench_2023] !
+:::::
+::::
+:::
+
+## 🔒 Transactions ACID : MVCC, Concurrence Optimiste (OCC) & Deletion Vectors
+
+Pour permettre à des dizaines de lecteurs SQL et de jobs d'écriture de travailler simultanément sans verrouiller la table, le Lakehouse combine **MVCC** (*Multi-Version Concurrency Control*) et **Contrôle Concurrentiel Optimiste (OCC)** [@armbrust_delta_2020; @deltalake_concurrency_2026; @gotz_interoperable_2026] :
+
+1. **Lecture isolée (`Snapshot`)** : tout lecteur interroge la version figée $V_{\text{start}}$ pendant que les scripteurs préparent leurs nouveaux fichiers à part.
+2. **Validation mathématique au Commit** : avant de publier $V_{\text{commit}+1}$, le scripteur vérifie si une transaction concurrente validée entre $V_{\text{start}}$ et $V_{\text{commit}}$ est entrée en collision avec son périmètre — selon le niveau d'isolation choisi (**Snapshot Isolation** par défaut sur Iceberg/Hudi ; **Serializability** par défaut sur Delta Lake, voire *Strict Serializability*) [@deltalake_concurrency_2026] :
+   - Conflit détecté $\implies$ levée d'une exception ciblée (`ConcurrentAppendException`, `ConcurrentDeleteReadException`, `ConcurrentDeleteDeleteException`).
+   - **Révolution de la concurrence à la ligne (*Row-Level Concurrency*)** : historiquement, modifier deux lignes distinctes (`#42` et `#980`) au sein d'un même fichier Parquet de 100 Mo faisait échouer la seconde transaction ! Grâce au **Row Tracking** et aux **Deletion Vectors** (bitmaps compressés marquant les lignes invalidées sans toucher au Parquet), le moteur fusionne désormais atomiquement les bitmaps et valide les deux écritures sans conflit [@jiang_rowlevel_2025].
+
+::: {.callout-warning}
+#### Danger critique des verrous externes Hive MetaStore (Jain et al., CIDR 2023)
+
+Tandis que Delta Lake s'appuie sur des primitives atomiques de stockage (`put-if-absent` ou coordinateur léger DynamoDB), l'usage de verrous de table externes via le **Hive MetaStore (HMS)** sans [jeton de clôture (*Fencing Token*)](consensus.qmd) comporte un piège redoutable [@jain_lhbench_2023; @kleppmann_locking_2016] : si le signal de vie (*lock heartbeat*) d'un scripteur lent expire (*timeout* réseau ou pause GC) pendant qu'il écrit ses métadonnées, HMS libère prématurément le verrou et l'accorde à un second scripteur, provoquant un écrasement mutuel (**dirty write**) et une corruption de la table !
+:::
+
+## ⚡ Arbitrage Physique `CoW` vs `MoR` et Dette Technique
+
+Lors d'un `UPDATE`, `DELETE` ou `MERGE`, deux stratégies physiques s'opposent sur le compromis écriture / lecture [@jain_lhbench_2023; @cutura_compaction_2026] :
+
+| Critère opérationnel       | **Copy-on-Write (`CoW`)**                                                        | **Merge-on-Read (`MoR`)**                                                                            |
+| :------------------------- | :------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **Mécanique à l'écriture** | Réécrit intégralement le fichier Parquet de 100 Mo dès qu'une seule ligne change | Ajoute uniquement un léger delta (log Avro Hudi ou *Delete File* / *Deletion Vector* de quelques Ko) |
+| **Amplification**          | **Forte en écriture** · Nulle en lecture                                         | Faible en écriture · **Forte en lecture** (fusion à la volée CPU/I/O)                                |
+| **Cas d'usage idéal**      | Tables décisionnelles lues intensivement en BI                                   | Flux **CDC** et *streaming* à mises à jour fréquentes                                                |
+
+Sans entretien régulier, les deltas MoR et micro-lots streaming accumulent une dette technique mortelle. Deux opérations automatisées sont **obligatoires** en production [@cutura_compaction_2026] : la **compaction** (`OPTIMIZE` / `rewrite_data_files`) qui fusionne petits fichiers et deltas, et le **nettoyage** (`VACUUM` / `expire_snapshots`) qui purge les anciens fichiers non référencés au-delà de la fenêtre de *Time Travel*.
+
+::: {.callout-note collapse="true"}
+#### Commandes SQL de Maintenance Production & Enseignements du Benchmark LHBench
+
+```sql
+-- 1. Maintenance Delta Lake : Compaction + Z-Ordering (ou Liquid Clustering) et Purge 7 jours
+OPTIMIZE events ZORDER BY (user_id, event_timestamp);
+VACUUM events RETAIN 168 HOURS;
+
+-- 2. Maintenance Apache Iceberg : Compaction en cibles de 512 Mo et Expiration des snapshots
+CALL catalog.system.rewrite_data_files(
+  table => 'db.events',
+  strategy => 'binpack',
+  options => map('target-file-size-bytes', '536870912')
+);
+CALL catalog.system.expire_snapshots(table => 'db.events', older_than => TIMESTAMP '2026-11-08 00:00:00');
+```
+
+**Pourquoi les écarts observés sur le benchmark TPC-DS 3 To (*LHBench*, CIDR 2023) [@jain_lhbench_2023] ?**
+
+- **Apache Hudi** charge initialement **~10× plus lentement** (~20 000 s vs ~2 000 s) à cause des vérifications d'unicité de clés, et génère par défaut de petits fichiers de **8,3 Mo** (contre 128 Mo sur Delta) : sur la requête Q90, Spark doit ouvrir **18 443 fichiers** (186 Go) sous Hudi contre **2 128 fichiers** (138 Go) sous Delta !
+- **Apache Iceberg** affichait sur Spark TPC-DS un retrait relatif de **1,7×** face à Delta en raison de son lecteur Parquet personnalisé (*Field-IDs*) moins vectorisé à l'époque et des statistiques partielles remontées par l'API Spark Data Source v2 (`DSv2`) [@jain_lhbench_2023].
+:::
+
+## 🧪 Simulateur : Conflits OCC, Deletion Vectors, Panne HMS & CoW/MoR
+
+Expérimentez les collisions de transactions simultanées, leur résolution atomique au niveau de la ligne, la corruption par *timeout* HMS et le cycle de vie CoW vs MoR :
+
+::: {.card-window}
+#### Simulateur Transactionnel Lakehouse : MVCC/OCC, Bitmaps DV, Verrou HMS & Compaction {.bi-layers-fill}
+
+:::: {#lakehouse-occ-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createLakehouseOccSimulator("#lakehouse-occ-sim")
+```
+
+## 🧭 Règle de Choix Architecturale
+
+- **Écosystème hétérogène multi-moteurs** (Spark + Trino + Flink + Snowflake) ou **évolution fréquente du partitionnement sans réécriture** $\implies$ **Apache Iceberg** [@merced_iceberg_2026].
+- **Plateforme centrée Apache Spark / Databricks** recherchant performance SQL maximale, **Liquid Clustering** et interopérabilité **UniForm** $\implies$ **Delta Lake** [@jain_lhbench_2023].
+- **Ingestion continue CDC à très haute fréquence** indexée par clé primaire en mode *Merge-on-Read* $\implies$ **Apache Hudi** [@jain_lhbench_2023].
+
+Notre infrastructure physique Lakehouse est désormais solide, transactionnelle et ouverte. Il ne reste plus qu'à organiser logiquement le raffinage progressif de la donnée à l'intérieur de ce Lakehouse grâce à l'**Architecture Médaillon**.

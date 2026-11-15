@@ -80,10 +80,17 @@
     }
 
     &[data-category="Data Science"],
-    &[data-category="Statistiques"] {
+    &[data-category="Statistiques"],
+    &[data-category="Data & IA"] {
       color: var(--sol-green);
       background: rgba(var(--sol-green-rgb), 0.12);
       border-color: rgba(var(--sol-green-rgb), 0.25);
+    }
+
+    &[data-category="Big Data"] {
+      color: var(--sol-orange);
+      background: rgba(var(--sol-orange-rgb), 0.12);
+      border-color: rgba(var(--sol-orange-rgb), 0.25);
     }
 
     &[data-category="DevOps"],

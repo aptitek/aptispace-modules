@@ -1,0 +1,115 @@
+---
+title: "Orchestration DAG, Patron WAP & Gouvernance RGPD"
+icon: "🛡️"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Piloter des graphes de dépendances déterministes (Airflow, Dagster), bloquer les données viciées par branche Write-Audit-Publish (WAP) et appliquer le droit à l'oubli RGPD sur stockage immuable."
+---
+
+Nous savons désormais ingérer des événements ([Kafka & CDC](kafka-cdc.qmd)), les traiter en flux ou par lots ([Streaming](streaming.qmd), [Spark](spark.qmd)) et les raffiner en couches **Bronze $\to$ Silver $\to$ Gold** ([Médaillon](medaillon.qmd)) sur un [Data Lakehouse](datalakehouse.qmd). Pour qu'une telle plateforme tourne sans intervention nocturne ni amende réglementaire, il reste un dernier pilier indispensable : **l'orchestration déterministe, l'audit pré-publication et la gouvernance RGPD**.
+
+## 🕸️ Du `cron` Aveugle à l'Orchestration Déclarative par DAG
+
+Planifier vingt scripts SQL interdépendants avec de simples minuteurs `cron` (ex. *« Bronze à 01h00, Silver à 02h00, Gold à 03h00 »*) est une bombe à retardement : le jour où la source prend 65 minutes de retard, Silver et Gold s'exécutent à l'heure dite sur des tables **incomplètes** et publient silencieusement un chiffre d'affaires faux [@harenslak_airflow_2021] !
+
+Les orchestrateurs modernes modélisent l'intégralité de la plateforme comme un **Graphe Acyclique Dirigé (*DAG*)** de dépendances explicites :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Centré Tâches : Apache Airflow [Workflow Impératif]{.concept-badge .tag-primary} {.bi-diagram-3-fill}
+
+Référence historique où chaque nœud du DAG représente une **action** (*Operator* : lancer un job Spark, attendre un fichier via un *Sensor*, envoyer une alerte) assortie de politiques de relance à **recul exponentiel (*exponential backoff*)** et de contrats SLA [@harenslak_airflow_2021].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Centré Actifs : Dagster [Software-Defined Assets]{.concept-badge .tag-info} {.bi-boxes}
+
+Inverse la perspective : chaque nœud du graphe déclare directement **la table ou le modèle cible** (*Asset*) et ses partitions temporelles [@dagster_assets_2026]. L'orchestrateur sait en permanence quelles partitions de `gold.sales` sont obsolètes par rapport à `silver.orders`.
+:::::
+::::
+:::
+
+::: {.callout-danger}
+#### La Règle d'Or du Backfill : Bannissez `CURRENT_DATE()` et `now()` de vos pipelines !
+
+Un pipeline orchestré doit être **temporellement pur (déterministe)** [@harenslak_airflow_2021; @merced_idempotent_2026] : si vous rattrapez le 15 novembre trois journées en panne (`12, 13 et 14 novembre` — opération de **Backfill**), une requête filtrant sur `WHERE dt = CURRENT_DATE()` lira trois fois les données du 15 novembre et corrompra tout votre historique !
+
+Injectez **toujours** les bornes logiques de la fenêtre d'exécution fournies par l'orchestrateur (`data_interval_start` / `{{ ds }}` dans Airflow, `partition_key` dans Dagster) : relancer le job six mois plus tard reconstruira alors exactement la partition voulue [@harenslak_airflow_2021; @dagster_assets_2026].
+:::
+
+## 🚦 Le Patron Write-Audit-Publish (WAP) : Le « Blue/Green » de la Donnée
+
+Dans le chapitre [Médaillon](medaillon.qmd), les portes de quarantaine isolent les lignes individuelles invalides. Mais que se passe-t-il lorsqu'un bogue applicatif amont vide soudainement 40 % d'une livraison ou fausse un taux de change global ? Exécuter vos tests `dbt` *après* avoir écrit dans la table `main` revient à prévenir les pompiers une fois que le tableau de bord du comité exécutif est déjà pollué [@nessie_wap_2026] !
+
+Grâce au versionnement de catalogue de type Git (**Apache Iceberg Branches** ou **Project Nessie** multi-tables), le patron **Write – Audit – Publish (WAP)** agit comme un disjoncteur préventif *zero-copy* [@nessie_wap_2026] :
+
+1. **`Write` (Branche isolée)** : l'orchestrateur crée instantanément une branche de métadonnées `audit_run_42` (sans copier un seul octet existant) et y écrit les nouveaux fichiers Parquet.
+2. **`Audit` (Tests de contrat)** : des assertions automatisées vérifient l'unicité des clés, les volumes attendus, la distribution statistique et l'absence de fuite PII sur la branche isolée.
+3. **`Publish` (Promotion atomique ou Abandon)** : si 100 % des contrôles sont verts, le catalogue fusionne le pointeur vers `main` en une milliseconde ; sinon, la branche est bloquée pour inspection pendant que les utilisateurs BI continuent de lire la dernière version saine sur `main` [@nessie_wap_2026] !
+
+## 🔐 Gouvernance Unifiée, Lignage & Le Paradoxe RGPD de l'Immuabilité
+
+À l'échelle d'une organisation (qu'elle soit centralisée ou fédérée en produits autonomes selon les principes du **Data Mesh** de Zhamak Dehghani [@dehghani_datamesh_2022]), gouverner la donnée repose sur trois piliers techniques :
+
+1. **Contrôle d'accès granulaire (Catalogues unifiés : Unity Catalog, Apache Polaris)** : filtrage dynamique des lignes selon le pays du lecteur (**Row-Level Security**) et masquage à la volée des colonnes sensibles (**Dynamic Column Masking**).
+2. **Lignage inter-systèmes (`OpenLineage`)** : standard ouvert capturant automatiquement les métadonnées d'exécution de Kafka, Spark, Flink, Airflow et dbt pour tracer l'impact d'une colonne cassée de bout en bout [@openlineage_spec_2026].
+3. **Droit à l'effacement RGPD (Article 17) face aux journaux immuables** [@gdpr_eu_2016] : comment « oublier » définitivement un citoyen européen lorsque [Kafka](kafka-cdc.qmd), la couche Bronze et les sauvegardes S3 sont conçus pour ne jamais être modifiés ?
+
+| Stratégie de conformité RGPD                      | Mécanisme technique mis en œuvre                                                                                                                                                                                     | Cible idéale                                                       |
+| :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
+| **Purge Physique Groupée (`DELETE` + `VACUUM`)**  | Regroupe les demandes RGPD (délai légal : 30 jours [@gdpr_eu_2016]), applique un `DELETE` Lakehouse, compacte, puis **expire impérativement les anciens snapshots** (*Time Travel*) et fichiers orphelins            | Tables analytiques Silver / Gold mutables                          |
+| **Crypto-Shredding (Effacement Cryptographique)** | Chiffre à l'ingestion les champs PII de chaque individu avec une clé dédiée (**`DEK`**) logée dans un coffre **KMS**. Pour oublier l'individu, on **détruit simplement sa clé KMS** [@newman_cryptoshredding_2021] ! | **Topics Kafka, Bronze append-only et archives froides immuables** |
+
+::: {.callout-note collapse="true"}
+#### Code de référence : Pipeline WAP déterministe sur Branche Iceberg / Nessie
+
+```sql
+-- 1. WRITE : Création d'une branche d'audit zero-copy et écriture paramétrée par {{ ds }} (jamais CURRENT_DATE !)
+ALTER TABLE catalog.silver.orders CREATE BRANCH IF NOT EXISTS audit_2026_11_15;
+
+MERGE INTO catalog.silver.orders.branch_audit_2026_11_15 AS t
+USING (SELECT * FROM catalog.bronze.orders WHERE arrival_date = DATE '2026-11-15') AS s
+ON t.order_id = s.order_id
+WHEN MATCHED THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *;
+
+-- 2. AUDIT : Assertions bloquantes exécutées par l'orchestrateur sur la branche isolée
+SELECT CASE
+  WHEN COUNT(*) = 0 THEN raise_error('WAP_ABORT: Livraison vide pour 2026-11-15')
+  WHEN SUM(CASE WHEN customer_id IS NULL THEN 1 ELSE 0 END) > 0 THEN raise_error('WAP_ABORT: Clés clients NULL détectées')
+END
+FROM catalog.silver.orders VERSION AS OF 'audit_2026_11_15'
+WHERE arrival_date = DATE '2026-11-15';
+
+-- 3. PUBLISH : Promotion atomique du pointeur vers main uniquement si l'étape 2 réussit
+CALL catalog.system.fast_forward('silver.orders', 'main', 'audit_2026_11_15');
+ALTER TABLE catalog.silver.orders DROP BRANCH audit_2026_11_15;
+```
+:::
+
+## 🧪 Simulateur : Backfill DAG, Disjoncteur WAP & Crypto-Shredding RGPD
+
+Reproduisez le bogue d'un backfill utilisant `CURRENT_DATE()`, déclenchez une dérive amont face au disjoncteur *Write-Audit-Publish* et détruisez une clé KMS pour observer le *Crypto-Shredding* instantané :
+
+::: {.card-window}
+#### Simulateur de Gouvernance : Pureté Temporelle DAG, Branches WAP & Droit à l'Oubli RGPD {.bi-shield-lock-fill}
+
+:::: {#governance-wap-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createGovernanceWapSimulator("#governance-wap-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **Un pipeline industrialisé est une fonction pure de sa fenêtre logique** : bannissez toute lecture de l'horloge système (`CURRENT_DATE()`, `now()`) afin que tout *backfill* historique soit 100 % déterministe [@harenslak_airflow_2021; @dagster_assets_2026].
+- **Auditez sur branche avant de publier (`WAP`)** : grâce aux branches *zero-copy* du Lakehouse, une anomalie globale devient une alerte d'ingénierie transparente plutôt qu'une crise devant les décideurs [@nessie_wap_2026].
+- **N'oubliez jamais le Time Travel lors d'un `DELETE` RGPD, et adoptez le Crypto-Shredding sur l'immuable** : détruire une clé KMS de 256 bits anonymise instantanément des années d'archives sans réécrire un seul téraoctet tout en préservant l'exactitude des agrégats financiers [@gdpr_eu_2016; @newman_cryptoshredding_2021].

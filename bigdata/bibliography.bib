@@ -1,0 +1,873 @@
+% =============================================================================
+% Bibliographie consolidée et dédupliquée — Cursus Big Data & Ingénierie des Données
+% Format compatible Pandoc (--citeproc) / Quarto
+% =============================================================================
+
+% --- 1. FONDATIONS DISTRIBUÉES, MATÉRIEL & MODÈLES DE COHÉRENCE ---
+
+@incollection{romero_hardware_2024,
+  author    = {Romero, Jazmin and Selzler, Roger and Shiell, Nicholi and Taylor, Ryan and Schoenrock, Andrew},
+  title     = {3.5 Hardware Bottlenecks and Overhead},
+  booktitle = {Introduction to Advanced Research Computing using Digital Research Alliance of Canada Resources},
+  publisher = {eCampusOntario Pressbooks},
+  year      = {2024},
+  url       = {https://ecampusontario.pressbooks.pub/arcwithdrac/chapter/3-5-hardware-bottlenecks-and-overhead/}
+}
+
+@misc{kleppmann_critique_2015,
+  author        = {Kleppmann, Martin},
+  title         = {A Critique of the {CAP} Theorem},
+  year          = {2015},
+  eprint        = {1509.05393},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+  url           = {https://arxiv.org/abs/1509.05393}
+}
+
+@article{brewer_cap_2012,
+  author    = {Brewer, Eric},
+  title     = {{CAP} Twelve Years Later: How the ``Rules'' Have Changed},
+  journal   = {Computer},
+  publisher = {IEEE Computer Society},
+  volume    = {45},
+  number    = {2},
+  pages     = {23--29},
+  year      = {2012},
+  doi       = {10.1109/MC.2012.37}
+}
+
+@article{gilbert_brewers_2002,
+  author    = {Gilbert, Seth and Lynch, Nancy},
+  title     = {Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services},
+  journal   = {ACM SIGACT News},
+  volume    = {33},
+  number    = {2},
+  pages     = {51--59},
+  year      = {2002},
+  doi       = {10.1145/564585.564601}
+}
+
+@article{vogels_eventually_2009,
+  author    = {Vogels, Werner},
+  title     = {Eventually Consistent},
+  journal   = {Communications of the ACM},
+  volume    = {52},
+  number    = {1},
+  pages     = {40--44},
+  year      = {2009},
+  doi       = {10.1145/1435417.1435432}
+}
+
+@inproceedings{lloyd_cops_2011,
+  author    = {Lloyd, Wyatt and Freedman, Michael J. and Kaminsky, Michael and Andersen, David G.},
+  title     = {Don't Settle for Eventual: Scalable Causal Consistency for Wide-Area Storage with {COPS}},
+  booktitle = {Proceedings of the 23rd ACM Symposium on Operating Systems Principles (SOSP '11)},
+  pages     = {401--416},
+  year      = {2011},
+  publisher = {ACM},
+  doi       = {10.1145/2043556.2043593}
+}
+
+@article{manne_scaling_2024,
+  author  = {Manne, Uday Kumar},
+  title   = {Horizontal vs. Vertical Scaling in Modern Database Systems: A Comparative Analysis of Performance and Cost Trade-Offs},
+  journal = {International Journal of Computer Engineering and Technology (IJCET)},
+  volume  = {15},
+  number  = {5},
+  pages   = {514--524},
+  year    = {2024},
+  doi     = {10.5281/zenodo.13851050}
+}
+
+@techreport{ongaro_raft_2014,
+  author      = {Ongaro, Diego and Ousterhout, John},
+  title       = {In Search of an Understandable Consensus Algorithm (Extended Version)},
+  institution = {Stanford University},
+  year        = {2014}
+}
+
+% --- 2. STOCKAGE DISTRIBUÉ : GFS & APACHE HDFS ---
+
+@inproceedings{ghemawat_gfs_2003,
+  author    = {Ghemawat, Sanjay and Gobioff, Howard and Leung, Shun-Tak},
+  title     = {The {Google File System}},
+  booktitle = {Proceedings of the 19th ACM Symposium on Operating Systems Principles (SOSP '03)},
+  year      = {2003},
+  pages     = {29--43},
+  publisher = {ACM},
+  doi       = {10.1145/945445.945450}
+}
+
+@inproceedings{shvachko_hdfs_2010,
+  author    = {Shvachko, Konstantin and Kuang, Hairong and Radia, Sanjay and Chansler, Robert},
+  title     = {The {Hadoop Distributed File System}},
+  booktitle = {Proceedings of the 2010 IEEE 26th Symposium on Mass Storage Systems and Technologies (MSST)},
+  year      = {2010},
+  pages     = {1--10},
+  publisher = {IEEE},
+  doi       = {10.1109/MSST.2010.5496972}
+}
+
+@article{malhotra_hdfs_2020,
+  author    = {Malhotra, Arjun},
+  title     = {A Comprehensive Analysis of {Hadoop Distributed File System (HDFS)}: Architecture, Storage Mechanism, and Block Replication Strategies},
+  journal   = {International Journal of AI, Big Data, Computational and Management Studies},
+  year      = {2020},
+  volume    = {1},
+  number    = {1},
+  pages     = {1--11},
+  doi       = {10.63282/30509416/IJAIBDCMS-V1I1P101}
+}
+
+@manual{apache_hdfs_2020,
+  author       = {{Apache Software Foundation}},
+  organization = {Apache Hadoop},
+  title        = {Apache Hadoop 3.3.0 -- {HDFS} Users Guide},
+  year         = {2020},
+  url          = {https://hadoop.apache.org/docs/r3.3.0/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html}
+}
+
+@manual{apache_hdfs_2023,
+  author       = {{Apache Software Foundation}},
+  organization = {Apache Hadoop},
+  title        = {Apache Hadoop 3.3.6 -- {HDFS} Architecture},
+  year         = {2023},
+  url          = {https://hadoop.apache.org/docs/r3.3.6/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html}
+}
+
+@misc{wang_checkpointing_2014,
+  author       = {Wang, Andrew},
+  title        = {A Guide to Checkpointing in {Hadoop}},
+  howpublished = {Cloudera Technical Blog},
+  year         = {2014},
+  url          = {https://www.cloudera.com/blog/technical/a-guide-to-checkpointing-in-hadoop.html}
+}
+
+@misc{chen_scanners_2016,
+  author       = {Chen, Xiao},
+  title        = {{HDFS} DataNode Scanners and Disk Checker Explained},
+  howpublished = {Cloudera Technical Blog},
+  year         = {2016},
+  url          = {https://www.cloudera.com/blog/technical/hdfs-datanode-scanners-and-disk-checker-explained.html}
+}
+
+@inproceedings{niazi_smallfiles_2017,
+  author       = {Niazi, Salman and Haridi, Seif and Dowling, Jim},
+  title        = {Size Matters: Improving the Performance of Small Files in {HDFS}},
+  booktitle    = {EuroSys 2017},
+  year         = {2017},
+  organization = {KTH Royal Institute of Technology}
+}
+
+@misc{gummalla_smallfiles_2019,
+  author       = {Gummalla, Bhagya Lakshmi and Naik, Shashank},
+  title        = {Small Files, Big Foils: Addressing the Associated Metadata and Application Challenges},
+  howpublished = {Cloudera Technical Blog},
+  year         = {2019},
+  url          = {https://www.cloudera.com/blog/technical/small-files-big-foils-addressing-the-associated-metadata-and-application-challenges.html}
+}
+
+@article{lebdaoui_hdfs_2024,
+  author  = {Lebdaoui, Imane and Orhanou, Ghizlane},
+  title   = {Preliminary Analysis of {HDFS} Read Operation, Threats Impacts and Mitigation},
+  journal = {International Journal of Engineering Trends and Technology},
+  year    = {2024},
+  volume  = {72},
+  number  = {9},
+  pages   = {33--48},
+  doi     = {10.14445/22315381/IJETT-V72I9P103}
+}
+
+% --- 3. MAPREDUCE, YARN & LOCALITÉ DES DONNÉES ---
+
+@inproceedings{dean_mapreduce_2004,
+  author    = {Dean, Jeffrey and Ghemawat, Sanjay},
+  title     = {{MapReduce}: Simplified Data Processing on Large Clusters},
+  booktitle = {Proceedings of the 6th Symposium on Operating Systems Design and Implementation (OSDI '04)},
+  year      = {2004},
+  pages     = {137--150},
+  publisher = {USENIX Association},
+  url       = {https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/}
+}
+
+@inproceedings{vavilapalli_yarn_2013,
+  author    = {Vavilapalli, Vinod Kumar and Murthy, Arun C. and Douglas, Chris and Agarwal, Sharad and Konar, Mahadev and Evans, Robert and Graves, Thomas and Lowe, Jason and Shah, Hitesh and Seth, Siddharth and Saha, Bikas and Curino, Carlo and O'Malley, Owen and Radia, Sanjay and Reed, Benjamin and Baldeschwieler, Eric},
+  title     = {Apache Hadoop {YARN}: Yet Another Resource Negotiator},
+  booktitle = {Proceedings of the 4th Annual Symposium on Cloud Computing (SoCC '13)},
+  year      = {2013},
+  pages     = {5:1--5:16},
+  publisher = {ACM},
+  doi       = {10.1145/2523616.2523633}
+}
+
+@inproceedings{zaharia_delay_2010,
+  author    = {Zaharia, Matei and Borthakur, Dhruba and Sen Sarma, Joydeep and Elmeleegy, Khaled and Shenker, Scott and Stoica, Ion},
+  title     = {Delay Scheduling: A Simple Technique for Achieving Locality and Fairness in Cluster Scheduling},
+  booktitle = {Proceedings of the 5th European Conference on Computer Systems (EuroSys '10)},
+  year      = {2010},
+  pages     = {265--278},
+  publisher = {ACM}
+}
+
+@article{lee_locality_2019,
+  author  = {Lee, Sungchul and Jo, Ju-Yeon and Kim, Yoohwan},
+  title   = {Hadoop Performance Analysis Model with Deep Data Locality},
+  journal = {Information},
+  volume  = {10},
+  number  = {7},
+  pages   = {222},
+  year    = {2019},
+  doi     = {10.3390/info10070222}
+}
+
+@manual{apache_mapreduce_2026,
+  author       = {{Apache Software Foundation}},
+  organization = {Apache Hadoop},
+  title        = {Apache Hadoop 3.4.3 -- {MapReduce} Tutorial},
+  year         = {2026},
+  url          = {https://hadoop.apache.org/docs/r3.4.3/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html}
+}
+
+% --- 4. APACHE SPARK, RDD, TUNGSTEN, CATALYST & ANTI-PATTERNS PYSPARK ---
+
+@inproceedings{zaharia_spark_2010,
+  author    = {Zaharia, Matei and Chowdhury, Mosharaf and Franklin, Michael J. and Shenker, Scott and Stoica, Ion},
+  title     = {Spark: Cluster Computing with Working Sets},
+  booktitle = {Proceedings of the 2nd USENIX Conference on Hot Topics in Cloud Computing (HotCloud '10)},
+  year      = {2010},
+  publisher = {USENIX Association}
+}
+
+@inproceedings{zaharia_rdd_2012,
+  author    = {Zaharia, Matei and Chowdhury, Mosharaf and Das, Tathagata and Dave, Ankur and Ma, Justin and McCauley, Murphy and Franklin, Michael J. and Shenker, Scott and Stoica, Ion},
+  title     = {Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing},
+  booktitle = {Proceedings of the 9th USENIX Conference on Networked Systems Design and Implementation (NSDI '12)},
+  year      = {2012},
+  pages     = {15--28},
+  publisher = {USENIX Association}
+}
+
+@article{shi_clash_2015,
+  author  = {Shi, Juwei and Qiu, Yunjie and Minhas, Umar Farooq and Jiao, Limei and Wang, Chen and Reinwald, Berthold and {\"O}zcan, Fatma},
+  title   = {Clash of the Titans: {MapReduce} vs. {Spark} for Large Scale Data Analytics},
+  journal = {Proceedings of the VLDB Endowment},
+  year    = {2015},
+  volume  = {8},
+  number  = {13},
+  pages   = {2110--2121}
+}
+
+@misc{xin_tungsten_2015,
+  author       = {Xin, Reynold and Rosen, Josh},
+  title        = {Project {Tungsten}: Bringing {Apache Spark} Closer to Bare Metal},
+  howpublished = {Databricks Blog},
+  year         = {2015},
+  url          = {https://www.databricks.com/blog/2015/04/28/project-tungsten-bringing-spark-closer-to-bare-metal.html}
+}
+
+@misc{armbrust_catalyst_2015,
+  author       = {Armbrust, Michael and Huai, Yin and Liang, Cheng and Xin, Reynold and Zaharia, Matei},
+  title        = {Deep Dive into {Spark SQL}'s {Catalyst} Optimizer},
+  howpublished = {Databricks Blog},
+  year         = {2015},
+  url          = {https://www.databricks.com/blog/2015/04/13/deep-dive-into-spark-sqls-catalyst-optimizer.html}
+}
+
+@book{karau_learning_2015,
+  author    = {Karau, Holden and Konwinski, Andy and Wendell, Patrick and Zaharia, Matei},
+  title     = {Learning Spark: Lightning-Fast Big Data Analysis},
+  publisher = {O'Reilly Media},
+  year      = {2015}
+}
+
+@misc{parmar_spark_2026,
+  author       = {Parmar, Darshil},
+  title        = {Spark Internals: {Catalyst}, {Tungsten} \& Shuffle Performance},
+  howpublished = {Data Vidhya -- Data Engineering System Design},
+  year         = {2026},
+  url          = {https://datavidhya.com/learn/de-system-design/technology-deep-dives/spark-internals/}
+}
+
+@misc{srini_pyspark_2026,
+  author       = {Srini},
+  title        = {5 {PySpark} Performance Anti-Patterns Killing Your {Databricks} Jobs},
+  howpublished = {Srinimf},
+  year         = {2026},
+  url          = {https://srinimf.com/2026/08/16/5-pyspark-performance-anti-patterns-on-databricks-and-how-to-fix-them/}
+}
+
+% --- 5. DATA LAKE, ENCODAGES SIMD & APACHE PARQUET ---
+
+@misc{pavlo_formats_2024,
+  author       = {Pavlo, Andy},
+  title        = {15-721 Advanced Database Systems -- Lecture \#03: Data Formats \& Encoding {II}},
+  institution  = {Carnegie Mellon University},
+  howpublished = {Lecture Notes, Carnegie Mellon University},
+  year         = {2024},
+  url          = {https://15721.courses.cs.cmu.edu/spring2024/}
+}
+
+@article{liu_formats_2023,
+  author  = {Liu, Chunwei and Pavlenko, Anna and Interlandi, Matteo and Haynes, Brandon},
+  title   = {A Deep Dive into Common Open Formats for Analytical {DBMSs}},
+  journal = {Proceedings of the VLDB Endowment},
+  year    = {2023},
+  volume  = {16},
+  number  = {11},
+  pages   = {3044--3056},
+  doi     = {10.14778/3611479.3611507}
+}
+
+@article{zeng_columnar_2023,
+  author  = {Zeng, Xinyu and Hui, Yulong and Shen, Jiahong and Pavlo, Andrew and McKinney, Wes and Zhang, Huanchen},
+  title   = {An Empirical Evaluation of Columnar Storage Formats},
+  journal = {Proceedings of the VLDB Endowment},
+  year    = {2023},
+  volume  = {17},
+  number  = {2},
+  pages   = {148--161},
+  doi     = {10.14778/3626292.3626298}
+}
+
+@misc{velodb_parquet_2026,
+  author       = {{VeloDB}},
+  title        = {Parquet Format: A Complete Guide to {Apache Parquet} File Format},
+  howpublished = {VeloDB Glossary},
+  year         = {2026},
+  url          = {https://www.velodb.io/glossary/par-1}
+}
+
+@misc{apache_parquet_2026,
+  author       = {{Apache Software Foundation}},
+  title        = {File Format \& Metadata -- {Apache Parquet} Documentation},
+  howpublished = {Apache Parquet},
+  year         = {2026},
+  url          = {https://parquet.apache.org/docs/file-format/}
+}
+
+@misc{khare_parquet_2026,
+  author       = {Khare, Rituraj},
+  title        = {{Apache Parquet} Explained: Complex Data Structures, Statistics, Page Indexes, and Bloom Filters},
+  howpublished = {X-TechWork Blog},
+  year         = {2026},
+  url          = {https://www.xtechwork.com/blog/apache-parquet-complex-data-structures-statistics-page-indexes-bloom-filters}
+}
+
+@article{wieder_datalakes_2022,
+  author  = {Wieder, Philipp and Nolte, Hendrik},
+  title   = {Toward Data Lakes as Central Building Blocks for Data Management and Analysis},
+  journal = {Frontiers in Big Data},
+  year    = {2022},
+  volume  = {5},
+  pages   = {945720},
+  doi     = {10.3389/fdata.2022.945720}
+}
+
+@misc{gahi_datalakes_2025,
+  author       = {Gahi, Youssef},
+  title        = {What Went Wrong with Data Lakes? A 15-Year Reality Check from the Field},
+  howpublished = {arXiv Preprint, Ibn Tofail University},
+  year         = {2025}
+}
+
+% --- 6. DATA WAREHOUSE, ETL, ELT & ARCHITECTURE HYBRIDE ---
+
+@misc{varma_hybrid_2024,
+  author       = {Varma, Yarra Aditya},
+  title        = {A Hybrid Analytical Pipeline Combining {ELT} Efficiency With {ETL} Validation for High-Quality Reporting Systems},
+  year         = {2024},
+  pages        = {56--73},
+  howpublished = {Research Paper}
+}
+
+@book{kimball_toolkit_2013,
+  author    = {Kimball, Ralph and Ross, Margy},
+  title     = {The Data Warehouse Toolkit: The Definitive Guide to Dimensional Modeling},
+  edition   = {3rd},
+  publisher = {John Wiley \& Sons},
+  year      = {2013}
+}
+
+@book{inmon_architecture_2020,
+  author    = {Inmon, W. H. and Linstedt, Daniel and Levins, Mary},
+  title     = {Data Architecture: A Primer for the Data Scientist},
+  edition   = {2nd},
+  publisher = {Academic Press},
+  year      = {2020}
+}
+
+@article{abadi_column_2013,
+  author  = {Abadi, Daniel and Boncz, Peter and Harizopoulos, Stavros and Idreos, Stratos and Madden, Samuel},
+  title   = {The Design and Implementation of Modern Column-Oriented Database Systems},
+  journal = {Foundations and Trends in Databases},
+  volume  = {5},
+  number  = {3},
+  pages   = {197--280},
+  year    = {2013}
+}
+
+@inproceedings{vassiliadis_etl_2002,
+  author    = {Vassiliadis, Panos and Simitsis, Alkis and Skiadopoulos, Spiros},
+  title     = {Conceptual Modeling for {ETL} Processes},
+  booktitle = {Proceedings of the 5th ACM International Workshop on Data Warehousing and OLAP (DOLAP '02)},
+  pages     = {14--21},
+  year      = {2002},
+  publisher = {ACM}
+}
+
+@article{rahm_cleaning_2000,
+  author  = {Rahm, Erhard and Do, Hong Hai},
+  title   = {Data Cleaning: Problems and Current Approaches},
+  journal = {IEEE Data Engineering Bulletin},
+  volume  = {23},
+  number  = {4},
+  pages   = {3--13},
+  year    = {2000}
+}
+
+@misc{redman_quality_2018,
+  author       = {Redman, Thomas C.},
+  title        = {If Your Data Is Bad, Your Machine Learning Tools Are Useless},
+  howpublished = {Harvard Business Review},
+  year         = {2018}
+}
+
+@inproceedings{simitsis_etl_2023,
+  author    = {Simitsis, Alkis and Skiadopoulos, Spiros and Vassiliadis, Panos},
+  title     = {The History, Present, and Future of {ETL} Technology},
+  booktitle = {Proceedings of the DOLAP 2023 Workshop},
+  series    = {CEUR Workshop Proceedings},
+  volume    = {3369},
+  year      = {2023}
+}
+
+@inproceedings{camacho_hive_2019,
+  author    = {Camacho-Rodr{\'i}guez, Jes{\'u}s and Chauhan, Ashutosh and Gates, Alan and Koifman, Eugene and O'Malley, Owen and Garg, Vineet and Haindrich, Zoltan and Shelukhin, Sergey and Jayachandran, Prasanth and Seth, Siddharth and others},
+  title     = {Apache Hive: From {MapReduce} to Enterprise-grade Big Data Warehousing},
+  booktitle = {Proceedings of the 2019 International Conference on Management of Data (SIGMOD '19)},
+  year      = {2019},
+  publisher = {ACM},
+  doi       = {10.1145/3299869.3314045}
+}
+
+% --- 7. DATA LAKEHOUSE & OPEN TABLE FORMATS (DELTA LAKE, ICEBERG, HUDI) ---
+
+@article{armbrust_delta_2020,
+  author  = {Armbrust, Michael and Das, Tathagata and Sun, Liwen and Yavuz, Burak and Zhu, Shixiong and Murthy, Mukul and Torres, Joseph and van Hovell, Herman and Ionescu, Adrian and {\L}uszczak, Alicja and others},
+  title   = {Delta Lake: High-Performance {ACID} Table Storage over Cloud Object Stores},
+  journal = {Proceedings of the VLDB Endowment},
+  year    = {2020},
+  volume  = {13},
+  number  = {12},
+  pages   = {3411--3424},
+  doi     = {10.14778/3415478.3415560}
+}
+
+@inproceedings{armbrust_lakehouse_2021,
+  author    = {Armbrust, Michael and Ghodsi, Ali and Xin, Reynold and Zaharia, Matei},
+  title     = {Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics},
+  booktitle = {Proceedings of the 11th Annual Conference on Innovative Data Systems Research (CIDR '21)},
+  year      = {2021},
+  url       = {https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf}
+}
+
+@inproceedings{jain_lhbench_2023,
+  author    = {Jain, Paras and Kraft, Peter and Power, Conor and Das, Tathagata and Stoica, Ion and Zaharia, Matei},
+  title     = {Analyzing and Comparing Lakehouse Storage Systems},
+  booktitle = {Proceedings of the 13th Annual Conference on Innovative Data Systems Research (CIDR '23)},
+  year      = {2023},
+  url       = {https://www.cidrdb.org/cidr2023/papers/p92-jain.pdf}
+}
+
+@misc{jiang_rowlevel_2025,
+  author       = {Jiang, Cindy and Stavrakakis, Christos and Mokhtar, Mostafa},
+  title        = {Deep Dive: How Row-level Concurrency Works Out of the Box},
+  howpublished = {Databricks Blog},
+  year         = {2025},
+  url          = {https://www.databricks.com/blog/deep-dive-how-row-level-concurrency-works-out-box}
+}
+
+@misc{deltalake_concurrency_2026,
+  author       = {{The Linux Foundation Projects}},
+  title        = {Concurrency Control --- {Delta Lake} Documentation},
+  howpublished = {Delta Lake Documentation},
+  year         = {2026},
+  url          = {https://docs.delta.io/concurrency-control/}
+}
+
+@misc{derosiaux_deltalog_2026,
+  author       = {Derosiaux, St{\'e}phane},
+  title        = {Delta Lake Transaction Log: How It Works},
+  howpublished = {Conduktor Glossary},
+  year         = {2026},
+  url          = {https://www.conduktor.io/glossary/delta-lake-transaction-log-how-it-works}
+}
+
+@misc{merced_iceberg_2026,
+  author       = {Merced, Alex},
+  title        = {Apache Iceberg vs {Delta Lake}: Which Is Right for Your Lakehouse?},
+  howpublished = {Dremio Blog},
+  year         = {2026},
+  url          = {https://www.dremio.com/blog/apache-iceberg-vs-delta-lake/}
+}
+
+@unpublished{cutura_compaction_2026,
+  author = {Cutura, Jannic Alexander and Prakash, Subash},
+  title  = {Smart Compaction: Predicting Compaction Utility from Lakehouse Table Metadata},
+  year   = {2026},
+  note   = {arXiv Preprint}
+}
+
+@article{gotz_interoperable_2026,
+  author  = {G{\"o}tz, Tobias and Ritter, Daniel and El-Hindi, Muhammad and Giceva, Jana},
+  title   = {Interoperable {ACID} Transactions for Open Table Formats},
+  journal = {Proceedings of the VLDB Endowment},
+  year    = {2026},
+  volume  = {19},
+  number  = {11},
+  pages   = {3216--3230},
+  doi     = {10.14778/3836663.3836684}
+}
+
+% --- 8. ARCHITECTURE MÉDAILLON (BRONZE, SILVER, GOLD) ---
+
+@misc{singdata_medallion_2025,
+  author       = {{Singdata}},
+  title        = {A Practical Guide to Building Data Pipelines Using Bronze, Silver, and Gold Layers},
+  howpublished = {Singdata Engineering Guide},
+  year         = {2025},
+  url          = {https://singdata.com/trending/data-pipelines-bronze-silver-gold-layer-structure-guide/}
+}
+
+@techreport{qlik_medallion_2024,
+  author      = {{Qlik}},
+  title       = {Building Scalable Data Pipelines with Medallion Architecture: {Qlik Talend Cloud} Data Integration and Transformation with {Databricks}},
+  institution = {QlikTech International AB},
+  type        = {White Paper},
+  year        = {2024},
+  url         = {https://www.qlik.com/}
+}
+
+@misc{derosiaux_zones_2026,
+  author       = {Derosiaux, St{\'e}phane},
+  title        = {Data Lake Zones: Bronze, Silver, Gold Architecture},
+  howpublished = {Conduktor},
+  year         = {2026},
+  url          = {https://www.conduktor.io/glossary/data-lake-zones-bronze-silver-gold-architecture}
+}
+
+@misc{threecloud_modeling_2024,
+  author       = {{3Cloud}},
+  title        = {Data Modeling Standards \& Best Practices},
+  howpublished = {3Cloud Technical Guide},
+  year         = {2024}
+}
+
+@misc{soni_quarantine_2026,
+  author       = {Soni, Aniket Abhishek},
+  title        = {Stop Failing Pipelines: Implementing Quarantine Gates in {Delta Live Tables}},
+  howpublished = {DEV Community},
+  year         = {2026},
+  url          = {https://dev.to/aniketsoni/stop-failing-pipelines-implementing-quarantine-gates-in-delta-live-tables-434j}
+}
+
+@misc{merced_idempotent_2026,
+  author       = {Merced, Alex},
+  title        = {Idempotent Data Pipelines: Patterns, {SQL}, and Pitfalls},
+  howpublished = {Alex Merced's Lakehouse Blog},
+  year         = {2026},
+  url          = {https://iceberglakehouse.com/posts/2026-02-debp-idempotent-pipelines/}
+}
+
+@misc{antoine_failure_2026,
+  author       = {Antoine, Richard},
+  title        = {Designing for Failure: Idempotency and Error Handling in {PySpark} Pipelines},
+  howpublished = {richard-antoine.com},
+  year         = {2026},
+  url          = {https://richard-antoine.com/}
+}
+
+
+% --- 9. CONSENSUS, QUORUMS & FENCING TOKENS ---
+
+@misc{kleppmann_locking_2016,
+  author       = {Kleppmann, Martin},
+  title        = {How to Do Distributed Locking},
+  howpublished = {martin.kleppmann.com},
+  year         = {2016},
+  url          = {https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html}
+}
+
+@book{kleppmann_ddia_2017,
+  author    = {Kleppmann, Martin},
+  title     = {Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems},
+  publisher = {O'Reilly Media},
+  year      = {2017},
+  isbn      = {978-1449373320}
+}
+
+@article{lamport_paxos_2001,
+  author  = {Lamport, Leslie},
+  title   = {Paxos Made Simple},
+  journal = {ACM SIGACT News},
+  volume  = {32},
+  number  = {4},
+  pages   = {51--58},
+  year    = {2001}
+}
+
+@inproceedings{hunt_zookeeper_2010,
+  author    = {Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio P. and Reed, Benjamin},
+  title     = {{ZooKeeper}: Wait-free Coordination for Internet-scale Systems},
+  booktitle = {Proceedings of the 2010 USENIX Annual Technical Conference (USENIX ATC '10)},
+  year      = {2010},
+  url       = {https://www.usenix.org/legacy/event/atc10/tech/full_papers/Hunt.pdf}
+}
+
+% --- 10. STOCKAGE OPÉRATIONNEL NOSQL, HACHAGE COHÉRENT & LSM-TREES ---
+
+@inproceedings{karger_consistent_1997,
+  author    = {Karger, David and Lehman, Eric and Leighton, Tom and Panigrahy, Rina and Levine, Matthew and Lewin, Daniel},
+  title     = {Consistent Hashing and Random Trees: Distributed Caching Protocols for Relieving Hot Spots on the World Wide Web},
+  booktitle = {Proceedings of the Twenty-Ninth Annual ACM Symposium on Theory of Computing (STOC '97)},
+  pages     = {654--663},
+  year      = {1997},
+  publisher = {ACM},
+  doi       = {10.1145/258533.258660}
+}
+
+@inproceedings{decandia_dynamo_2007,
+  author    = {DeCandia, Giuseppe and Hastorun, Deniz and Jampani, Madan and Kakulapati, Gunavardhan and Lakshman, Avinash and Pilchin, Alex and Sivasubramanian, Swaminathan and Vosshall, Peter and Vogels, Werner},
+  title     = {Dynamo: {Amazon}'s Highly Available Key-value Store},
+  booktitle = {Proceedings of the Twenty-First ACM SIGOPS Symposium on Operating Systems Principles (SOSP '07)},
+  pages     = {205--220},
+  year      = {2007},
+  publisher = {ACM},
+  doi       = {10.1145/1294261.1294281}
+}
+
+@article{oneil_lsm_1996,
+  author  = {O'Neil, Patrick and Cheng, Edward and Gawlick, Dieter and O'Neil, Elizabeth},
+  title   = {The Log-Structured Merge-Tree ({LSM-Tree})},
+  journal = {Acta Informatica},
+  volume  = {33},
+  number  = {4},
+  pages   = {351--385},
+  year    = {1996},
+  doi     = {10.1007/s002360050048}
+}
+
+@inproceedings{chang_bigtable_2006,
+  author    = {Chang, Fay and Dean, Jeffrey and Ghemawat, Sanjay and Hsieh, Wilson C. and Wallach, Deborah A. and Burrows, Mike and Chandra, Tushar and Fikes, Andrew and Gruber, Robert E.},
+  title     = {Bigtable: A Distributed Storage System for Structured Data},
+  booktitle = {Proceedings of the 7th USENIX Symposium on Operating Systems Design and Implementation (OSDI '06)},
+  pages     = {205--218},
+  year      = {2006},
+  url       = {https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf}
+}
+
+@article{lakshman_cassandra_2010,
+  author  = {Lakshman, Avinash and Malik, Prashant},
+  title   = {Cassandra: A Decentralized Structured Storage System},
+  journal = {ACM SIGOPS Operating Systems Review},
+  volume  = {44},
+  number  = {2},
+  pages   = {35--40},
+  year    = {2010},
+  doi     = {10.1145/1773912.1773922}
+}
+
+@article{dong_rocksdb_2021,
+  author  = {Dong, Siying and Kryczka, Andrew and Jin, Yanqin and Stumm, Michael},
+  title   = {{RocksDB}: Evolution of Development Priorities in a Key-Value Store Serving Large-Scale Applications},
+  journal = {ACM Transactions on Storage},
+  volume  = {17},
+  number  = {4},
+  pages   = {1--32},
+  year    = {2021},
+  doi     = {10.1145/3483840}
+}
+
+% --- 11. APACHE KAFKA, CDC, SCHEMA REGISTRY & ARROW ---
+
+@inproceedings{kreps_kafka_2011,
+  author    = {Kreps, Jay and Narkhede, Neha and Rao, Jun},
+  title     = {Kafka: A Distributed Messaging System for Log Processing},
+  booktitle = {Proceedings of the NetDB '11 Workshop},
+  year      = {2011}
+}
+
+@misc{mccabe_kip500_2019,
+  author       = {McCabe, Colin P.},
+  title        = {{KIP-500}: Replace {ZooKeeper} with a Self-Managed Metadata Quorum ({KRaft})},
+  howpublished = {Apache Kafka Improvement Proposals},
+  year         = {2019},
+  url          = {https://cwiki.apache.org/confluence/display/KAFKA/KIP-500}
+}
+
+@misc{debezium_doc_2026,
+  author       = {{Debezium Community}},
+  title        = {Debezium Architecture and Log-Based Change Data Capture ({CDC})},
+  howpublished = {Debezium Documentation},
+  year         = {2026},
+  url          = {https://debezium.io/documentation/}
+}
+
+@book{richardson_microservices_2018,
+  author    = {Richardson, Chris},
+  title     = {Microservices Patterns: With Examples in Java},
+  publisher = {Manning Publications},
+  year      = {2018},
+  isbn      = {978-1617294549}
+}
+
+@misc{confluent_schemaregistry_2026,
+  author       = {{Confluent}},
+  title        = {Schema Evolution and Compatibility for {Schema Registry}},
+  howpublished = {Confluent Documentation},
+  year         = {2026},
+  url          = {https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html}
+}
+
+@misc{apache_arrow_2026,
+  author       = {{Apache Software Foundation}},
+  title        = {Apache Arrow Columnar Format \& {PySpark} Vectorized {UDFs}},
+  howpublished = {Apache Arrow Documentation},
+  year         = {2026},
+  url          = {https://arrow.apache.org/docs/format/Columnar.html}
+}
+
+@misc{databricks_liquid_2025,
+  author       = {{Databricks}},
+  title        = {Use Liquid Clustering for {Delta} Tables ({Hilbert} Space-Filling Curves)},
+  howpublished = {Databricks Documentation},
+  year         = {2025},
+  url          = {https://docs.databricks.com/en/delta/clustering.html}
+}
+
+% --- 12. TRAITEMENT DE FLUX CONTINU (DATAFLOW, FLINK, STRUCTURED STREAMING) ---
+
+@book{marz_bigdata_2015,
+  author    = {Marz, Nathan and Warren, James},
+  title     = {Big Data: Principles and Best Practices of Scalable Real-Time Data Systems},
+  publisher = {Manning Publications},
+  year      = {2015},
+  isbn      = {978-1617290343}
+}
+
+@misc{kreps_kappa_2014,
+  author       = {Kreps, Jay},
+  title        = {Questioning the {Lambda} Architecture},
+  howpublished = {O'Reilly Radar},
+  year         = {2014},
+  url          = {https://www.oreilly.com/radar/questioning-the-lambda-architecture/}
+}
+
+@article{akidau_dataflow_2015,
+  author  = {Akidau, Tyler and Bradshaw, Robert and Chambers, Craig and Chernyak, Slava and Fern{\'a}ndez-Moctezuma, Rafael J. and Lax, Reuven and McVeety, Sam and Mills, Daniel and Perry, Frances and Schmidt, Eric and Whittle, Sam},
+  title   = {The Dataflow Model: A Practical Approach to Balancing Correctness, Latency, and Cost in Massive-Scale, Unbounded, Out-of-Order Data Processing},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {8},
+  number  = {12},
+  pages   = {1792--1803},
+  year    = {2015},
+  doi     = {10.14778/2824032.2824076}
+}
+
+@article{carbone_flink_2015,
+  author  = {Carbone, Paris and Katsifodimos, Asterios and Ewen, Stephan and Markl, Volker and Haridi, Seif and Tzoumas, Kostas},
+  title   = {Apache Flink: Stream and Batch Processing in a Single Engine},
+  journal = {IEEE Data Engineering Bulletin},
+  volume  = {38},
+  number  = {4},
+  pages   = {28--38},
+  year    = {2015}
+}
+
+@article{chandy_snapshots_1985,
+  author  = {Chandy, K. Mani and Lamport, Leslie},
+  title   = {Distributed Snapshots: Determining Global States of Distributed Systems},
+  journal = {ACM Transactions on Computer Systems},
+  volume  = {3},
+  number  = {1},
+  pages   = {63--75},
+  year    = {1985},
+  doi     = {10.1145/214451.214456}
+}
+
+@misc{carbone_snapshots_2017,
+  author       = {Carbone, Paris and Ewen, Stephan and F{\'o}ra, Gyula and Haridi, Seif and Richter, Stefan and Tzoumas, Kostas},
+  title        = {Lightweight Asynchronous Snapshots for Distributed Dataflows},
+  howpublished = {arXiv:1506.08603},
+  year         = {2017},
+  url          = {https://arxiv.org/abs/1506.08603}
+}
+
+@inproceedings{armbrust_structured_2018,
+  author    = {Armbrust, Michael and Das, Tathagata and Torres, Joseph and Yavuz, Burak and Zhu, Shixiong and Xin, Reynold and Ghodsi, Ali and Stoica, Ion and Zaharia, Matei},
+  title     = {Structured Streaming: A Declarative {API} for Real-Time Applications in {Apache Spark}},
+  booktitle = {Proceedings of the 2018 International Conference on Management of Data (SIGMOD '18)},
+  pages     = {601--613},
+  year      = {2018},
+  publisher = {ACM},
+  doi       = {10.1145/3183713.3190664}
+}
+
+% --- 13. ORCHESTRATION DAG, PATRON WAP & GOUVERNANCE RGPD ---
+
+@book{harenslak_airflow_2021,
+  author    = {Harenslak, Bas P. and de Ruiter, Julian Rutger},
+  title     = {Data Pipelines with {Apache Airflow}},
+  publisher = {Manning Publications},
+  year      = {2021},
+  isbn      = {978-1617296901}
+}
+
+@misc{dagster_assets_2026,
+  author       = {{Dagster Labs}},
+  title        = {Software-Defined Assets and Time-Window Partitioned Backfills},
+  howpublished = {Dagster Documentation},
+  year         = {2026},
+  url          = {https://docs.dagster.io/concepts/assets/software-defined-assets}
+}
+
+@misc{nessie_wap_2026,
+  author       = {{Project Nessie}},
+  title        = {Data Engineering Patterns: Write-Audit-Publish ({WAP}) on {Apache Iceberg}},
+  howpublished = {Project Nessie Documentation},
+  year         = {2026},
+  url          = {https://projectnessie.org/guides/wap/}
+}
+
+@misc{openlineage_spec_2026,
+  author       = {{LF AI \& Data Foundation}},
+  title        = {OpenLineage: An Open Framework for Data Lineage Collection and Analysis},
+  howpublished = {openlineage.io},
+  year         = {2026},
+  url          = {https://openlineage.io/}
+}
+
+@book{dehghani_datamesh_2022,
+  author    = {Dehghani, Zhamak},
+  title     = {Data Mesh: Delivering Data-Driven Value at Scale},
+  publisher = {O'Reilly Media},
+  year      = {2022},
+  isbn      = {978-1492092391}
+}
+
+@misc{gdpr_eu_2016,
+  author       = {{Parlement europ{\'e}en et Conseil}},
+  title        = {R{\`e}glement ({UE}) 2016/679 relatif {\`a} la protection des donn{\'e}es ({RGPD}) --- Article 17 : Droit {\`a} l'effacement},
+  howpublished = {Journal officiel de l'Union europ{\'e}enne},
+  year         = {2016},
+  url          = {https://eur-lex.europa.eu/eli/reg/2016/679/oj}
+}
+
+@book{newman_cryptoshredding_2021,
+  author    = {Newman, Sam},
+  title     = {Building Microservices: Designing Fine-Grained Systems},
+  edition   = {2},
+  publisher = {O'Reilly Media},
+  year      = {2021},
+  isbn      = {978-1492034025}
+}

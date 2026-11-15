@@ -1,0 +1,132 @@
+---
+title: "Architecture Médaillon : Raffinage Bronze, Silver, Gold"
+icon: "🥇"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Structurer le raffinage logique des données en trois couches auditées : immuabilité Bronze et Replay, portes de quarantaine Silver, modélisation Kimball SCD2 Gold et idempotence MERGE."
+---
+
+Une confusion fréquente consiste à assimiler l'**Architecture Médaillon** (*Bronze – Silver – Gold*) au **[Data Lakehouse](datalakehouse.qmd)** lui-même. La frontière conceptuelle est pourtant limpide [@derosiaux_zones_2026] :
+
+- Le **Lakehouse** (ou l'entrepôt) définit **où et comment** les octets sont physiquement stockés avec des garanties ACID.
+- L'**Architecture Médaillon** définit **comment la qualité logique de la donnée s'élève étape par étape**, prolongeant à l'échelle industrielle l'entonnoir de raffinage introduit dans le module [Introduction à la Data Science](../datascience/intro-datascience.qmd) [@singdata_medallion_2025; @qlik_medallion_2024; @derosiaux_zones_2026].
+
+## 🥉🥈🥇 Les Trois Couches du Raffinage Progressif
+
+| Dimension             | 🥉 **Couche Bronze** *(Brut)*                                       | 🥈 **Couche Silver** *(Conforme)*                                                | 🥇 **Couche Gold** *(Métier)*                                            |
+| :-------------------- | :----------------------------------------------------------------- | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------- |
+| **Maxime**            | *Tout conserver, ne rien transformer* [@derosiaux_zones_2026]      | *Nettoyer, dédoublonner, unifier* [@singdata_medallion_2025]                    | *Agréger, certifier, servir les KPIs* [@threecloud_modeling_2024]       |
+| **Écriture & Schéma** | `Append-only` immuable · *Schema-on-Read* + métadonnées techniques | Incrémentale **CDC** (`MERGE`) · Typage strict, masquage **PII**, neutre métier | Schémas en étoile Kimball · Clés `BIGINT NOT NULL` & dimensions **SCD** |
+| **Fraîcheur type**    | Temps réel / sous-seconde (Kafka, API, batch)                      | Quasi temps réel à horaire                                                      | Horaire à quotidienne (alignée SLO décisionnels)                        |
+| **Public cible**      | Data Engineers (audit, *replay* d'incident)                        | Data Scientists, ML Engineers, EDA                                              | Décideurs, analystes BI, dashboards exécutifs                           |
+
+### Couche Bronze : Le Socle d'Audit et de Replay Immuable
+
+Zone d'atterrissage (*landing zone*) alimentée par lots, API ou flux événementiels **[Apache Kafka & CDC](kafka-cdc.qmd)** (gouvernés en amont par un *Schema Registry* et le suivi du *consumer lag* [@derosiaux_zones_2026]), la couche Bronze interdit toute suppression ou altération métier. Elle enrichit uniquement la charge utile brute de métadonnées d'audit (`ingestion_timestamp`, `source_system`, offset Kafka, partition de date) et active le flux de changements (*Change Data Feed*) [@singdata_medallion_2025; @derosiaux_zones_2026].
+
+> **Pourquoi ne jamais sauter Bronze ?** Si un bug de calcul est découvert trois semaines plus tard en aval, l'immuabilité du Bronze permet de **rejouer (*Replay*) l'intégralité de l'historique** sans jamais ré-interroger ni surcharger les systèmes opérationnels sources [@derosiaux_zones_2026] !
+
+### Couche Silver : Portes de Quarantaine, Dédoublonnage CDC & Conformité PII
+
+Alimentée en mode incrémental (*SQL pushdown* sur Spark/Databricks [@qlik_medallion_2024]), la couche Silver convertit les types, harmonise les référentiels (dates ISO, devises), pseudonymise les données personnelles (**PII**) et élimine les doublons de réémission réseau par fenêtrage analytique `ROW_NUMBER()` [@singdata_medallion_2025; @derosiaux_zones_2026].
+
+Surtout, au lieu de laisser une ligne malformée faire planter tout le pipeline nocturne, une architecture résiliente implémente des **portes de quarantaine** (*quarantine gates*) : les enregistrements violant un contrat de qualité (`amount <= 0`, clé nulle) sont déroutés vers une table d'isolement auditée pendant que les lignes saines poursuivent leur route [@soni_quarantine_2026]. La couche Silver doit rester **agnostique des règles de gestion propres à un département** afin de servir de socle commun aux Data Scientists [@derosiaux_zones_2026].
+
+### Couche Gold : Modélisation Dimensionnelle Kimball & Historisation SCD
+
+La couche Gold expose des *Data Marts* métier modélisés en **schémas en étoile** (ou flocon) selon des standards d'ingénierie stricts [@kimball_toolkit_2013; @threecloud_modeling_2024] :
+
+- **Clés de substitution entières (*Surrogate Keys*)** : toutes les jointures entre faits et dimensions reposent sur des entiers `INT` ou `BIGINT NOT NULL` — jamais sur des chaînes de caractères coûteuses à hacher [@threecloud_modeling_2024].
+- **Dimensions dégénérées (*Degenerate Dimensions*)** : un numéro de facture ou de commande sans attribut descriptif propre reste directement dans la table de faits sans table de dimension superflue [@threecloud_modeling_2024].
+- **Les 3 types de Tables de Faits** [@kimball_toolkit_2013; @threecloud_modeling_2024] :
+  1. **Transaction** : événement atomique ponctuel au grain le plus fin (ex. passage en caisse).
+  2. **Instantanné accumulatif (*Accumulating Snapshot*)** : cycle de vie borné à jalons multiples (achat $\to$ expédition $\to$ livraison) avec une colonne de date par étape.
+  3. **Instantanné périodique (*Periodic Snapshot*)** : photographie régulière d'un état cumulatif (solde bancaire de fin de journée, stock mensuel).
+- **Dimensions à évolution lente (*Slowly Changing Dimensions — SCD*)** [@kimball_toolkit_2013; @qlik_medallion_2024] :
+  - **SCD Type 1** : écrase l'ancienne valeur (correction d'une faute de frappe sans besoin d'historique).
+  - **SCD Type 2** : insère une nouvelle ligne versionnée (`valid_from`, `valid_to`, `is_current`) avec une nouvelle `surrogate_key`, préservant l'exactitude temporelle des analyses passées (ex. déménagement d'un client ou changement de secteur commercial) [@derosiaux_zones_2026].
+
+## 🔁 La Loi d'Airain de la Production : L'Idempotence (`MERGE INTO`)
+
+Dans un orchestrateur distribué (Airflow, Dagster, ADF), une tâche qui expire sur un *timeout* réseau au moment de la validation est **automatiquement relancée** (*retry*) [@antoine_failure_2026]. Un pipeline est dit **idempotent** si l'exécuter 1 fois ou 5 fois sur le même lot produit exactement le même état final : $f(f(x)) = f(x)$ [@merced_idempotent_2026].
+
+- **Piège mortel (`INSERT INTO`)** : chaque relance ajoute une copie supplémentaire des lignes en cible, gonflant silencieusement le chiffre d'affaires !
+- **Standard idempotent (`MERGE INTO` + *Deletion Vectors*)** : rapproche atomiquement la clé métier source et la cible pour mettre à jour l'existant ou insérer uniquement l'inédit [@merced_idempotent_2026; @derosiaux_zones_2026].
+
+::: {.callout-note collapse="true"}
+#### Patrons SQL de Référence : Ingestion Bronze, Dédoublonnage Silver Idempotent & Dimension Gold SCD Type 2
+
+```sql
+-- 1. BRONZE : Atterrissage immuable avec Change Data Feed activé
+CREATE TABLE bronze.raw_transactions (
+    raw_payload STRING,
+    source_system STRING,
+    kafka_offset BIGINT,
+    ingestion_ts TIMESTAMP,
+    arrival_date DATE
+) USING DELTA PARTITIONED BY (arrival_date)
+TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true');
+
+-- 2. SILVER : Dédoublonnage ROW_NUMBER() + Alimentation idempotente par MERGE INTO
+MERGE INTO silver.transactions AS target
+USING (
+    SELECT * FROM (
+        SELECT
+            CAST(get_json_object(raw_payload, '$.tx_id') AS BIGINT) AS tx_id,
+            CAST(get_json_object(raw_payload, '$.customer_id') AS STRING) AS customer_id,
+            CAST(get_json_object(raw_payload, '$.amount') AS DECIMAL(10,2)) AS amount,
+            sha2(get_json_object(raw_payload, '$.email'), 256) AS email_hash,
+            ROW_NUMBER() OVER (
+                PARTITION BY get_json_object(raw_payload, '$.tx_id')
+                ORDER BY ingestion_ts DESC
+            ) AS rn
+        FROM bronze.raw_transactions
+        WHERE arrival_date = DATE '{{ ds }}' -- borne logique d'orchestration (voir Orchestration & Gouvernance)
+          AND CAST(get_json_object(raw_payload, '$.amount') AS DECIMAL(10,2)) > 0
+    ) dedup WHERE rn = 1
+) AS src
+ON target.tx_id = src.tx_id
+WHEN MATCHED THEN UPDATE SET target.amount = src.amount, target.email_hash = src.email_hash
+WHEN NOT MATCHED THEN INSERT (tx_id, customer_id, amount, email_hash)
+                      VALUES (src.tx_id, src.customer_id, src.amount, src.email_hash);
+
+-- 3. GOLD : Dimension Produit historisée en SCD Type 2 avec clé entière NOT NULL
+CREATE TABLE gold.dim_products (
+    product_key BIGINT NOT NULL,
+    product_id STRING NOT NULL,
+    product_name STRING,
+    category_name STRING,
+    unit_price DECIMAL(10,2),
+    valid_from TIMESTAMP NOT NULL,
+    valid_to TIMESTAMP,
+    is_current BOOLEAN NOT NULL
+) USING DELTA CLUSTER BY (product_id);
+```
+:::
+
+## 🧪 Simulateur : Quarantaine, Crash Retry, Replay Bronze & SCD1 vs SCD2
+
+Testez la résistance d'une architecture Médaillon face aux doublons Kafka, aux relances d'orchestrateur non idempotentes, à un bug métier en Gold et au déménagement d'un client :
+
+::: {.card-window}
+#### Simulateur de Pipeline Médaillon : Quality Gate, Idempotence MERGE, Replay & SCD {.bi-award-fill}
+
+:::: {#medallion-replay-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createMedallionReplaySimulator("#medallion-replay-sim")
+```
+
+## 🎯 Les 4 Réflexes de l'Architecte Médaillon
+
+1. **Ne sautez jamais Bronze, ne polluez jamais Silver avec des KPIs départementaux** : Bronze protège votre capacité de *Replay* ; Silver factorise le nettoyage pour l'IA et l'analytique ; Gold certifie les définitions métier uniques [@singdata_medallion_2025; @derosiaux_zones_2026].
+2. **Quarantaine plutôt que crash ou perte silencieuse** : routez les enregistrements non conformes vers une table d'audit dédiée afin de préserver les SLA tout en alertant les producteurs amont [@soni_quarantine_2026].
+3. **Exigez l'idempotence de bout en bout** : appuyez-vous sur `MERGE INTO` et les primitives transactionnelles du [Lakehouse](datalakehouse.qmd) pour qu'aucun *retry* réseau ne crée jamais de doublon [@merced_idempotent_2026; @antoine_failure_2026].
+4. **Modélisez Gold pour les humains et les moteurs** : clés de substitution `BIGINT NOT NULL`, grain de faits explicite et **SCD Type 2** dès que la vérité historique compte [@kimball_toolkit_2013; @threecloud_modeling_2024].
+
+Reste à coordonner l'exécution quotidienne de ces couches sans jamais publier de table cassée ni violer le droit à l'oubli européen : c'est la mission finale du chapitre **[Orchestration DAG, Patron WAP & Gouvernance RGPD](orchestration-gouvernance.qmd)**.

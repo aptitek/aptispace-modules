@@ -1,0 +1,115 @@
+---
+title: "Pipelines Analytiques : ETL, ELT & Architecture Hybride"
+icon: "🔀"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Résoudre le dilemme vitesse-qualité en arbitrant entre prévention ETL (Schema-on-Write), vélocité Cloud ELT (Schema-on-Read) et routage hybride intelligent."
+---
+
+Disposer d'un moteur distribué rapide ([Spark](spark.qmd)) et d'un format colonnaire sobre ([Parquet](datalake.qmd)) ne suffit pas : encore faut-il décider **quand et où valider la donnée** avant de l'exposer aux décideurs et aux modèles d'IA. Toute équipe Data se heurte alors au **dilemme vitesse–qualité** : faut-il bloquer et inspecter minutieusement chaque enregistrement *avant* son chargement, ou déverser les octets bruts à pleine vitesse dans le Cloud pour les transformer après coup [@varma_hybrid_2024; @simitsis_etl_2023] ?
+
+## ⚖️ Le Duel Historique : Douane ETL vs Autoroute Cloud ELT
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### ETL Classique : La Qualité d'Abord [Préventif]{.concept-badge .tag-primary} {.bi-shield-lock-fill}
+
+Pendant vingt ans, l'ingénierie décisionnelle s'est appuyée sur le triptyque **Extract – Transform – Load** [@kimball_toolkit_2013; @vassiliadis_etl_2002] : tel un **poste de douane sanitaire**, un serveur intermédiaire dédié (*staging area*) nettoie les types, vérifie l'intégrité référentielle et rejette les anomalies **avant** toute écriture (*Schema-on-Write*) [@rahm_cleaning_2000].
+
+- **Force** : étanchéité remarquable dépassant **99,7 % d'exactitude** sur les flux comptables et réglementaires [@varma_hybrid_2024].
+- **Goulot** : le serveur ETL mono-moteur s'essouffle face aux téraoctets (**145 min** de latence moyenne) et toute nouvelle colonne oblige à redéployer le pipeline [@varma_hybrid_2024].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Cloud ELT : La Vitesse d'Abord [Détectif]{.concept-badge .tag-warning} {.bi-speedometer}
+
+L'essor des entrepôts cloud massivement parallèles (Snowflake, BigQuery, Redshift) et d'Apache Hive/Spark SQL a inversé la séquence en **Extract – Load – Transform** [@abadi_column_2013; @camacho_hive_2019; @inmon_architecture_2020] : telle une **autoroute à péage ouvert**, les données brutes atterrissent immédiatement dans l'entrepôt où des requêtes SQL élastiques transforment à la lecture (*Schema-on-Read*).
+
+- **Force** : latence divisée par plus de deux (**68 min**, jusqu'à **45 000 enreg./s**) et fraîcheur immédiate [@varma_hybrid_2024].
+- **Danger caché** : le contrôle devient **détectif** (*a posteriori*). **68 % des organisations** en ELT pur subissent une hausse critique d'incidents polluant directement les tableaux de bord de direction [@simitsis_etl_2023; @redman_quality_2018; @varma_hybrid_2024] !
+:::::
+::::
+:::
+
+## 🧭 L'Architecture Hybride de Varma : Classifier plutôt que Subir
+
+Opposer le « tout-ETL » au « tout-ELT » est un faux dilemme : **l'hétérogénéité des données exige une hétérogénéité architecturale** [@varma_hybrid_2024]. L'architecture hybride formalisée par Yarra Aditya Varma articule cinq briques autour d'un aiguilleur intelligent :
+
+1. **`Ingestion Layer` & `Classification Engine`** : inspectent le profil de chaque flux entrant selon **4 critères** — *Criticalité métier*, *Complexité de transformation*, *Volume quotidien* ($<100\text{ Go}$ vs $>1\text{ To}$) et *Risque qualité de la source* [@varma_hybrid_2024].
+2. **`ETL Validation Path` (Voie Critique)** : oriente les référentiels maîtres et écritures comptables vers un moteur de validation préventive et sa zone de *staging*.
+3. **`ELT Efficiency Path` (Voie Volume)** : déverse les flux massifs à faible risque unitaire (clics web, télémétrie) directement dans le Cloud Data Warehouse pour des transformations SQL parallèles.
+4. **`Integration Layer` (Réconciliation)** : garantit l'intégrité référentielle lors de la jointure entre dimensions validées en ETL et tables de faits massives traitées en ELT.
+5. **`Control Plane / Resilience Monitor`** : supervise de bout en bout les SLA de fraîcheur, les dérives de schéma et la traçabilité multi-voies [@varma_hybrid_2024].
+
+| Flux de données type         | Critère dominant                            | Voie routée                                  | Justification architecturale [@varma_hybrid_2024]                               |
+| :--------------------------- | :------------------------------------------ | :------------------------------------------- | :------------------------------------------------------------------------------ |
+| **Transactions financières** | Criticalité maximale & risque moyen         | **Hybride** *(Validation ETL + Agrégat ELT)* | Exactitude comptable préventive en amont, puis puissance SQL cloud pour agréger |
+| **Référentiel fournisseurs** | Forte complexité (*lookups*) & risque élevé | **ETL Pur**                                  | Donnée maîtresse critique : toute anomalie doit être stoppée en *staging*       |
+| **Démographie clients**      | Faible complexité & source stable           | **ELT Pur**                                  | Structure maîtrisée se prêtant idéalement au SQL *in-database*                  |
+| **Web Analytics (> 1 To/j)** | Volumétrie massive                          | **ELT Pur**                                  | Débit incompatible avec un goulot ETL ; tolérance métier aux micro-écarts       |
+
+::: {.callout-note collapse="true"}
+#### Les 3 motifs de déploiement et les 5 règles de gouvernance opérationnelle
+
+Varma identifie trois patrons d'implémentation complémentaires [@varma_hybrid_2024] :
+
+- **Critical Path Separation** : séparation stricte par domaine (Finance/Réglementaire en ETL ; Produit/Exploration en ELT).
+- **Complexity-Based Routing** : filtres et agrégations SQL déclaratifs en ELT ; enrichissements *stateful* multi-sources complexes en ETL.
+- **Staged Refinement** : atterrissage global rapide en ELT dans une couche brute, suivi d'un sas préventif ETL uniquement pour les sous-ensembles exposés au comité exécutif.
+
+En contrepartie d'une pile technique double à superviser, cinq garde-fous assurent le succès du modèle : **(1)** co-définir les seuils de criticalité avec les métiers, **(2)** démarrer par un pilote sur 1–2 flux critiques, **(3)** centraliser l'observabilité dans un orchestrateur unifié (Airflow / Prefect), **(4)** réviser trimestriellement la matrice de routage (ex. nouvelle norme légale faisant basculer un flux ELT vers ETL), et **(5)** former des équipes hybrides maîtrisant à la fois validation amont et SQL distribué [@varma_hybrid_2024].
+:::
+
+## 🧪 Simulateur : Routage ETL / ELT / Hybride & Injection d'Anomalies
+
+Basculez entre les trois architectures face à un trafic réaliste mêlant une écriture financière viciée et un pic de 1,5 To d'événements web :
+
+::: {.card-window}
+#### Simulateur de Pipeline : Goulot Douanier ETL, Pollution ELT & Interception Hybride {.bi-signpost-split-fill}
+
+:::: {#hybrid-pipeline-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createHybridPipelineSimulator("#hybrid-pipeline-sim")
+```
+
+## 📊 Bilan Empirique : Performance, Coûts & Réduction de 67 % des Incidents
+
+Les mesures expérimentales de Varma [@varma_hybrid_2024] confirment que le routage hybride capture **94 % du gain de vitesse de l'ELT** tout en abaissant de **67 % les incidents de qualité majeurs et critiques** :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=7}
+| Métrique observée [@varma_hybrid_2024] | Pure ETL  | Pure ELT  | **Hybride**         | Gain Hybride        |
+| :------------------------------------- | :-------- | :-------- | :------------------ | :------------------ |
+| **Latence moyenne**                    | 145 min   | 68 min    | **72 min**          | **-50,3 %** vs ETL  |
+| **Débit de pointe (enreg./s)**         | 8 500     | 45 000    | **38 000**          | **+347 %** vs ETL   |
+| **Exactitude flux critiques**          | 99,7 %    | 96,8 %    | **99,5 %**          | **+2,7 pts** vs ELT |
+| **Couverture validation**              | 100 %     | 35 %      | **78 %** *(ciblée)* | Optimum risque/coût |
+| **Reprise après échec batch**          | 85 min    | 45 min    | **52 min**          | **-38,8 %** vs ETL  |
+| **Coût mensuel d'infra**               | 24 500 \$ | 15 200 \$ | **17 800 \$**       | **-27,3 %** vs ETL  |
+::::
+
+:::: {.col span=5}
+::::: {.card-window}
+#### Incidents Mensuels par Gravité {.bi-bar-chart-line-fill}
+
+:::::: {#varma-incidents-chart}
+::::::
+:::::
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.renderVarmaIncidentsChart("varma-incidents-chart")
+```
+
+Reste une question fondamentale d'infrastructure : peut-on unifier physiquement l'entrepôt transactionnel et le lac de fichiers [Parquet](datalake.qmd) sur un seul et même stockage objet ouvert, sans dupliquer les données entre deux systèmes ? C'est précisément la mission du **Data Lakehouse**.

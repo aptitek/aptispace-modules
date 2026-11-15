@@ -1,0 +1,136 @@
+---
+title: "Apache Spark : Lignage en Mémoire, DAG & Optimisation"
+icon: "⚡"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Comprendre les RDD immuables, la tolérance aux pannes par lignée de données, l'arbitrage Caching vs Checkpointing, le Shuffle et les anti-patterns PySpark."
+---
+
+Même propulsé par [YARN](mapreduce.qmd), le modèle MapReduce souffre d'un handicap rédhibitoire dès qu'un algorithme enchaîne plusieurs passes (Machine Learning itératif, graphes, requêtes SQL interactives) : pour survivre aux pannes, il matérialise et réplique **chaque résultat intermédiaire sur disque et à travers le réseau**, imposant une barrière d'arrêt complet entre deux étapes [@zaharia_spark_2010; @shi_clash_2015]. Créé à UC Berkeley par Matei Zaharia et son équipe, **Apache Spark** élimine cette taxe d'E/S en remplaçant la réplication brute des états intermédiaires par la **reconstruction ciblée via la lignée de données** (*Data Lineage*) [@zaharia_rdd_2012].
+
+## 🧬 RDD, Immuabilité & Résilience par la Lignée (Data Lineage)
+
+L'abstraction fondatrice de Spark est le **RDD** (*Resilient Distributed Dataset*) : une collection **partitionnée** sur le cluster, maintenue prioritairement **en mémoire vive**, et strictement **immuable** (toute transformation produit un nouveau RDD sans jamais modifier l'ancien sur place) [@zaharia_rdd_2012; @karau_learning_2015].
+
+Plutôt que d'écrire un journal d'opérations granulaire (*Write-Ahead Log*) aussi volumineux que les données elles-mêmes, Spark mémorise uniquement la « recette mathématique » — le **graphe acyclique dirigé (DAG)** des transformations appliquées depuis la source [@zaharia_rdd_2012] :
+
+| Mécanisme de résilience           | Volume sauvegardé                                       | Coût à l'exécution nominale               | Réaction lors du crash d'un nœud Worker                                                  |
+| :-------------------------------- | :------------------------------------------------------ | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
+| **Réplication brute / WAL**       | Égal à $3\times$ le volume des données                  | Saturation disque & réseau à chaque étape | Bascule vers une copie physique déjà écrite                                              |
+| **Lignée Spark (*Data Lineage*)** | Quelques kilooctets (le graphe DAG) [@zaharia_rdd_2012] | **Quasi nul** (calcul pur en RAM)         | Recalcul ciblé **des seules partitions perdues** sur les nœuds sains [@zaharia_rdd_2012] |
+
+Pour que ce recalcul partiel donne un résultat bit-à-bit identique au reste du cluster, deux invariants sont non négociables [@zaharia_rdd_2012] :
+
+1. **Immuabilité absolue** : si une partition parente avait été mutée *in-place*, rejouer la recette produirait un état divergent.
+2. **Déterminisme strict** : une transformation doit toujours retourner la même sortie pour la même entrée (pour un tirage aléatoire ou un échantillonnage ML, Spark fige la **graine aléatoire `seed`** directement dans le graphe de lignée [@zaharia_rdd_2012]).
+
+::: {.callout-note collapse="true"}
+#### Sous le capot : Moteur Tungsten et Mémoire Binaire Off-Heap
+
+Stocker des millions d'objets Java natifs dans le tas (*Heap*) de la JVM coûte très cher : une simple chaîne `String` de 4 caractères occupe plus de **40 octets** d'en-têtes et provoque de violentes pauses du ramasse-miettes (*Garbage Collector*) [@xin_tungsten_2015; @parmar_spark_2026]. Le moteur **Tungsten** contourne la JVM en allouant directement des pages binaires contiguës **hors-tas (*off-heap*)** (par exemple un préfixe de longueur de 4 octets suivi des octets UTF-8 bruts), maximisant les *cache hits* L1/L2 du processeur et supprimant les pauses GC [@xin_tungsten_2015; @parmar_spark_2026].
+:::
+
+## 💾 Stabiliser les Pipelines : Caching vs Checkpointing
+
+Sur un algorithme comportant **500 itérations** (ex. descente de gradient ou PageRank), la lignée s'allonge dangereusement : perdre un nœud à l'étape 499 forcerait à rejouer les 499 étapes amont ! Spark distingue alors deux outils complémentaires qu'il ne faut jamais confondre [@zaharia_rdd_2012; @parmar_spark_2026] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### `.cache()` / `.persist()` [Accélération]{.concept-badge .tag-info} {.bi-lightning-fill}
+
+Garde les partitions évaluées en **RAM locale** (avec débordement gracieux *spill* sur disque local si la RAM déborde) pour accélérer les réutilisations proches.
+
+- **Impact sur la lignée : CONSERVÉE.** Si le serveur s'éteint, sa RAM et son disque local disparaissent ensemble ; Spark a donc toujours besoin du DAG complet pour reconstruire la partition [@parmar_spark_2026].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### `.checkpoint()` [Coupure de Lignée]{.concept-badge .tag-success} {.bi-scissors}
+
+Matérialise l'état du RDD sur un **stockage distribué répliqué** ([HDFS](hdfs.qmd) `R=3` ou S3).
+
+- **Impact sur la lignée : TRANCHÉE.** Uniquement parce que les octets sont désormais protégés sur *plusieurs serveurs indépendants*, Spark détruit tout le graphe parent : en cas de crash ultérieur, le calcul repart directement du checkpoint [@zaharia_rdd_2012] !
+:::::
+::::
+:::
+
+## 🔄 Modèle d'Exécution Physique : Jobs, Stages & Shuffle
+
+Les transformations Spark sont **paresseuses** (*lazy evaluation*) : l'optimiseur **Catalyst** attend qu'une **Action** (`.count()`, `.write()`, `.collect()`) soit appelée pour compiler le plan logique en un **`Job`** découpé en **`Stages`**, eux-mêmes exécutés par des **`Tasks`** (1 Task = 1 partition traitée par 1 thread d'exécuteur) [@armbrust_catalyst_2015; @parmar_spark_2026].
+
+- **Transformations Étroites (*Narrow* : `map`, `filter`, `withColumn`)** : chaque partition enfant dépend d'au plus une partition parente. Spark les fusionne en mémoire vive (**pipelining**) au sein d'un même *Stage* avec **zéro transfert réseau** [@parmar_spark_2026].
+- **Transformations Larges (*Wide* : `join`, `groupBy`, `reduceByKey`, `repartition`)** : exigent de regrouper des clés dispersées sur tout le cluster. Elles imposent une frontière de **`Shuffle`** (écriture triée sur disque local côté *Map* + lecture réseau croisée et désérialisation côté *Reduce*), l'opération la plus coûteuse de Spark [@parmar_spark_2026].
+
+::: {.callout-note collapse="true"}
+#### Contrainte algébrique de `reduceByKey` : Commutativité & Associativité
+
+Pour réduire drastiquement le volume réseau du Shuffle, `reduceByKey(f)` pré-agrège les valeurs localement sur chaque exécuteur source (*Map-side combiner*) avant d'envoyer les paquets sur le réseau dans un ordre quelconque [@parmar_spark_2026]. La fonction $f$ doit donc impérativement être **commutative** et **associative** :
+
+$$f(x, y) = f(y, x) \qquad \text{et} \qquad f\big(f(x, y), z\big) = f\big(x, f(y, z)\big)$$
+
+Utiliser une soustraction ou une moyenne arithmétique naïve dans `reduceByKey` produit des résultats faux et non déterministes d'une exécution à l'autre (il faut réduire des couples `(somme, compteur)` puis diviser à la fin) !
+:::
+
+## 🧪 Simulateur : Lignée DAG, Checkpoint, Driver OOM & Data Skew
+
+Provoquez des pannes d'exécuteurs et des anti-patterns de production, puis activez les correctifs architecturaux en un clic :
+
+::: {.card-window}
+#### Laboratoire de Résilience Spark : Crash Worker, Itération 500, OOM & Skew 99 % {.bi-cpu-fill}
+
+:::: {#spark-lineage-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createSparkLineageSimulator("#spark-lineage-sim")
+```
+
+## 🚨 Les Anti-Patterns PySpark en Production et leurs Refactorings
+
+Même sur des DataFrames modernes (introduits dans le module [DataFrames](../datascience/dataframe.qmd)), quatre erreurs de code ruinent régulièrement les performances des clusters PySpark [@srini_pyspark_2026] *(un cinquième piège lié au sur-partitionnement disque sera détaillé avec [Parquet](datalake.qmd) et le [Lakehouse](datalakehouse.qmd))* :
+
+| Anti-pattern PySpark                   | Symptôme en production                                                                                                   | Refactoring recommandé (100 % natif)                                                                                                                                                             |
+| :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. UDF Python pure**                 | Double sérialisation JVM $\leftrightarrow$ Python ligne à ligne ; Catalyst et Tungsten neutralisés [@srini_pyspark_2026] | Expressions natives (`when`/`otherwise`) ou **Pandas UDF vectorisées** via **Apache Arrow** *(partage mémoire colonnaire zero-copy sans sérialisation entre JVM et Python [@apache_arrow_2026])* |
+| **2. `.collect()` / `.toPandas()`**    | Rapatriement intégral sur le nœud pilote $\to$ crash **`Driver OutOfMemoryError`** [@srini_pyspark_2026]                 | Filtrer/agréger sur les Workers (`df.filter(...)`), n'extraire qu'un aperçu borné `.take(10)`                                                                                                    |
+| **3. *Data Skew* sur `join`**          | Clé surreprésentée (`NULL`/défaut) bloquant **1 tâche sur 200 à 99 %** avec *disk spill* massif [@srini_pyspark_2026]    | Activer **AQE** (`spark.sql.adaptive.skewJoin.enabled`) ou appliquer un **Salting** contrôlé                                                                                                     |
+| **4. `.withColumn()` en boucle `for`** | Arbre de projections géant faisant exploser le temps de compilation Catalyst avant exécution [@srini_pyspark_2026]       | Passe logique unique via `df.select(*exprs)` ou `df.withColumns(dict)` (PySpark 3.3+)                                                                                                            |
+
+::: {.callout-note collapse="true"}
+#### Code de référence : Éliminer les UDF Python, les boucles `.withColumn()` et le Join Skew
+
+```python
+from pyspark.sql.functions import col, concat, floor, lit, rand, trim, when
+
+# 1. Remplacer une UDF Python par une expression vectorisée JVM + Catalyst
+df = df.withColumn(
+    "tier",
+    when(col("amount").isNull(), "UNKNOWN")
+    .when(col("amount") > 1000, "HIGH")
+    .otherwise("LOW"),
+)
+
+# 2. Nettoyer N colonnes en UNE seule passe logique (zéro inflation du plan Catalyst)
+cols_to_clean = ["country", "currency", "channel"]
+df = df.withColumns({c: trim(col(c)) for c in cols_to_clean})
+
+# 3. Résoudre un Join Skew automatiquement via AQE (recommandé) ou par Salting manuel (facteur 4)
+spark.conf.set("spark.sql.adaptive.enabled", "true")
+spark.conf.set("spark.sql.adaptive.skewJoin.enabled", "true")
+
+# Salting manuel si nécessaire (attention : multiplie la table de droite par 4 en mémoire !)
+orders_salted = orders_df.withColumn(
+    "salted_key", concat(col("customer_id"), lit("_"), floor(rand(42) * 4))
+)
+customers_salted = customers_df.crossJoin(
+    spark.range(4).withColumnRenamed("id", "salt")
+).withColumn("salted_key", concat(col("customer_id"), lit("_"), col("salt")))
+joined_df = orders_salted.join(customers_salted, on="salted_key", how="inner")
+```
+:::

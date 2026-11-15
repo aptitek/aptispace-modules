@@ -1,0 +1,96 @@
+---
+title: "Stockage Opérationnel NoSQL : Hachage Cohérent & Arbres LSM"
+icon: "⚡"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Répartir des milliards de clés sans tempête réseau grâce au hachage cohérent et absorber des écritures aléatoires massives avec les moteurs LSM-Tree (MemTable, SSTables, Bloom Filters)."
+---
+
+Avant d'étudier le stockage analytique de fichiers géants avec [HDFS](hdfs.qmd) et [Apache Parquet](datalake.qmd), une question symétrique se pose : comment des plateformes comme **Amazon DynamoDB**, **Apache Cassandra**, **Google Bigtable / HBase** ou le moteur d'état **RocksDB** parviennent-elles à absorber **des centaines de milliers d'écritures unitaires aléatoires par seconde** sur des téraoctets de données, tout en ajoutant ou perdant des serveurs à chaud [@chang_bigtable_2006; @decandia_dynamo_2007; @lakshman_cassandra_2010] ?
+
+Deux inventions algorithmiques rendent ce miracle possible : le **Hachage Cohérent** côté réseau, et l'**Arbre LSM (*Log-Structured Merge-Tree*)** côté disque.
+
+## 💍 Partitionner sans Tempête : Du Piège `mod N` au Hachage Cohérent
+
+Pour répartir un milliard de paniers d'achat sur $N$ serveurs, l'idée naïve consiste à router chaque clé $k$ vers le serveur `hash(k) mod N`. En production, cette formule est catastrophique : dès qu'un serveur tombe en panne ($N \to N-1$) ou qu'on ajoute une machine lors d'un pic de charge ($N \to N+1$), le reste de la division euclidienne change pour **$\frac{N-1}{N}$ des clés** (soit **90 % des données à déménager** sur un cluster de 10 nœuds !) [@karger_consistent_1997; @kleppmann_ddia_2017].
+
+Introduit par Karger et al. [@karger_consistent_1997] et industrialisé par Dynamo et Cassandra [@decandia_dynamo_2007; @lakshman_cassandra_2010], le **Hachage Cohérent (*Consistent Hashing*)** replie l'espace de sortie de la fonction de hachage (ex. $[0, 2^{32}-1]$) sous la forme d'un **anneau circulaire** :
+
+1. **Placement sur le cercle** : chaque serveur et chaque clé de donnée sont projetés sur l'anneau par la même fonction de hachage cryptographique ou uniforme (`Murmur3`, `xxHash`).
+2. **Routage horaire** : une clé appartient au premier serveur rencontré en avançant dans le sens des aiguilles d'une montre (et est répliquée sur les $R-1$ serveurs suivants selon le [quorum](consensus.qmd) choisi).
+3. **Coût minimal de redimensionnement** : l'ajout ou le retrait d'un serveur n'affecte que son voisin immédiat sur l'arc concerné, ne déplaçant en moyenne que **$1/N$ des clés** (le minimum mathématique absolu) [@karger_consistent_1997] !
+
+::: {.callout-note collapse="true"}
+#### Pourquoi les « Virtual Nodes » (vnodes) sont indispensables en production ?
+
+Placer chaque machine physique en un seul point de l'anneau crée deux déséquilibres : des arcs de tailles inégales par hasard statistique, et un report brutal de 100 % de la charge d'un serveur mort sur son **unique** successeur [@decandia_dynamo_2007]. En attribuant **128 à 256 jetons virtuels (*vnodes*)** dispersés sur l'anneau à chaque machine physique (voire proportionnellement à sa puissance CPU/RAM), la perte d'un serveur dilue instantanément sa charge de manière uniforme sur l'ensemble des survivants [@decandia_dynamo_2007; @lakshman_cassandra_2010] !
+:::
+
+## 🌲 B-Tree vs LSM-Tree : Transformer l'Aléatoire en Séquentiel Pur
+
+Les bases relationnelles classiques indexent leurs tables avec des **B-Trees**, qui découpent le disque en pages fixes de 4 à 16 Ko modifiées *sur place* (*in-place*) [@kleppmann_ddia_2017]. Sous un déluge d'écritures de clés aléatoires (`UUID`, capteurs IoT), chaque insertion provoque des sauts mécaniques ou une forte **amplification d'écriture SSD** (réécrire une page de 16 Ko pour modifier 20 octets).
+
+Inventé par Patrick O'Neil et al. [@oneil_lsm_1996] et adopté par **Bigtable**, **HBase**, **Cassandra** et **RocksDB** [@chang_bigtable_2006; @lakshman_cassandra_2010; @dong_rocksdb_2021], le **LSM-Tree** applique le principe radical de l'**immuabilité sur disque** :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=4}
+::::: {.card}
+#### `WAL` + `MemTable` [Écriture RAM]{.concept-badge .tag-success} {.bi-lightning-charge-fill}
+
+Toute écriture (`PUT` ou suppression) est d'abord ajoutée en **fin d'un journal séquentiel sur disque (`Write-Ahead Log`)** pour survivre aux coupures électriques, puis insérée dans un arbre trié en mémoire vive (**`MemTable`**, type *SkipList*) [@chang_bigtable_2006; @dong_rocksdb_2021]. Latence : microsecondes !
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### `SSTables` + Bloom [Fichiers Triés]{.concept-badge .tag-primary} {.bi-file-earmark-lock-fill}
+
+Dès que la `MemTable` atteint un seuil (ex. 64 Mo), elle est écrite d'un seul jet séquentiel sous forme d'une **`SSTable`** (*Sorted String Table*) **immuable** accompagnée d'un index épars et d'un **Filtre de Bloom** en RAM permettant d'ignorer en $O(1)$ tout fichier ne contenant pas la clé cherchée [@chang_bigtable_2006; @lakshman_cassandra_2010].
+:::::
+::::
+
+:::: {.col span=4}
+::::: {.card}
+#### `Tombstones` & Compaction [Entretien]{.concept-badge .tag-warning} {.bi-layers-half}
+
+Puisqu'une `SSTable` ne se modifie jamais, supprimer une clé écrit un marqueur spécial (**`Tombstone`**). En arrière-plan, un processus de **Compaction** fusionne plusieurs `SSTables` par *merge-sort* (comme des bandes magnétiques déjà triées !), éliminant vieilles versions et *tombstones* [@oneil_lsm_1996; @dong_rocksdb_2021].
+:::::
+::::
+:::
+
+| Critère d'ingénierie            | **Index B-Tree** *(PostgreSQL, MySQL InnoDB)*      | **Moteur LSM-Tree** *(Cassandra, HBase, RocksDB)*                       |
+| :------------------------------ | :------------------------------------------------- | :---------------------------------------------------------------------- |
+| **Débit d'écriture aléatoire**  | Modéré (réécriture de pages sur place + verrous)   | **Extrême** (ajout séquentiel pur `WAL` + tri en RAM) [@oneil_lsm_1996] |
+| **Latence de lecture unitaire** | **Optimale et prévisible** (1 seul chemin d'arbre) | Légèrement supérieure (sonde `MemTable` puis `SSTables` via Bloom)      |
+| **Empreinte disque**            | Fragmentation interne des pages (~25–30 % perdu)   | **Compacte** (fichiers immuables denses et compressés par blocs)        |
+| **Rôle dans l'écosystème Data** | Bases opérationnelles **OLTP** relationnelles      | NoSQL intensif, index de clés et **état local du Streaming** (RocksDB)  |
+
+::: {.callout-tip}
+#### Le lien direct avec le Data Lakehouse moderne
+
+Gardez bien en tête la mécanique `SSTable immuable + Tombstone + Compaction` : vous retrouverez **exactement cette même idée transposée sur le stockage objet cloud** avec la stratégie *Merge-on-Read (`MoR`)*, les *Deletion Vectors* et la commande `OPTIMIZE` des formats [Data Lakehouse](datalakehouse.qmd) !
+:::
+
+## 🧪 Simulateur : Anneau de Hachage Cohérent & Cycle de Vie LSM-Tree
+
+Comparez l'impact d'un redimensionnement `mod N` face à l'anneau à *vnodes*, puis testez la survie au crash par `WAL`, les filtres de Bloom et la compaction des `Tombstones` :
+
+::: {.card-window}
+#### Simulateur NoSQL : Consistent Hashing, Crash WAL, Filtres de Bloom & Compaction LSM {.bi-hdd-rack}
+
+:::: {#nosql-lsm-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createNosqlLsmSimulator("#nosql-lsm-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **Bannissez `hash(k) mod N` sur tout système élastique** : le **Hachage Cohérent** couplé aux **Virtual Nodes** réduit la migration réseau au minimum théorique $1/N$ et lisse automatiquement les pannes sur tout le parc [@karger_consistent_1997; @decandia_dynamo_2007].
+- **L'immuabilité transforme les écritures aléatoires en flux séquentiels** : en combinant `WAL`, `MemTable` et `SSTables` triées, le **LSM-Tree** décuple le débit d'ingestion au prix d'une **compaction** régulière en tâche de fond [@oneil_lsm_1996; @chang_bigtable_2006].
+- **Les Filtres de Bloom sauvent les lectures LSM** : cette empreinte binaire probabiliste en RAM garantit sans aucun faux négatif qu'une clé est absente d'une `SSTable`, évitant des ouvertures de fichiers inutiles [@lakshman_cassandra_2010].

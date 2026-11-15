@@ -1,0 +1,86 @@
+---
+title: "Data Lake & Anatomie Interne d'Apache Parquet"
+icon: "🪵"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Exploiter les encodages légers vectorisés SIMD, décortiquer l'architecture hiérarchique d'Apache Parquet et comprendre les limites d'un Data Lake brut."
+---
+
+Avec la montée du cloud, le paradigme du **Data Lake** a dissocié le calcul ([Spark](spark.qmd)) d'un stockage objet élastique et économique (Amazon S3, Azure ADLS, GCS) hébergeant des fichiers ouverts en mode *Schema-on-Read* [@wieder_datalakes_2022]. Mais comme nous l'avons découvert dans l'introduction au [stockage colonnaire](../datascience/colonnaire.qmd), interroger des téraoctets en CSV ou JSON orientés lignes gaspille **80 à 95 % de la bande passante disque** en lisant des dizaines de colonnes inutiles [@pavlo_formats_2024; @velodb_parquet_2026].
+
+Passer d'un format texte orienté lignes (idéal pour les transactions unitaires **OLTP**) à **Apache Parquet** (taillé pour l'analytique **OLAP**) accélère les requêtes de **5 à 10×** tout en réduisant la facture de stockage cloud de **60 à 80 %** [@liu_formats_2023; @velodb_parquet_2026]. Voyons comment sa mécanique binaire accomplit ce tour de force.
+
+## 🧬 Encodages Légers Vectorisés (SIMD) vs Compression par Blocs
+
+Avant même de compresser les octets avec un codec généraliste, un format colonnaire exploite l'homogénéité stricte des types au sein d'une colonne grâce à des **encodages légers** (*lightweight encodings*) [@pavlo_formats_2024; @liu_formats_2023; @zeng_columnar_2023]. Contrairement à une compression lourde (qui oblige le CPU à tout décompresser avant d'inspecter la moindre valeur), ces encodages préservent l'alignement binaire et permettent au processeur d'exécuter des filtres **directement sur des registres vectorisés SIMD** sans décompression préalable [@pavlo_formats_2024; @liu_formats_2023] :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Dictionary (`DICT`) & `RLE` [Faible Cardinalité]{.concept-badge .tag-info} {.bi-translate}
+
+- **Dictionary Encoding (`DICT`)** : remplace les chaînes répétitives (ex. codes pays, devises, statuts) par de petits identifiants entiers fixes pointant vers une table de dictionnaire [@liu_formats_2023; @velodb_parquet_2026].
+- **Run-Length Encoding (`RLE`)** : remplace toute suite contiguë identique par un couple `(valeur, répétitions)` — redoutable lorsque la table est triée sur disque, notamment en combinaison hybride **`DICT + RLE`** [@pavlo_formats_2024; @velodb_parquet_2026].
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### `FOR` + Bit-Packing [Séries Numériques]{.concept-badge .tag-primary} {.bi-binary}
+
+- **Frame of Reference (`FOR`)** : soustrait une valeur de base minimale à chaque entier d'un bloc afin de ne stocker que de petits écarts positifs ($\Delta$) [@pavlo_formats_2024; @liu_formats_2023].
+- **Bit-Packing** : supprime tous les zéros de poids fort inutiles (ex. coder des écarts $< 16$ sur **4 bits** au lieu de 64 bits), permettant de loger des dizaines de valeurs dans un seul registre SIMD [@pavlo_formats_2024].
+:::::
+::::
+:::
+
+## 🏛️ Anatomie Hiérarchique d'un Fichier Apache Parquet
+
+Pour conjuguer lecture parallèle et sauts d'E/S chirurgicaux, Parquet n'est pas un format colonnaire pur, mais un découpage **hybride horizontal puis vertical** structuré en quatre niveaux [@apache_parquet_2026; @velodb_parquet_2026] :
+
+1. **`File Footer` (Pied de fichier — lu en tout premier !)** : placé à la fin du fichier (identifié par les octets magiques `PAR1`), il concentre le schéma complet, les encodages choisis et les offsets exacts de tous les blocs [@liu_formats_2023; @velodb_parquet_2026].
+2. **`Row Group` (Tranche horizontale : 128 Mo à 1 Go)** : partition logique de lignes (cible recommandée en production : **256 à 512 Mo** pour équilibrer parallélisme des tâches Spark et ratio de compression [@velodb_parquet_2026]).
+3. **`Column Chunk` (Tranche verticale d'une colonne dans un Row Group)** : embarque ses statistiques d'indexation (**Zone Maps** : `[min, max]`, `null_count`) et ses filtres probabilistes [@liu_formats_2023; @khare_parquet_2026].
+4. **`Page` (8 Ko à 1 Mo)** : plus petite unité physique d'encodage et de compression par codec, divisée entre **`Dictionary Page`** et **`Data Pages`** [@apache_parquet_2026; @velodb_parquet_2026].
+
+### Les deux moteurs d'économie d'E/S et le choix du Codec
+
+- **Column Pruning (Élagage vertical)** : grâce aux offsets du *File Footer*, le moteur ne télécharge depuis S3/HDFS que les octets des colonnes listées dans le `SELECT`, ignorant physiquement toutes les autres [@velodb_parquet_2026].
+- **Predicate Pushdown (Élagage horizontal)** : avant de lire un *Row Group*, le moteur confronte la clause `WHERE` à trois gardes-barrières successifs [@khare_parquet_2026; @velodb_parquet_2026] :
+  1. **Zone Maps `[min, max]`** : si `WHERE amount > 1000` et que `max = 420`, tout le *Row Group* est sauté en **zéro octet d'I/O**.
+  2. **Dictionary Filtering** : si la valeur cherchée est absente de la *Dictionary Page*, aucune *Data Page* n'est scannée.
+  3. **Filtres de Bloom (*Bloom Filters*)** : structure binaire probabiliste ultra-compacte qui garantit l'absence d'un identifiant haute cardinalité (`UUID`, `tx_id`) sans faux négatif [@khare_parquet_2026].
+
+| Codec par Page          | Taux de compression              | Coût CPU Lecture/Écriture             | Usage recommandé en production                                        |
+| :---------------------- | :------------------------------- | :------------------------------------ | :-------------------------------------------------------------------- |
+| **`ZSTD` *(niv. 5–6)*** | **Élevé** (+10 à 15 % vs Snappy) | Très équilibré (décompression rapide) | **Standard par défaut en production** [@velodb_parquet_2026]          |
+| **`Snappy`**            | Modéré                           | **Minimal** (vitesse pure)            | Requêtes interactives à latence ultra-basse [@velodb_parquet_2026]    |
+| **`LZ4`**               | Modéré à faible                  | Écriture extrêmement véloce           | Tampons d'ingestion temporaires à fort débit [@liu_formats_2023]      |
+| **`Gzip`**              | Très élevé                       | **Lourd** en décompression CPU        | Archivage froid (*cold storage*) rarement relu [@velodb_parquet_2026] |
+
+## 🧪 Simulateur : Inspecteur Parquet, Élagage d'I/O & Crash sur Lac Brut
+
+Exécutez différentes requêtes SQL sur un fichier Parquet de 4 *Row Groups*, comparez les codecs et observez ce qui arrive lorsqu'une écriture plante au milieu d'un Data Lake dépourvu de transactions :
+
+::: {.card-window}
+#### Inspecteur Dynamique Parquet : Footer, Zone Maps, Bloom Filter & Écriture Partielle {.bi-file-earmark-binary-fill}
+
+:::: {#parquet-pruning-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createParquetPruningSimulator("#parquet-pruning-sim")
+```
+
+## ⚠️ Pourquoi un Data Lake Brut Dérive vers un « Data Swamp »
+
+Malgré l'excellence binaire de Parquet, empiler des fichiers bruts dans des dossiers cloud (`year=2026/month=11/day=15/hour=14/`) finit par transformer de nombreux lacs en marécages inexploitables (*Data Swamps*) [@gahi_datalakes_2025] :
+
+1. **Piège du sur-partitionnement (*Anti-Pattern PySpark #5*)** : découper un petit volume avec `partitionBy("year", "month", "day", "hour")` pulvérise la table en dizaines de milliers de micro-fichiers Parquet où les appels HTTP `LIST` du stockage objet prennent plus de temps que la lecture elle-même [@srini_pyspark_2026; @velodb_parquet_2026].
+2. **Zéro transaction ACID ni `UPDATE`/`DELETE`** : un crash d'exécuteur laisse des fichiers partiels visibles par les lecteurs concurrents, et corriger une seule ligne RGPD oblige à réécrire un répertoire complet [@gahi_datalakes_2025].
+
+Comment concilier vitesse d'ingestion cloud et rigueur de validation sans corrompre le décisionnel ? C'est l'enjeu architectural du chapitre suivant sur les pipelines **ETL, ELT et Hybrides**, avant de doter nos fichiers Parquet d'une couche transactionnelle avec le **[Data Lakehouse](datalakehouse.qmd)**.

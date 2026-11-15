@@ -1,0 +1,91 @@
+---
+title: "Traitement de Flux Continu : Event-Time, Watermarks & Exactly-Once"
+icon: "🌊"
+bibliography: bibliography.bib
+categories:
+  - Big Data
+  - Data & IA
+description: "Unifier flux et lots au-delà de l'architecture Lambda, maîtriser les fenêtres temporelles avec Watermarks face aux retards réseau et garantir le Exactly-Once par barrières de Chandy-Lamport."
+---
+
+Une fois les événements collectés en temps réel dans [Apache Kafka](kafka-cdc.qmd), comment calculer des agrégations continues (détection de fraude en moins de 50 ms, tarification dynamique, alertes IoT) alors que le flux **ne s'arrête jamais**, que les paquets mobiles arrivent **dans le désordre** après une coupure 5G, et qu'un serveur peut griller au milieu d'une fenêtre horaire [@akidau_dataflow_2015; @carbone_flink_2015] ?
+
+## 🏗️ De Lambda à Kappa : Micro-Lots Spark vs Flux Natif Apache Flink
+
+Au début des années 2010, l'**Architecture Lambda** de Nathan Marz [@marz_bigdata_2015] superposait deux piles indépendantes : une **couche Batch** lente mais exacte (MapReduce/Spark recalculant tout la nuit) et une **couche Speed** approximative en temps réel. En pratique, maintenir la même logique métier dans **deux langages et deux moteurs différents** provoquait des bogues chroniques et une dérive permanente des indicateurs [@kreps_kappa_2014].
+
+En 2014, Jay Kreps propose l'**Architecture Kappa** [@kreps_kappa_2014] : un **unique moteur de flux** lit le journal immuable Kafka ; lorsqu'une règle métier change, on relance simplement une nouvelle instance depuis l'`offset 0` ! Aujourd'hui, deux familles de moteurs incarnent cette unification (le lot n'étant plus qu'un flux borné [@akidau_dataflow_2015]) :
+
+::: {.row gap=4 mb=4}
+:::: {.col span=6}
+::::: {.card}
+#### Micro-Batching : Spark Structured Streaming [Débit Analytique]{.concept-badge .tag-primary} {.bi-collection-play-fill}
+
+Découpe le flux continu en une suite rapide de petits jobs [Spark SQL](spark.qmd) discrets (toutes les 100 ms à quelques secondes) [@armbrust_structured_2018].
+
+- **Atout** : réutilise intégralement Catalyst, Tungsten et l'écosystème Lakehouse avec un débit massif.
+- **Limite** : latence plancher liée au cycle de planification des micro-lots (bien que le mode *Continuous Processing* abaisse ce seuil sur les filtres simples).
+:::::
+::::
+
+:::: {.col span=6}
+::::: {.card}
+#### Flux Continu Natif : Apache Flink [Latence Sous-Seconde]{.concept-badge .tag-success} {.bi-water}
+
+Les opérateurs restent déployés en permanence et traitent **chaque événement individuellement dès son arrivée** en mémoire, appuyés sur un état local **RocksDB** ([LSM-Tree](nosql.qmd)) [@carbone_flink_2015].
+
+- **Contre-pression (*Backpressure*) par crédits** : si un puits aval ralentit, les tampons réseau de Flink cessent d'accorder des crédits à l'opérateur amont, propageant un freinage doux jusqu'à Kafka **sans jamais saturer la RAM (OOM)** !
+:::::
+::::
+:::
+
+## ⏱️ Le Modèle Dataflow : Event-Time, Fenêtres & Watermarks
+
+Formalisé chez Google par Tyler Akidau et son équipe [@akidau_dataflow_2015], tout système de streaming rigoureux doit séparer strictement deux horloges :
+
+- **Temps de traitement (*Processing-Time*)** : l'heure de la montre du serveur qui exécute le calcul. Simple, mais **faux dès qu'un réseau retarde un paquet** !
+- **Temps de l'événement (*Event-Time*)** : l'horodatage gravé à la source au moment réel où l'action s'est produite (ex. paiement sans contact à `14:03` dans un métro hors réseau, reçu par Kafka à `14:14`) [@akidau_dataflow_2015].
+
+Pour découper un flux infini en tranches finies en *Event-Time*, on applique des **fenêtres (*Windows*)** — **fixes (*Tumbling*)**, **glissantes (*Sliding*)** ou **par session d'activité (*Session Windows*)** — pilotées par une horloge de progression appelée **Watermark** [@akidau_dataflow_2015] :
+
+$$\mathcal{W}(t) = \max(\text{event\_time observé}) - \delta_{\text{tolérance}}$$
+
+Une **Watermark** $\mathcal{W} = \text{14:05}$ est une promesse heuristique affirmant au moteur : *« Plus aucun événement antérieur à 14:05 ne devrait arriver, tu peux clôturer et émettre le résultat de la fenêtre `[14:00, 14:05)` »* [@akidau_dataflow_2015].
+
+| Réglage du retard toléré                      | Avantage opérationnel                                   | Risque / Contrepartie                                                                                                |
+| :-------------------------------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------- |
+| **Watermark agressive** ($\delta$ très court) | Résultats émis avec une latence minimale                | Nombreux retardataires exclus de la fenêtre initiale                                                                 |
+| **Watermark prudente** ($\delta$ large)       | Capture quasi tous les paquets retardés du premier coup | Retarde l'émission des tableaux de bord et gonfle l'état mémoire                                                     |
+| **`Allowed Lateness` + `Side Output`**        | **Équilibre optimal** [@akidau_dataflow_2015]           | Émet vite à la Watermark, corrige la fenêtre pendant un délai de grâce, puis déroute les grands retards sans perte ! |
+
+## 🛡️ État Tolérant aux Pannes : Barrières de Chandy-Lamport & Exactly-Once
+
+Si un nœud Flink maintient en mémoire la somme des achats d'une fenêtre d'une heure et s'éteint à la 59e minute, comment reprendre sans tout perdre (*At-most-once*) ni recompter deux fois les mêmes paiements (*At-least-once*) ?
+
+Mettre tout le cluster en pause toutes les 10 secondes pour sauvegarder l'état détruirait la latence. Apache Flink résout ce défi en adaptant l'algorithme classique de **Chandy et Lamport (1985)** sous la forme de **Snapshots Légers Asynchrones à Barrières (*Asynchronous Barrier Snapshotting — ABS*)** [@chandy_snapshots_1985; @carbone_snapshots_2017] :
+
+1. **Injection de barrières dans le flux** : le coordinateur insère périodiquement des marqueurs virtuels (`Checkpoint Barrier #n`) directement entre les événements Kafka.
+2. **Photographie asynchrone sans arrêt** : dès qu'un opérateur reçoit la barrière `#n` sur ses entrées, il fige un cliché *Copy-on-Write* instantané de son état local RocksDB (correspondant **exactement** à tous les événements précédant la barrière) et l'envoie en tâche de fond vers S3/[HDFS](hdfs.qmd) sans bloquer le traitement [@carbone_snapshots_2017] !
+3. **Commit à Deux Phases (`2PC`) vers l'extérieur** : pour que le système cible (Kafka aval ou table Lakehouse) ne voie aucun doublon lors d'un crash + rejeu, le puits ouvre une transaction pré-validée (*pre-commit*) lors de la barrière et ne la valide définitivement (*commit*) qu'une fois le checkpoint global confirmé (**End-to-End Exactly-Once**) [@carbone_snapshots_2017].
+
+## 🧪 Simulateur : Retard Tunnel, Backpressure & Crash Chandy-Lamport
+
+Faites varier la tolérance `Allowed Lateness` face à un paiement mobile bloqué en tunnel, testez le freinage par crédits de Flink et comparez un crash en *At-Least-Once* avec les barrières de Chandy-Lamport :
+
+::: {.card-window}
+#### Simulateur Streaming : Event-Time, Watermarks, Crédits Backpressure & Checkpoints ABS {.bi-activity}
+
+:::: {#stream-watermark-sim}
+::::
+:::
+
+```{ojs}
+//| output: false
+aptitek.createStreamWatermarkSimulator("#stream-watermark-sim")
+```
+
+## 🎯 Points Clés à Retenir
+
+- **Raisonnez toujours en `Event-Time`, jamais en `Processing-Time`** dès que vos événements traversent des réseaux mobiles, de l'IoT ou des files tamponnées [@akidau_dataflow_2015].
+- **Watermark + `Allowed Lateness` + `Side Output` forment le filet de sécurité complet** : rapidité d'émission nominale, mise à jour contrôlée des fenêtres récentes et zéro perte silencieuse pour les retards extrêmes [@akidau_dataflow_2015].
+- **Le `Exactly-Once` de bout en bout exige l'alliance d'un source rejouable (Kafka), de snapshots à barrières (Chandy-Lamport) et d'un puits transactionnel (`2PC` ou idempotent)** [@chandy_snapshots_1985; @carbone_snapshots_2017].
